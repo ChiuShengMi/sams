@@ -1,20 +1,15 @@
 name: sams
 description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
   sdk: ^3.5.3
 
-
 dependencies:
   flutter:
     sdk: flutter
-
-
   cupertino_icons: ^1.0.8
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
@@ -23,28 +18,48 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: "^0.14.1"  # アイコン生成用のパッケージ
 
+# アプリアイコンの設定
+flutter_icons:
+  android: true  # Androidアイコンの名前
+  ios: true                 # iOS向けにアイコンを生成
+  image_path: "assets/icon/HelloEcc_icon.png"  # アイコン画像のパス
+  adaptive_icon_background: "#FFFFFF"  #背景
+  adaptive_icon_foreground: "assets/icon/HelloEcc_icon_withbackground.png"  # 前景
+  # web:
+  #   generate: true  # Webアプリのアイコンを生成する
+  #   image_path: "assets/icon/HelloEcc_icon_withbackground.png"  # Webアイコンの画像パス
+  #   background_color: "#800080"  # 背景色
+  #   theme_color: "#000000"       # テーマカラー
+  # windows:
+  #   generate: true  # Windowsアプリのアイコンを生成する
+  #   image_path: "assets/icon/HelloEcc_icon_withbackground.png"  # Windowsアイコンの画像パス
+  #   icon_size: 48  # Windows用のアイコンサイズ
+  # macos:
+  #   generate: true  # macOSアプリのアイコンを生成する
+  #   image_path: "assets/icon/HelloEcc_icon_withbackground.png"  # macOSアイコンの画像パス
 
 flutter:
-
   uses-material-design: true
 
-  #字体はここから
+  # アセット（画像やフォント）の設定
   assets:
-    - assets/fonts/  
+    - assets/fonts/  # フォント用のアセットディレクトリ
+    - assets/images/ # 画像用のアセットディレクトリ
+    - assets/icon/   # アイコン用のアセットディレクトリ
 
+  # フォント設定
   fonts:
-    - family: CaterOne
+    - family: CaterOne  # フォントファミリーCaterOne
       fonts:
-        - asset: assets/fonts/CarterOne-Regular.ttf
-    - family: FjallaOne
+        - asset: assets/fonts/CarterOne-Regular.ttf  # CaterOneのRegularフォント
+    - family: FjallaOne  # フォントファミリーFjallaOne
       fonts:
-        - asset: assets/fonts/FjallaOne-Regular.ttf
-    - family: KiwiMaru
+        - asset: assets/fonts/FjallaOne-Regular.ttf  # FjallaOneのRegularフォント
+    - family: KiwiMaru  # フォントファミリーKiwiMaru
       fonts:
-        - asset: assets/fonts/KiwiMaru-Regular.ttf
-        - asset: assets/fonts/KiwiMaru-Medium.ttf
-        - asset: assets/fonts/KiwiMaru-Light.ttf
+        - asset: assets/fonts/KiwiMaru-Regular.ttf  # KiwiMaruのRegularフォント
+        - asset: assets/fonts/KiwiMaru-Medium.ttf   # KiwiMaruのMediumフォント
+        - asset: assets/fonts/KiwiMaru-Light.ttf    # KiwiMaruのLightフォント
