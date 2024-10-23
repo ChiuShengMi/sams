@@ -56,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text(
                     'Hello ECC',
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 100,
                       fontFamily: 'CarterOne',
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

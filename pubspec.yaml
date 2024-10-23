@@ -35,8 +35,11 @@ flutter:
   #字体はここから
   assets:
     - assets/fonts/  
+    
   fonts:
-    - family: CustomFont
+    - family: CaterOne
       fonts:
         - asset: assets/fonts/CarterOne-Regular.ttf
+    - family: FjallaOne
+      fonts:
         - asset: assets/fonts/FjallaOne-Regular.ttf
