@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // Firebase Auth パッケージ
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth パッケージ
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sams/pages/mainPages/homepage.dart';  // ここでパスが正しいことを確認
+import 'package:sams/pages/mainPages/homepage.dart'; // ここでパスが正しいことを確認
 
 class LoginPage extends StatefulWidget {
   @override
@@ -25,7 +25,8 @@ class _LoginPageState extends State<LoginPage> {
       // ログイン成功後、ホームページに遷移
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()), // HomePage のパスが正しいことを確認
+        MaterialPageRoute(
+            builder: (context) => HomePage()), // HomePage のパスが正しいことを確認
       );
     } on FirebaseAuthException catch (e) {
       // ログインに失敗した場合、エラーメッセージを表示
@@ -36,14 +37,15 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,  // キーボード出現時に画面サイズを調整
+      resizeToAvoidBottomInset: true, // キーボード出現時に画面サイズを調整
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 94, 7, 131),
         toolbarHeight: 20, // AppBar の高さ
       ),
-      body: SingleChildScrollView(  // ページ全体をスクロール可能にする
+      body: SingleChildScrollView(
+        // ページ全体をスクロール可能にする
         child: Container(
-          height: MediaQuery.of(context).size.height,  // デバイスの全高を使用
+          height: MediaQuery.of(context).size.height, // デバイスの全高を使用
           decoration: BoxDecoration(
             color: Color(0xFF7B1FA2),
           ),
@@ -56,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text(
                     'Hello ECC',
                     style: TextStyle(
-                      fontSize: 100,
+                      fontSize: 30,
                       fontFamily: 'CarterOne',
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -64,7 +66,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 80,),
+              const SizedBox(
+                height: 80,
+              ),
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 60),
@@ -81,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextField(
-                          controller: emailController,  // メール入力コントローラにバインド
+                          controller: emailController, // メール入力コントローラにバインド
                           decoration: InputDecoration(
                             suffixIcon: Icon(Icons.check, color: Colors.grey),
                             label: Text(
@@ -96,12 +100,14 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         SizedBox(height: 20),
                         TextField(
-                          controller: passwordController,  // パスワード入力コントローラにバインド
-                          obscureText: !_isPasswordVisible,  // パスワードを表示するかどうか
+                          controller: passwordController, // パスワード入力コントローラにバインド
+                          obscureText: !_isPasswordVisible, // パスワードを表示するかどうか
                           decoration: InputDecoration(
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                               ),
                               color: Colors.grey,
                               onPressed: () {
@@ -135,7 +141,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         SizedBox(height: 40),
                         GestureDetector(
-                          onTap: signInWithEmailPassword,  // ログインボタンをクリックした時にログインメソッドを呼び出す
+                          onTap:
+                              signInWithEmailPassword, // ログインボタンをクリックした時にログインメソッドを呼び出す
                           child: Container(
                             height: 55,
                             width: 300,
