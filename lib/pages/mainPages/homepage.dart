@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth パッケー�
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
+import 'package:sams/pages/testPages/testPages.dart';
 
 class HomePage extends StatelessWidget {
   // ログアウトメソッド
@@ -29,11 +30,26 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center, // 中央揃え
           children: [
             Text('Welcome to Home Page!'),
-            SizedBox(height: 20), // テキストとボタンの間にスペースを追加
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: () => _signOut(context), // ログアウトメソッドを呼び出す
-              tooltip: 'Logout', // ツールチップを追加
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TestPage()),
+                    );
+                  },
+                  child: Text('Test Page'),
+                ),
+                SizedBox(width: 20),
+                IconButton(
+                  icon: Icon(Icons.logout),
+                  onPressed: () => _signOut(context), // ログアウトメソッドを呼び出す
+                  tooltip: 'Logout', // ツールチップを追加
+                ),
+              ],
             ),
           ],
         ),
