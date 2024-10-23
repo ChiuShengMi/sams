@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';  // FirebaseAuth パッケー
 import 'package:sams/pages/loginPages/login.dart';  
 
 class HomePage extends StatelessWidget {
+
   // ログアウトメソッド
   Future<void> _signOut(BuildContext context) async {
     try {
