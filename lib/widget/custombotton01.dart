@@ -11,7 +11,7 @@ class PurpleCustomButton extends StatelessWidget {
     Key? key,
     required this.text,         // 必須：表示するテキスト
     required this.onPressed,    // 必須：押した時のアクション
-    this.width = 200,           // デフォルトの幅を 200 に設定
+    this.width =340,           // デフォルトの幅を 200 に設定
     this.height = 55,           // デフォルトの高さを 55 に設定
     this.isEnabled = true,      // デフォルトではボタンは有効
   }) : super(key: key);
