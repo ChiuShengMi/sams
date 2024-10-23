@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // Firebase Auth パッケージ
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth パッケージ
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sams/pages/mainPages/homepage.dart';  // ここでパスが正しいことを確認
+import 'package:sams/pages/mainPages/homepage.dart'; // ここでパスが正しいことを確認
 
 class LoginPage extends StatefulWidget {
   @override
@@ -36,139 +36,151 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,  // キーボード出現時に画面サイズを調整
+      resizeToAvoidBottomInset: true, // キーボード出現時に画面サイズを調整
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 94, 7, 131),
         toolbarHeight: 20, // AppBar の高さ
       ),
-      body: SingleChildScrollView(  // ページ全体をスクロール可能にする
-        child: Container(
-          height: MediaQuery.of(context).size.height,  // デバイスの全高を使用
-          decoration: BoxDecoration(
-            color: Color(0xFF7B1FA2),
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 60.0, left: 22),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'Hello ECC',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontFamily: 'CarterOne',
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Check if the width is wide enough for desktop view
+          bool isDesktop = constraints.maxWidth > 800;
+          return SingleChildScrollView(
+            // ページ全体をスクロール可能にする
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 300 : 0), // Padding for larger screens
+              height: MediaQuery.of(context).size.height, // デバイスの全高を使用
+              decoration: BoxDecoration(
+                color: Color(0xFF7B1FA2),
               ),
-              const SizedBox(height: 80,),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 60),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 60.0, left: 22),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        'Hello ECC',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontFamily: 'CarterOne',
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    color: Colors.white,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextField(
-                          controller: emailController,  // メール入力コントローラにバインド
-                          decoration: InputDecoration(
-                            suffixIcon: Icon(Icons.check, color: Colors.grey),
-                            label: Text(
-                              'メール',
-                              style: TextStyle(
-                                fontFamily: 'FjallaOne',
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF7B1FA2),
-                              ),
-                            ),
-                          ),
+                  const SizedBox(
+                    height: 80,
+                  ),
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 60),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40),
                         ),
-                        SizedBox(height: 20),
-                        TextField(
-                          controller: passwordController,  // パスワード入力コントローラにバインド
-                          obscureText: !_isPasswordVisible,  // パスワードを表示するかどうか
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                              ),
-                              color: Colors.grey,
-                              onPressed: () {
-                                // パスワードの表示/非表示を切り替える
-                                setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
-                                });
-                              },
-                            ),
-                            label: Text(
-                              'パスワード',
-                              style: TextStyle(
-                                fontFamily: 'FjallaOne',
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF7B1FA2),
+                        color: Colors.white,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(18.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextField(
+                              controller: emailController, // メール入力コントローラにバインド
+                              decoration: InputDecoration(
+                                suffixIcon: Icon(Icons.check, color: Colors.grey),
+                                label: Text(
+                                  'メール',
+                                  style: TextStyle(
+                                    fontFamily: 'FjallaOne',
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF7B1FA2),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        SizedBox(height: 80),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'パスワードを忘れた方',
-                            style: TextStyle(
-                              fontFamily: 'FjallaOne',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 40),
-                        GestureDetector(
-                          onTap: signInWithEmailPassword,  // ログインボタンをクリックした時にログインメソッドを呼び出す
-                          child: Container(
-                            height: 55,
-                            width: 300,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFF7B1FA2),
-                                  Color.fromARGB(255, 139, 7, 241),
-                                ],
+                            SizedBox(height: 20),
+                            TextField(
+                              controller: passwordController, // パスワード入力コントローラにバインド
+                              obscureText: !_isPasswordVisible, // パスワードを表示するかどうか
+                              decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isPasswordVisible
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                  ),
+                                  color: Colors.grey,
+                                  onPressed: () {
+                                    // パスワードの表示/非表示を切り替える
+                                    setState(() {
+                                      _isPasswordVisible = !_isPasswordVisible;
+                                    });
+                                  },
+                                ),
+                                label: Text(
+                                  'パスワード',
+                                  style: TextStyle(
+                                    fontFamily: 'FjallaOne',
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF7B1FA2),
+                                  ),
+                                ),
                               ),
                             ),
-                            child: Center(
+                            SizedBox(height: 80),
+                            Align(
+                              alignment: Alignment.center,
                               child: Text(
-                                'ログイン',
+                                'パスワードを忘れた方',
                                 style: TextStyle(
                                   fontFamily: 'FjallaOne',
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
-                                  color: Colors.white,
                                 ),
                               ),
                             ),
-                          ),
+                            SizedBox(height: 40),
+                            GestureDetector(
+                              onTap: signInWithEmailPassword, // ログインボタンをクリックした時にログインメソッドを呼び出す
+                              child: Container(
+                                height: 55,
+                                width: isDesktop ? 400 : 300, // Adjust width for desktop
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xFF7B1FA2),
+                                      Color.fromARGB(255, 139, 7, 241),
+                                    ],
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'ログイン',
+                                    style: TextStyle(
+                                      fontFamily: 'FjallaOne',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
