@@ -11,7 +11,6 @@ class HomePageAdmin extends StatelessWidget {
     try {
       await FirebaseAuth.instance
           .signOut(); // FirebaseAuth の signOut メソッドを使ってログアウト
-      // ログアウト後、ログインページに戻る
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
@@ -25,97 +24,121 @@ class HomePageAdmin extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(), // カスタムAppBarを適用
-      body: SingleChildScrollView( // スクロール可能にするためにSingleChildScrollViewを追加
-        child: Padding(
-          padding: const EdgeInsets.all(16.0), // Padding around the content
-          child: Container( // すべての要素をContainerでラップ
-            padding: const EdgeInsets.all(16.0), // 内側に余白を追加
-            decoration: BoxDecoration(
-              color: Colors.white, // 背景色
-              borderRadius: BorderRadius.circular(10), // 角を丸くする
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5), // シャドウの色
-                  spreadRadius: 5, // シャドウの広がり
-                  blurRadius: 7, // シャドウのぼかし
-                  offset: Offset(0, 3), // シャドウの位置
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // 中央揃え
-              children: [
-                SizedBox(height: 20),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center, // 中央揃え
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding:
+                    const EdgeInsets.all(150.0), // Padding around the content
+                child: Container(
+                  padding: const EdgeInsets.all(50.0), // 内側に余白を追加
+                  decoration: BoxDecoration(
+                    color: Colors.white, // 背景色
+                    borderRadius: BorderRadius.circular(10), // 角を丸くする
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5), // シャドウの色
+                        spreadRadius: 5, // シャドウの広がり
+                        blurRadius: 7, // シャドウのぼかし
+                        offset: Offset(0, 3), // シャドウの位置
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // 中央揃え vertically
+                      crossAxisAlignment:
+                          CrossAxisAlignment.center, // 中央揃え horizontally
+                      children: [
+                        SizedBox(height: 20),
 
-                // First Row:
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceEvenly, // Evenly space the buttons
-                  children: [
-                    // First Button
-                    _buildBoxedButton(
-                      context: context,
-                      label: '出席総計管理',
-                      onPressed: () {
-                        //押されたとき処理
-                      },
+                        // First Row with Equal-Sized Buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // First Button
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: '出席総計管理',
+                                onPressed: () {
+                                  //押されたとき処理
+                                },
+                              ),
+                            ),
+
+                            SizedBox(width: 20), // Space between buttons
+
+                            // Second Button
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: '全体出席データ管理',
+                                onPressed: () {
+                                  //押されたとき処理
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: 20),
+
+                        // Second Row with Equal-Sized Buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Third Button
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: '授業リスト',
+                                onPressed: () {
+                                  //押されたとき処理
+                                },
+                              ),
+                            ),
+
+                            SizedBox(width: 20), // Space between buttons
+
+                            // Fourth Button
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: 'ユーザ管理',
+                                onPressed: () {
+                                  //押されたとき処理
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-
-                    // Second Button
-                    _buildBoxedButton(
-                      context: context,
-                      label: '全体出席データ管理',
-                      onPressed: () {
-                        //押されたとき処理
-                      },
-                    ),
-                  ],
+                  ),
                 ),
-
-                SizedBox(height: 20),
-
-                // Second Row: Third and Fourth Buttons
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceEvenly, // Evenly space the buttons
-                  children: [
-                    // Third Button
-                    _buildBoxedButton(
-                      context: context,
-                      label: '授業リスト',
-                      onPressed: () {
-                        //押されたとき処理
-                      },
-                    ),
-
-                    // Fourth Button
-                    _buildBoxedButton(
-                      context: context,
-                      label: 'ユーザ管理',
-                      onPressed: () {
-                        //押されたとき処理
-                      },
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 20),
-
-                // Third Row: Test button
-                _buildBoxedButton(
-                  context: context,
-                  label: 'Test Page',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TestPage()),
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+
+          // Place the Test Page button at the bottom
+          Padding(
+            padding: const EdgeInsets.all(5.0), // Padding around the button
+            child: _buildBoxedButton(
+              context: context,
+              label: 'Test Page',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TestPage()),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomBar(), // カスタムBottomBarを適用
     );
@@ -128,7 +151,7 @@ class HomePageAdmin extends StatelessWidget {
     required VoidCallback onPressed,
   }) {
     return Container(
-      padding: EdgeInsets.all(90), // Padding inside the box
+      height: 60, // Fixed height for consistent button size
       decoration: BoxDecoration(
         color: Color(0xFF7B1FA2), // Box color
         borderRadius: BorderRadius.circular(10), // Rounded corners
