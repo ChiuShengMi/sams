@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth パッケージ
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sams/pages/mainPages/homepage.dart'; // ここでパスが正しいことを確認
+import 'package:sams/pages/mainPages/homepage_admin.dart'; // ここでパスが正しいことを確認
 
 class LoginPage extends StatefulWidget {
   @override
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => HomePage()), // HomePage のパスが正しいことを確認
+            builder: (context) => HomePageAdmin()), // HomePage のパスが正しいことを確認
       );
     } on FirebaseAuthException catch (e) {
       // ログインに失敗した場合、エラーメッセージを表示
