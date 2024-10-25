@@ -4,22 +4,9 @@ import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/widget/appbarlogout.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/pages/testPages/testPages.dart';
+import 'package:sams/main.dart';
 
 class HomePageAdmin extends StatelessWidget {
-  // ログアウトメソッド
-  Future<void> _signOut(BuildContext context) async {
-    try {
-      await FirebaseAuth.instance
-          .signOut(); // FirebaseAuth の signOut メソッドを使ってログアウト
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-      );
-    } catch (e) {
-      print('ログアウトエラー: $e'); // エラーハンドリング
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
