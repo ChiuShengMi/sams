@@ -25,79 +25,96 @@ class HomePageAdmin extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(), // カスタムAppBarを適用
-      body: Padding(
-        padding: const EdgeInsets.all(16.0), // Padding around the content
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // 中央揃え
-          children: [
-            SizedBox(height: 20),
-
-            // First Row:
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly, // Evenly space the buttons
+      body: SingleChildScrollView( // スクロール可能にするためにSingleChildScrollViewを追加
+        child: Padding(
+          padding: const EdgeInsets.all(16.0), // Padding around the content
+          child: Container( // すべての要素をContainerでラップ
+            padding: const EdgeInsets.all(16.0), // 内側に余白を追加
+            decoration: BoxDecoration(
+              color: Colors.white, // 背景色
+              borderRadius: BorderRadius.circular(10), // 角を丸くする
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5), // シャドウの色
+                  spreadRadius: 5, // シャドウの広がり
+                  blurRadius: 7, // シャドウのぼかし
+                  offset: Offset(0, 3), // シャドウの位置
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // 中央揃え
               children: [
-                // First Button
-                _buildBoxedButton(
-                  context: context,
-                  label: '出席総計管理',
-                  onPressed: () {
-                    //押されたとき処理
-                  },
+                SizedBox(height: 20),
+
+                // First Row:
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceEvenly, // Evenly space the buttons
+                  children: [
+                    // First Button
+                    _buildBoxedButton(
+                      context: context,
+                      label: '出席総計管理',
+                      onPressed: () {
+                        //押されたとき処理
+                      },
+                    ),
+
+                    // Second Button
+                    _buildBoxedButton(
+                      context: context,
+                      label: '全体出席データ管理',
+                      onPressed: () {
+                        //押されたとき処理
+                      },
+                    ),
+                  ],
                 ),
 
-                // Second Button
+                SizedBox(height: 20),
+
+                // Second Row: Third and Fourth Buttons
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceEvenly, // Evenly space the buttons
+                  children: [
+                    // Third Button
+                    _buildBoxedButton(
+                      context: context,
+                      label: '授業リスト',
+                      onPressed: () {
+                        //押されたとき処理
+                      },
+                    ),
+
+                    // Fourth Button
+                    _buildBoxedButton(
+                      context: context,
+                      label: 'ユーザ管理',
+                      onPressed: () {
+                        //押されたとき処理
+                      },
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 20),
+
+                // Third Row: Test button
                 _buildBoxedButton(
                   context: context,
-                  label: '全体出席データ管理',
+                  label: 'Test Page',
                   onPressed: () {
-                    //押されたとき処理
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TestPage()),
+                    );
                   },
                 ),
               ],
             ),
-
-            SizedBox(height: 20),
-
-            // Second Row: Third and Fourth Buttons
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly, // Evenly space the buttons
-              children: [
-                // Third Button
-                _buildBoxedButton(
-                  context: context,
-                  label: '授業リスト',
-                  onPressed: () {
-                    //押されたとき処理
-                  },
-                ),
-
-                // Fourth Button
-                _buildBoxedButton(
-                  context: context,
-                  label: 'ユーザ管理',
-                  onPressed: () {
-                    //押されたとき処理
-                  },
-                ),
-              ],
-            ),
-
-            SizedBox(height: 20),
-
-            // Third Row: Test button
-            _buildBoxedButton(
-              context: context,
-              label: 'Test Page',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => TestPage()),
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomBar(), // カスタムBottomBarを適用
