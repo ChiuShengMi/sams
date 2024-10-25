@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth パッケージをインポート
 import 'package:sams/pages/loginPages/login.dart';
+import 'package:sams/pages/mainPages/subjectlist/subjecttable.dart';
 import 'package:sams/widget/appbarlogout.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/pages/testPages/testPages.dart';
+import 'package:sams/pages/mainPages/subjectlist/subjecttable.dart';
 import 'package:sams/main.dart';
 
 class HomePageAdmin extends StatelessWidget {
@@ -84,7 +86,11 @@ class HomePageAdmin extends StatelessWidget {
                                 context: context,
                                 label: '授業リスト',
                                 onPressed: () {
-                                  //押されたとき処理
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Subjecttable()),
+                                  );
                                 },
                               ),
                             ),
