@@ -4,16 +4,6 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-/// Default [FirebaseOptions] for use with your Firebase apps.
-///
-/// Example:
-/// ```dart
-/// import 'firebase_options.dart';
-/// // ...
-/// await Firebase.initializeApp(
-///   options: DefaultFirebaseOptions.currentPlatform,
-/// );
-/// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -48,6 +38,7 @@ class DefaultFirebaseOptions {
     authDomain: 'way2win-4964d.firebaseapp.com',
     storageBucket: 'way2win-4964d.appspot.com',
     measurementId: 'G-0S4VPCJ5PH',
+    databaseURL: 'https://way2win-4964d-default-rtdb.asia-southeast1.firebasedatabase.app', // 追加
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -56,6 +47,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '82134360978',
     projectId: 'way2win-4964d',
     storageBucket: 'way2win-4964d.appspot.com',
+    databaseURL: 'https://way2win-4964d-default-rtdb.asia-southeast1.firebasedatabase.app', // 追加
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -65,6 +57,7 @@ class DefaultFirebaseOptions {
     projectId: 'way2win-4964d',
     storageBucket: 'way2win-4964d.appspot.com',
     iosBundleId: 'com.example.sams',
+    databaseURL: 'https://way2win-4964d-default-rtdb.asia-southeast1.firebasedatabase.app', // 追加
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -74,6 +67,7 @@ class DefaultFirebaseOptions {
     projectId: 'way2win-4964d',
     storageBucket: 'way2win-4964d.appspot.com',
     iosBundleId: 'com.example.sams',
+    databaseURL: 'https://way2win-4964d-default-rtdb.asia-southeast1.firebasedatabase.app', // 追加
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
@@ -84,5 +78,6 @@ class DefaultFirebaseOptions {
     authDomain: 'way2win-4964d.firebaseapp.com',
     storageBucket: 'way2win-4964d.appspot.com',
     measurementId: 'G-X5WR5G8J1H',
+    databaseURL: 'https://way2win-4964d-default-rtdb.asia-southeast1.firebasedatabase.app', // 追加
   );
 }
