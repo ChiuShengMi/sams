@@ -455,7 +455,7 @@ class TestPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => TestPageLink()), // 遷移先を指定
                 );
               },
-              child: Text('DATABASE構築'),
+              child: Text('授業と学生紐付け'),
             ),
           ],
         ),
