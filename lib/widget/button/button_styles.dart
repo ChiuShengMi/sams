@@ -5,7 +5,7 @@ class ButtonStyles {
     backgroundColor: Color(0xFF7B1FA2),
     foregroundColor: Colors.white,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12.0),
+      borderRadius: BorderRadius.circular(30.0),
     ),
     elevation: 2.0,
     textStyle: TextStyle(
