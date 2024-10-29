@@ -12,11 +12,19 @@ class Subjecttable extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(), // Apply custom AppBar
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text("授業リスト"),
+          Text(
+            "授業リスト",
+            style: TextStyle(
+              fontSize: 24, // Customize font size
+              fontWeight: FontWeight.bold, // Make the font bold
+              color: Colors.black, // Adjust the color as needed
+            ),
+          ),
           Divider(
-            color: Colors.red,
-            thickness: 15.0,
+            color: Colors.grey,
+            thickness: 1.5,
             height: 15.0,
           ),
 
