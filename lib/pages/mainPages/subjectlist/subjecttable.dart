@@ -2,11 +2,10 @@ import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/widget/lessontable.dart';
 import 'package:flutter/material.dart';
-import 'package:sams/main.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class Subjecttable extends StatelessWidget {
+class SubjectTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,11 +33,12 @@ class Subjecttable extends StatelessWidget {
           // Rest of your content
           Expanded(
             child: Center(
-              child: Text("Your content here"),
+              child: Lessontable(), // Load the LessonTable widget
             ),
           ),
         ],
       ),
+      bottomNavigationBar: BottomBar(), // Optional BottomBar
     );
   }
 }

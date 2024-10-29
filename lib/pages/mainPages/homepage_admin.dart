@@ -89,7 +89,7 @@ class HomePageAdmin extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => Subjecttable()),
+                                        builder: (context) => SubjectTable()),
                                   );
                                 },
                               ),
