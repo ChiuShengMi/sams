@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestoreのパッケージをインポート
 import 'package:firebase_database/firebase_database.dart';
 import 'package:sams/pages/loginPages/login.dart';
+import 'package:sams/pages/testPages/testPages_leaves.dart';
 import 'package:sams/pages/testPages/testPages_link.dart';
 class TestPage extends StatelessWidget {
 
@@ -177,7 +178,7 @@ class TestPage extends StatelessWidget {
                       },
                       items: [
                         '国際１号館', '国際2号館', '国際3号館',
-                        '１号館', '2号館', '3号館', '4号館'
+                        '1号館', '2号館', '3号館', '4号館'
                       ].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -455,8 +456,18 @@ class TestPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => TestPageLink()), // 遷移先を指定
                 );
               },
-              child: Text('DATABASE構築'),
+              child: Text('授業と学生紐付け'),
             ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TestPageLeaves()), // testPages_leavesに遷移
+                  );
+              },
+              child: Text('休暇届出'),
+            ),            
           ],
         ),
       ),

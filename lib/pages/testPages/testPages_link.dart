@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart'; // Firebase Database package
+import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TestPageLink extends StatefulWidget {
   @override
@@ -19,7 +20,21 @@ class _TestPageLinkState extends State<TestPageLink> {
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return AddStudentDialog();
+                return ClassSelectionDialog(
+                  onClassSelected: (selectedClass, classType, classID) {
+                    Navigator.of(context).pop();
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return StudentSelectionDialog(
+                          selectedClass: selectedClass,
+                          classType: classType,
+                          classID: classID,
+                        );
+                      },
+                    );
+                  },
+                );
               },
             );
           },
@@ -30,57 +45,48 @@ class _TestPageLinkState extends State<TestPageLink> {
   }
 }
 
-class AddStudentDialog extends StatefulWidget {
+// 授業検索のダイアログ
+class ClassSelectionDialog extends StatefulWidget {
+  final Function(String selectedClass, String classType, String classID) onClassSelected;
+
+  ClassSelectionDialog({required this.onClassSelected});
+
   @override
-  _AddStudentDialogState createState() => _AddStudentDialogState();
+  _ClassSelectionDialogState createState() => _ClassSelectionDialogState();
 }
 
-class _AddStudentDialogState extends State<AddStudentDialog> {
-  TextEditingController searchController = TextEditingController();
+class _ClassSelectionDialogState extends State<ClassSelectionDialog> {
+  TextEditingController classSearchController = TextEditingController();
   bool isITSelected = false;
   bool isGameSelected = false;
   List<Map<String, dynamic>> classList = [];
+  List<Map<String, dynamic>> filteredClassList = [];
 
   @override
   void initState() {
     super.initState();
-    searchClasses(); // Fetch initial data
+    fetchClasses();
+    classSearchController.addListener(() => filterClassList());
   }
 
-  // Method to fetch data from Firebase Database
-  Future<void> searchClasses() async {
+  Future<void> fetchClasses() async {
     DatabaseReference dbRef = FirebaseDatabase.instance.ref('CLASS');
     List<Map<String, dynamic>> results = [];
 
-    // Search based on the selection of IT and GAME
     if (isITSelected || isGameSelected) {
-      if (isITSelected) {
-        results.addAll(await _fetchClassData(dbRef.child('IT')));
-      }
-      if (isGameSelected) {
-        results.addAll(await _fetchClassData(dbRef.child('GAME')));
-      }
+      if (isITSelected) results.addAll(await _fetchClassData(dbRef.child('IT')));
+      if (isGameSelected) results.addAll(await _fetchClassData(dbRef.child('GAME')));
     } else {
-      // If neither IT nor GAME is selected, fetch both
       results.addAll(await _fetchClassData(dbRef.child('IT')));
       results.addAll(await _fetchClassData(dbRef.child('GAME')));
     }
 
-    // Filter results based on the search text
-    if (searchController.text.isNotEmpty) {
-      results = results.where((classData) {
-        final className = classData['className'].toString().toLowerCase();
-        final searchText = searchController.text.toLowerCase();
-        return className.contains(searchText);
-      }).toList();
-    }
-
     setState(() {
       classList = results;
+      filterClassList();
     });
   }
 
-  // Fetch CLASS, DAY, TIME from the specified path
   Future<List<Map<String, dynamic>>> _fetchClassData(DatabaseReference path) async {
     DataSnapshot snapshot = await path.get();
     List<Map<String, dynamic>> result = [];
@@ -92,6 +98,8 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
           'className': value['CLASS'],
           'day': value['DAY'],
           'time': value['TIME'],
+          'classID': key,
+          'classType': path.key,
         });
       });
     }
@@ -99,119 +107,365 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
     return result;
   }
 
+  void filterClassList() {
+    String searchText = classSearchController.text.toLowerCase();
+    setState(() {
+      filteredClassList = classList.where((classData) {
+        final className = classData['className'].toLowerCase();
+        final day = classData['day'].toLowerCase();
+        return className.contains(searchText) || day.contains(searchText);
+      }).toList();
+    });
+  }
+
   @override
   void dispose() {
-    searchController.dispose();
+    classSearchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Calculate the maximum height for the dialog content
-    final maxHeight = MediaQuery.of(context).size.height * 0.7;
-
     return Dialog(
-      child: Container(
-        constraints: BoxConstraints(maxHeight: maxHeight),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Dialog Title
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                '授業に学生を追加',
-                style: TextStyle(fontSize: 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: classSearchController,
+              decoration: InputDecoration(
+                labelText: '授業検索',
+                prefixIcon: Icon(Icons.search),
               ),
             ),
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  labelText: '検索', // 'Search' in Japanese
-                  prefixIcon: Icon(Icons.search),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ToggleButtons(
+              isSelected: [isITSelected, isGameSelected],
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('IT'),
                 ),
-                onChanged: (text) {
-                  searchClasses(); // Perform search whenever text changes
-                },
-              ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('GAME'),
+                ),
+              ],
+              onPressed: (int index) {
+                setState(() {
+                  if (index == 0) {
+                    isITSelected = !isITSelected;
+                  } else if (index == 1) {
+                    isGameSelected = !isGameSelected;
+                  }
+                  fetchClasses();
+                });
+              },
             ),
-            SizedBox(height: 10),
-            // IT / GAME Toggle buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: FittedBox(
-                child: ToggleButtons(
-                  isSelected: [isITSelected, isGameSelected],
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('IT'),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('GAME'),
-                    ),
-                  ],
-                  onPressed: (int index) {
-                    setState(() {
-                      if (index == 0) {
-                        isITSelected = !isITSelected;
-                      } else if (index == 1) {
-                        isGameSelected = !isGameSelected;
-                      }
-                      searchClasses(); // Perform search whenever selection changes
-                    });
+          ),
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: filteredClassList.length,
+              itemBuilder: (context, index) {
+                final classData = filteredClassList[index];
+                return ListTile(
+                  title: Text(
+                      '${classData['className']} - ${classData['day']} - ${classData['time']}'),
+                  onTap: () {
+                    widget.onClassSelected(
+                      classData['className'],
+                      classData['classType'],
+                      classData['classID'],
+                    );
                   },
-                ),
-              ),
+                );
+              },
             ),
-            SizedBox(height: 10),
-            // Display search results
-            Expanded(
-              child: classList.isNotEmpty
-                  ? ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: classList.length,
-                      itemBuilder: (context, index) {
-                        final classData = classList[index];
-                        return ListTile(
-                          title: Text(
-                            '${classData['className']} - ${classData['day']} - ${classData['time']}',
-                            overflow: TextOverflow.ellipsis,
-                          ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// 学生検索のダイアログ
+class StudentSelectionDialog extends StatefulWidget {
+  final String selectedClass;
+  final String classType;
+  final String classID;
+
+  StudentSelectionDialog({
+    required this.selectedClass,
+    required this.classType,
+    required this.classID,
+  });
+
+  @override
+  _StudentSelectionDialogState createState() => _StudentSelectionDialogState();
+}
+
+class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
+  TextEditingController studentSearchController = TextEditingController();
+  bool isITSelected = false;
+  bool isGameSelected = false;
+  List<Map<String, dynamic>> studentList = [];
+  List<Map<String, dynamic>> filteredStudentList = [];
+  Set<String> selectedStudentIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    fetchStudents();
+    studentSearchController.addListener(() => filterStudentList());
+  }
+
+  Future<void> fetchStudents() async {
+    List<Map<String, dynamic>> results = [];
+
+    CollectionReference studentsITRef = FirebaseFirestore.instance.collection('Users/Students/IT');
+    CollectionReference studentsGameRef = FirebaseFirestore.instance.collection('Users/Students/GAME');
+
+    if (isITSelected || isGameSelected) {
+      if (isITSelected) results.addAll(await _fetchStudentData(studentsITRef));
+      if (isGameSelected) results.addAll(await _fetchStudentData(studentsGameRef));
+    } else {
+      results.addAll(await _fetchStudentData(studentsITRef));
+      results.addAll(await _fetchStudentData(studentsGameRef));
+    }
+
+    setState(() {
+      studentList = results;
+      filterStudentList();
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchStudentData(CollectionReference path) async {
+    QuerySnapshot snapshot = await path.get();
+    List<Map<String, dynamic>> result = [];
+
+    if (snapshot.docs.isNotEmpty) {
+      for (var doc in snapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+        result.add({
+          'id': data['ID'],
+          'name': data['NAME'],
+          'class': data['CLASS'],
+          'uid': doc.id,
+        });
+      }
+    }
+
+    return result;
+  }
+
+  void filterStudentList() {
+    String searchText = studentSearchController.text.toLowerCase();
+    setState(() {
+      filteredStudentList = studentList.where((studentData) {
+        final studentName = (studentData['name'] ?? '').toString().toLowerCase();
+        final studentClass = (studentData['class'] ?? '').toString().toLowerCase();
+        final studentID = (studentData['id'] ?? '').toString();
+        return selectedStudentIds.contains(studentData['uid']) ||
+            studentName.contains(searchText) ||
+            studentClass.contains(searchText) ||
+            studentID.contains(searchText);
+      }).toList();
+
+      for (var student in studentList) {
+        if (selectedStudentIds.contains(student['uid']) &&
+            !filteredStudentList.contains(student)) {
+          filteredStudentList.add(student);
+        }
+      }
+    });
+  }
+
+  Future<void> saveSelectedStudents() async {
+    String classType = widget.classType; // IT  OR GAME
+    String classID = widget.classID;     // 授業ID
+
+   
+    Map<String, dynamic> studentData = {
+      for (var i = 0; i < filteredStudentList.length; i++)
+        if (selectedStudentIds.contains(filteredStudentList[i]['uid']))
+          i.toString(): {
+            'UID': filteredStudentList[i]['uid'],
+            'NAME': filteredStudentList[i]['name'],
+            'ID': filteredStudentList[i]['id'],
+          },
+    };
+
+    Map<String, dynamic> data = {
+      'CLASS': widget.selectedClass, // 授業名
+      'STD': studentData,
+    };
+
+    // SAVE PATH
+    await FirebaseFirestore.instance
+        .collection('Class')              // メインコレクション
+        .doc(classType)                   // IT or GAME ドキュメント
+        .collection('Subjects')           // 授業をまとめるサブコレクション
+        .doc(classID)                     // 授業IDに対応するドキュメント
+        .set(data, SetOptions(merge: true));
+
+    
+    Navigator.of(context).pop();
+  }
+
+  @override
+  void dispose() {
+    studentSearchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return ClassSelectionDialog(
+                          onClassSelected: (selectedClass, classType, classID) {
+                            Navigator.of(context).pop();
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return StudentSelectionDialog(
+                                  selectedClass: selectedClass,
+                                  classType: classType,
+                                  classID: classID,
+                                );
+                              },
+                            );
+                          },
                         );
                       },
-                    )
-                  : Center(child: Text('No classes found')),
+                    );
+                  },
+                ),
+                Text(
+                  '選択中の授業: ${widget.selectedClass}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedStudentIds.clear();
+                        });
+                      },
+                      child: Text('全体取消'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          for (var student in filteredStudentList) {
+                            selectedStudentIds.add(student['uid'].toString());
+                          }
+                        });
+                      },
+                      child: Text('全体追加'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            // Buttons at the bottom
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Cancel Button
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
-                    },
-                    child: Text('取消', style: TextStyle(fontSize: 16)),
-                  ),
-                  // Confirm Button
-                  TextButton(
-                    onPressed: () {
-                      // Do nothing for now
-                    },
-                    child: Text('確定', style: TextStyle(fontSize: 16)),
-                  ),
-                ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: studentSearchController,
+              decoration: InputDecoration(
+                labelText: '学生検索',
+                prefixIcon: Icon(Icons.search),
               ),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ToggleButtons(
+              isSelected: [isITSelected, isGameSelected],
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('IT'),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('GAME'),
+                ),
+              ],
+              onPressed: (int index) {
+                setState(() {
+                  if (index == 0) {
+                    isITSelected = !isITSelected;
+                  } else if (index == 1) {
+                    isGameSelected = !isGameSelected;
+                  }
+                  fetchStudents();
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: filteredStudentList.length,
+              itemBuilder: (context, index) {
+                final studentData = filteredStudentList[index];
+                final studentUID = studentData['uid'].toString();
+                return ListTile(
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${studentData['id']} - ${studentData['name']} - ${studentData['class']}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Checkbox(
+                        value: selectedStudentIds.contains(studentUID),
+                        onChanged: (bool? value) {
+                          setState(() {
+                            if (value == true) {
+                              selectedStudentIds.add(studentUID);
+                            } else {
+                              selectedStudentIds.remove(studentUID);
+                            }
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: saveSelectedStudents,
+              child: Text('確定'),
+            ),
+          ),
+        ],
       ),
     );
   }
