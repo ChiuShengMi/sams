@@ -2,15 +2,8 @@ import 'package:flutter/material.dart';
 
 class ButtonStyles {
   static final ButtonStyle baseStyle = ElevatedButton.styleFrom(
-    backgroundColor: Color(0xFF7B1FA2),
-    foregroundColor: Colors.white,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(30.0),
-    ),
-    elevation: 2.0,
-    textStyle: TextStyle(
-      fontSize: 15.0,
-      fontWeight: FontWeight.bold,
-    ),
-  );
+      backgroundColor: Color(0xFF7B1FA2),
+      foregroundColor: Colors.white,
+      textStyle: TextStyle(fontWeight: FontWeight.bold),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)));
 }

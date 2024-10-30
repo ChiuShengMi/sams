@@ -1,3 +1,4 @@
+// Actionbar.dart
 import 'package:flutter/material.dart';
 
 class Actionbar extends StatelessWidget {
@@ -16,7 +17,12 @@ class Actionbar extends StatelessWidget {
           borderRadius: BorderRadius.circular(10)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: children,
+        children: children.map((child) {
+          if (child is Flexible || child is Expanded) {
+            return child;
+          }
+          return Flexible(child: child);
+        }).toList(),
       ),
     );
   }
