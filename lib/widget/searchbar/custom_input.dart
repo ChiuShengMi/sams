@@ -11,7 +11,7 @@ class CustomInput extends StatelessWidget {
 
   CustomInput(
       {required this.controller,
-      this.hintText = 'Input',
+      required this.hintText,
       this.height = 50.0,
       this.borderRadius = 30.0,
       this.fillColor = Colors.white,
@@ -41,28 +41,31 @@ class CustomInput extends StatelessWidget {
 }
 
 class SmallInput extends CustomInput {
-  SmallInput({required TextEditingController controller})
+  SmallInput(
+      {required String hintText, required TextEditingController controller})
       : super(
+            hintText: hintText,
             controller: controller,
             height: 40.0,
-            borderRadius: 20.0,
-            hintText: 'Small Input');
+            borderRadius: 20.0);
 }
 
 class MediumInput extends CustomInput {
-  MediumInput({required TextEditingController controller})
+  MediumInput(
+      {required String hintText, required TextEditingController controller})
       : super(
+            hintText: hintText,
             controller: controller,
             height: 50.0,
-            borderRadius: 25.0,
-            hintText: 'Medium Input');
+            borderRadius: 25.0);
 }
 
 class LargeInput extends CustomInput {
-  LargeInput({required TextEditingController controller})
+  LargeInput(
+      {required String hintText, required TextEditingController controller})
       : super(
+            hintText: hintText,
             controller: controller,
             height: 60.0,
-            borderRadius: 30.0,
-            hintText: 'Large Input');
+            borderRadius: 30.0);
 }
