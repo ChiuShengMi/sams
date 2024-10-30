@@ -47,7 +47,8 @@ class _TestPageLinkState extends State<TestPageLink> {
 
 // 授業検索のダイアログ
 class ClassSelectionDialog extends StatefulWidget {
-  final Function(String selectedClass, String classType, String classID) onClassSelected;
+  final Function(String selectedClass, String classType, String classID)
+      onClassSelected;
 
   ClassSelectionDialog({required this.onClassSelected});
 
@@ -74,8 +75,10 @@ class _ClassSelectionDialogState extends State<ClassSelectionDialog> {
     List<Map<String, dynamic>> results = [];
 
     if (isITSelected || isGameSelected) {
-      if (isITSelected) results.addAll(await _fetchClassData(dbRef.child('IT')));
-      if (isGameSelected) results.addAll(await _fetchClassData(dbRef.child('GAME')));
+      if (isITSelected)
+        results.addAll(await _fetchClassData(dbRef.child('IT')));
+      if (isGameSelected)
+        results.addAll(await _fetchClassData(dbRef.child('GAME')));
     } else {
       results.addAll(await _fetchClassData(dbRef.child('IT')));
       results.addAll(await _fetchClassData(dbRef.child('GAME')));
@@ -87,7 +90,8 @@ class _ClassSelectionDialogState extends State<ClassSelectionDialog> {
     });
   }
 
-  Future<List<Map<String, dynamic>>> _fetchClassData(DatabaseReference path) async {
+  Future<List<Map<String, dynamic>>> _fetchClassData(
+      DatabaseReference path) async {
     DataSnapshot snapshot = await path.get();
     List<Map<String, dynamic>> result = [];
 
@@ -226,12 +230,15 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
   Future<void> fetchStudents() async {
     List<Map<String, dynamic>> results = [];
 
-    CollectionReference studentsITRef = FirebaseFirestore.instance.collection('Users/Students/IT');
-    CollectionReference studentsGameRef = FirebaseFirestore.instance.collection('Users/Students/GAME');
+    CollectionReference studentsITRef =
+        FirebaseFirestore.instance.collection('Users/Students/IT');
+    CollectionReference studentsGameRef =
+        FirebaseFirestore.instance.collection('Users/Students/GAME');
 
     if (isITSelected || isGameSelected) {
       if (isITSelected) results.addAll(await _fetchStudentData(studentsITRef));
-      if (isGameSelected) results.addAll(await _fetchStudentData(studentsGameRef));
+      if (isGameSelected)
+        results.addAll(await _fetchStudentData(studentsGameRef));
     } else {
       results.addAll(await _fetchStudentData(studentsITRef));
       results.addAll(await _fetchStudentData(studentsGameRef));
@@ -243,7 +250,8 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
     });
   }
 
-  Future<List<Map<String, dynamic>>> _fetchStudentData(CollectionReference path) async {
+  Future<List<Map<String, dynamic>>> _fetchStudentData(
+      CollectionReference path) async {
     QuerySnapshot snapshot = await path.get();
     List<Map<String, dynamic>> result = [];
 
@@ -266,8 +274,10 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
     String searchText = studentSearchController.text.toLowerCase();
     setState(() {
       filteredStudentList = studentList.where((studentData) {
-        final studentName = (studentData['name'] ?? '').toString().toLowerCase();
-        final studentClass = (studentData['class'] ?? '').toString().toLowerCase();
+        final studentName =
+            (studentData['name'] ?? '').toString().toLowerCase();
+        final studentClass =
+            (studentData['class'] ?? '').toString().toLowerCase();
         final studentID = (studentData['id'] ?? '').toString();
         return selectedStudentIds.contains(studentData['uid']) ||
             studentName.contains(searchText) ||
@@ -286,9 +296,8 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
 
   Future<void> saveSelectedStudents() async {
     String classType = widget.classType; // IT  OR GAME
-    String classID = widget.classID;     // 授業ID
+    String classID = widget.classID; // 授業ID
 
-   
     Map<String, dynamic> studentData = {
       for (var i = 0; i < filteredStudentList.length; i++)
         if (selectedStudentIds.contains(filteredStudentList[i]['uid']))
@@ -306,13 +315,12 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
 
     // SAVE PATH
     await FirebaseFirestore.instance
-        .collection('Class')              // メインコレクション
-        .doc(classType)                   // IT or GAME ドキュメント
-        .collection('Subjects')           // 授業をまとめるサブコレクション
-        .doc(classID)                     // 授業IDに対応するドキュメント
+        .collection('Class') // メインコレクション
+        .doc(classType) // IT or GAME ドキュメント
+        .collection('Subjects') // 授業をまとめるサブコレクション
+        .doc(classID) // 授業IDに対応するドキュメント
         .set(data, SetOptions(merge: true));
 
-    
     Navigator.of(context).pop();
   }
 
