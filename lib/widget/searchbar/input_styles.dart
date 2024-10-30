@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class InputStyles {
-  static final InputDecoration searchBarStyle = InputDecoration(
+  static final InputDecoration InputStyle = InputDecoration(
       contentPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
       filled: true,
       fillColor: Colors.white,

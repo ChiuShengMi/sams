@@ -9,9 +9,9 @@ class Actionbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 150,
+      height: 130,
       margin: EdgeInsets.all(30),
-      padding: EdgeInsets.symmetric(horizontal: 15.0),
+      padding: EdgeInsets.symmetric(horizontal: 30.0),
       decoration: BoxDecoration(
           border: Border.all(color: Colors.black, width: 0.1),
           borderRadius: BorderRadius.circular(10)),
