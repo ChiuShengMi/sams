@@ -1,0 +1,1 @@
+//ここはファイアベースのREALTIME　DATABASE検索メソッド
