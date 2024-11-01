@@ -12,3 +12,15 @@ class ConfirmationModal extends StatelessWidget {
         });
   }
 }
+
+class ConfirmationModalSubEdit extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CustomModal(
+        title: "授業リスト編集",
+        content: "授業リスト変更しますか",
+        onPressed: () {
+          Navigator.of(context).pop();
+        });
+  }
+}

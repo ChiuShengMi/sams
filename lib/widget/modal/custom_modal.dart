@@ -38,7 +38,7 @@ class CustomModal extends StatelessWidget {
             Align(
               alignment: Alignment.bottomRight,
               child: MediumButton(
-                  text: '確認',
+                  text: '確定',
                   onPressed: () {
                     Navigator.pop(context);
                   }),
