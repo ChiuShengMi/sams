@@ -71,14 +71,21 @@ class LargeInput extends CustomInput {
 }
 
 
+
+
+
+//final TextEditingController InputController = TextEditingController();
+// bulidの上にコントローラを宣言
+
+
 // Actionbar(children: [
 //                 Expanded(
 //                     child: Row(
 //                   children: [
 //                     Flexible(     //Flexibleに囲んで使用。
 //                         child: CustomInput(
-//                             controller: loginEmailInputController,
-//                             hintText: 'Login Email'))
+//                             controller: InputController,
+//                             hintText: ''))
 //                   ],
 //                 ))
 //               ])
