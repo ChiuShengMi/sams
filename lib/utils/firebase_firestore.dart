@@ -1,0 +1,1 @@
+//ここはファイアベースのFIRESTORE　DATABASE検索メソッド
