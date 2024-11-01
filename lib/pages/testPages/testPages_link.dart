@@ -293,36 +293,40 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
       }
     });
   }
-
   Future<void> saveSelectedStudents() async {
-    String classType = widget.classType; // IT  OR GAME
+    String classType = widget.classType; // IT または GAME
     String classID = widget.classID; // 授業ID
 
+    // 選択された学生の情報を格納するマップ
     Map<String, dynamic> studentData = {
       for (var i = 0; i < filteredStudentList.length; i++)
         if (selectedStudentIds.contains(filteredStudentList[i]['uid']))
           i.toString(): {
-            'UID': filteredStudentList[i]['uid'],
-            'NAME': filteredStudentList[i]['name'],
-            'ID': filteredStudentList[i]['id'],
+            'UID': filteredStudentList[i]['uid'], // 学生のUID
+            'NAME': filteredStudentList[i]['name'], // 学生の名前
+            'ID': filteredStudentList[i]['id'], // 学生のID
+            'CLASS': filteredStudentList[i]['class'], // 学生のクラス情報を追加
           },
     };
 
+    // Firestoreに保存するデータ構造
     Map<String, dynamic> data = {
       'CLASS': widget.selectedClass, // 授業名
-      'STD': studentData,
+      'STD': studentData, // 学生リストを含む子要素
     };
 
-    // SAVE PATH
+    // Firestoreにデータを保存（既存データの上書きを防ぐためにmerge: trueを使用）
     await FirebaseFirestore.instance
         .collection('Class') // メインコレクション
-        .doc(classType) // IT or GAME ドキュメント
-        .collection('Subjects') // 授業をまとめるサブコレクション
+        .doc(classType) // IT または GAME のドキュメント
+        .collection('Subjects') // 授業サブコレクション
         .doc(classID) // 授業IDに対応するドキュメント
-        .set(data, SetOptions(merge: true));
+        .set(data, SetOptions(merge: true)); // データをマージして保存
 
+    // ダイアログを閉じる
     Navigator.of(context).pop();
   }
+
 
   @override
   void dispose() {
