@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import './dropbox_styles.dart';
 
-
 enum DropboxSize { small, medium, large }
 
 class Customdropdown extends StatelessWidget {
@@ -67,13 +66,14 @@ class Customdropdown extends StatelessWidget {
 
 
 
-//  Customdropdown(
+// Expanded(
+// flex: 1,
+// child: Customdropdown(
 //   hintText: 'Select Option',
 //   items: [
-//     DropdownMenuItem(
-//       child: Text('Option 1'),
-//       value: '1',
-//     )
+//   DropdownMenuItem(child: Text(''),
+//   value : '1',
+// ),
 //   ],
 //   onChanged: (value) {
 //      //ここに動さを入力

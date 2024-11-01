@@ -4,6 +4,8 @@ import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/dropbox/custom_dropdown.dart';
+import 'package:sams/widget/modal/confirmation_modal.dart';
+import 'package:sams/widget/modal/custom_modal.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 
 class UserAdd extends StatelessWidget {
@@ -147,7 +149,13 @@ class UserAdd extends StatelessWidget {
                 children: [
                   CustomButton(text: '戻る', onPressed: () {}),
                   SizedBox(width: 16),
-                  CustomButton(text: '確認', onPressed: () {}),
+                  CustomButton(
+                      text: '確認',
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) => ConfirmationModal());
+                      }),
                   SizedBox(width: 16),
                 ],
               )
