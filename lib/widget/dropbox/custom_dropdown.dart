@@ -64,3 +64,19 @@ class Customdropdown extends StatelessWidget {
     }
   }
 }
+
+
+
+//  Customdropdown(
+//   hintText: 'Select Option',
+//   items: [
+//     DropdownMenuItem(
+//       child: Text('Option 1'),
+//       value: '1',
+//     )
+//   ],
+//   onChanged: (value) {
+//      //ここに動さを入力
+//   },
+//   size: DropboxSize.medium,
+// )

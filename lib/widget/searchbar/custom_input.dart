@@ -69,3 +69,16 @@ class LargeInput extends CustomInput {
             height: 60.0,
             borderRadius: 30.0);
 }
+
+
+// Actionbar(children: [
+//                 Expanded(
+//                     child: Row(
+//                   children: [
+//                     Flexible(     //Flexibleに囲んで使用。
+//                         child: CustomInput(
+//                             controller: loginEmailInputController,
+//                             hintText: 'Login Email'))
+//                   ],
+//                 ))
+//               ])
