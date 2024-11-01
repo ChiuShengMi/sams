@@ -37,7 +37,7 @@ class CustomInputContainer extends StatelessWidget {
               child: Text(
                 title!,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 40,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -48,3 +48,10 @@ class CustomInputContainer extends StatelessWidget {
     );
   }
 }
+
+
+//  CustomInputContainer(
+//   inputWidgets: [  //ここにinputなどを入れる
+//     
+//   ],
+// )

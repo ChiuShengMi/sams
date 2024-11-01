@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sams/pages/mainPages/subjectlist/subjecttable.dart';
+import 'package:sams/pages/mainPages/subjectlist/subjecttable_edit.dart';
+import 'package:sams/widget/lessontable_edit.dart';
 
 class Lessontable extends StatefulWidget {
   @override
@@ -101,7 +104,6 @@ class _LessonTableScreenState extends State<Lessontable> {
     if (_cachedData == null) {
       return Center(child: Text('データがありません'));
     }
-
     List<TableRow> tableRows = [
       TableRow(
         decoration: BoxDecoration(
@@ -113,6 +115,7 @@ class _LessonTableScreenState extends State<Lessontable> {
         ),
         children: const [
           TableCellHeader(text: '授業名'),
+          TableCellHeader(text: "コース"),
           TableCellHeader(text: '教師'),
           TableCellHeader(text: '授業曜日'),
           TableCellHeader(text: '時間割'),
@@ -133,6 +136,7 @@ class _LessonTableScreenState extends State<Lessontable> {
           TableRow(
             children: [
               buildTableCell(data['CLASS'] ?? 'N/A'),
+              buildTableCell(categoryKey), // Display course name
               TableCell(
                 child: FutureBuilder<DocumentSnapshot>(
                   future: _firestore
@@ -170,7 +174,7 @@ class _LessonTableScreenState extends State<Lessontable> {
               buildTableCell(data['QR_CODE'] ?? 'N/A'),
               buildTableCell(data['CLASSROOM'] ?? 'N/A'),
               buildTableCell(data['PLACE'] ?? 'N/A'),
-              buildEditCell(context, '編集'),
+              buildEditCell(context, '編集', data),
             ],
           ),
         );
@@ -203,10 +207,17 @@ class _LessonTableScreenState extends State<Lessontable> {
     );
   }
 
-  Widget buildEditCell(BuildContext context, String text) {
+  Widget buildEditCell(
+      BuildContext context, String text, Map<String, dynamic> lessonData) {
     return InkWell(
       onTap: () {
-        // Navigation logic for edit page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SubjecttableEdit(
+                lessonData: lessonData), // Use 'lessonData' here
+          ),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),

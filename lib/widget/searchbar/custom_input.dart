@@ -69,3 +69,23 @@ class LargeInput extends CustomInput {
             height: 60.0,
             borderRadius: 30.0);
 }
+
+
+
+
+
+//final TextEditingController InputController = TextEditingController();
+// bulidの上にコントローラを宣言
+
+
+// Actionbar(children: [
+//                 Expanded(
+//                     child: Row(
+//                   children: [
+//                     Flexible(     //Flexibleに囲んで使用。
+//                         child: CustomInput(
+//                             controller: InputController,
+//                             hintText: ''))
+//                   ],
+//                 ))
+//               ])
