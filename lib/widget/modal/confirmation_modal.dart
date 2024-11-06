@@ -24,3 +24,15 @@ class ConfirmationModalSubEdit extends StatelessWidget {
         });
   }
 }
+
+class DeleteModalSubEdit extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CustomModal(
+        title: "授業リスト削除",
+        content: "授業リスト削除しますか",
+        onPressed: () {
+          Navigator.of(context).pop();
+        });
+  }
+}

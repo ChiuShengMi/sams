@@ -158,17 +158,31 @@ class _LessonTableScreenState extends State<Lessontable> {
                             as Map<String, dynamic>? ??
                         {};
 
-                    String teacherDisplay =
-                        (firestoreData['TEACHER_ID'] is List)
-                            ? (firestoreData['TEACHER_ID'] as List).join(', ')
-                            : firestoreData['TEACHER_ID']?.toString() ??
-                                data['TEACHER_ID']?.toString() ??
-                                'N/A';
+                    String teacherDisplay = 'N/A';
+
+                    if (firestoreData['TEACHER_ID'] is Map) {
+                      // Get the first key from the TEACHER_ID map
+                      var teacherMap = firestoreData['TEACHER_ID'] as Map;
+                      var firstKey = teacherMap.keys.first;
+                      teacherDisplay =
+                          teacherMap[firstKey]['NAME']?.toString() ?? 'N/A';
+                    }
 
                     return buildTableCell(teacherDisplay);
                   },
+
+                  //   String teacherDisplay =
+                  //       (firestoreData['TEACHER_ID'] is List)
+                  //           ? (firestoreData['TEACHER_ID'] as List).join(', ')
+                  //           : firestoreData['TEACHER_ID']?.toString() ??
+                  //               data['TEACHER_ID']?.toString() ??
+                  //               'N/A';
+
+                  //   return buildTableCell(teacherDisplay);
+                  // },
                 ),
               ),
+
               buildTableCell(data['DAY'] ?? 'N/A'),
               buildTableCell(data['TIME'] ?? 'N/A'),
               buildTableCell(data['QR_CODE'] ?? 'N/A'),
