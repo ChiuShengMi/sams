@@ -188,7 +188,7 @@ class _LessonTableScreenState extends State<Lessontable> {
               buildTableCell(data['QR_CODE'] ?? 'N/A'),
               buildTableCell(data['CLASSROOM'] ?? 'N/A'),
               buildTableCell(data['PLACE'] ?? 'N/A'),
-              buildEditCell(context, '編集', data),
+              buildEditCell(context, '編集', data,subjectKey, categoryKey),
             ],
           ),
         );
@@ -222,14 +222,17 @@ class _LessonTableScreenState extends State<Lessontable> {
   }
 
   Widget buildEditCell(
-      BuildContext context, String text, Map<String, dynamic> lessonData) {
+      BuildContext context, String text, Map<String, dynamic> lessonData, String id, String course) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => SubjecttableEdit(
-                lessonData: lessonData), // Use 'lessonData' here
+                lessonData: lessonData,
+                id: id,
+                course: course,
+                ), // Use 'lessonData' here
           ),
         );
       },

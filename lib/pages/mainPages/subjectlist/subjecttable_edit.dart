@@ -116,6 +116,7 @@
 // // }
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
@@ -123,8 +124,15 @@ import 'package:sams/widget/button/custom_button.dart';
 
 class SubjecttableEdit extends StatefulWidget {
   final Map<String, dynamic> lessonData;
+  final String id;
+  final String course;
 
-  SubjecttableEdit({required this.lessonData});
+  SubjecttableEdit({
+    required this.lessonData,
+    required this.id,
+    required this.course
+    });
+  
 
   @override
   _SubjecttableEditState createState() => _SubjecttableEditState();
@@ -146,7 +154,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     _classController = TextEditingController(
         text: widget.lessonData['CLASS']?.toString() ?? '');
     _courseController = TextEditingController(
-        text: widget.lessonData['COURSE']?.toString() ?? '');
+        text: widget.id.toString() ?? '');
     _teacherController = TextEditingController(
         text: widget.lessonData['TEACHER_ID']?.toString() ?? '');
     _dayController =
@@ -174,24 +182,25 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     super.dispose();
   }
 
-  Future<void> _updateLesson(BuildContext context) async {
-    String classType = widget.lessonData['COURSE'] == 'GAME' ? 'GAME' : 'IT';
-    String lessonId = widget.lessonData['id'];
+ Future<void> _updateLesson(BuildContext context) async {
+    // classTypeとlessonIdはwidgetのプロパティから取得
+    String classType = widget.course;
+    String lessonId = widget.id;
 
-    // Use ?? '' to handle any null values
     Map<String, dynamic> updatedData = {
-      'CLASS': _classController.text ?? '',
-      'COURSE': _courseController.text ?? '',
-      'TEACHER_ID': _teacherController.text ?? '',
-      'DAY': _dayController.text ?? '',
-      'TIME': _timeController.text ?? '',
-      'QR_CODE': _qrCodeController.text ?? '',
-      'CLASSROOM': _classroomController.text ?? '',
-      'PLACE': _placeController.text ?? '',
+      'CLASS': _classController.text,
+      'COURSE': _courseController.text,
+      'TEACHER_ID': _teacherController.text,
+      'DAY': _dayController.text,
+      'TIME': _timeController.text,
+      'QR_CODE': _qrCodeController.text,
+      'CLASSROOM': _classroomController.text,
+      'PLACE': _placeController.text,
     };
 
-    print("Updating lesson at path: Class/$classType/Subjects/$lessonId");
-    print("Data to update: $updatedData");
+    Map<String, dynamic> firestoreUpdatedData = {
+    'CLASS': _classController.text, // FirestoreではCLASSのみを更新
+  };
 
     try {
       await FirebaseFirestore.instance
@@ -199,6 +208,10 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
           .doc(classType)
           .collection('Subjects')
           .doc(lessonId)
+          .update(firestoreUpdatedData);
+
+       await FirebaseDatabase.instance
+        .ref('CLASS/$classType/$lessonId')
           .update(updatedData);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,53 +226,36 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     }
   }
 
-  Future<void> _deleteLesson(BuildContext context) async {
-    // Ensure `lessonData` exists and retrieve fields with null checks
-    final lessonData = widget.lessonData;
+Future<void> _deleteLesson(BuildContext context) async {
+  String classType = widget.course;
+  String lessonId = widget.id;
 
-    if (lessonData == null) {
-      print('lessonData is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('授業データが見つかりません')),
-      );
-      return;
-    }
+  try {
+    // Firestoreから授業データを削除
+    await FirebaseFirestore.instance
+        .collection('Class')
+        .doc(classType)
+        .collection('Subjects')
+        .doc(lessonId)
+        .delete();
 
-    print(
-        'Lesson data: $lessonData'); // Print the whole lessonData for debugging
+    // Realtime Databaseから授業データを削除
+    await FirebaseDatabase.instance
+        .ref('CLASS/$classType/$lessonId')
+        .remove();
 
-    String classType = (lessonData['COURSE'] ?? 'IT').toString();
-    String lessonId = (lessonData['id'] ?? '').toString();
-
-    if (lessonId.isEmpty) {
-      print('Lesson ID is missing from lessonData');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('授業IDが見つかりません')),
-      );
-      return;
-    }
-
-    print("Deleting lesson at path: Class/$classType/Subjects/$lessonId");
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('Class')
-          .doc(classType)
-          .collection('Subjects')
-          .doc(lessonId)
-          .delete();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('授業が削除されました')),
-      );
-      Navigator.of(context).pop();
-    } catch (e) {
-      print('Error deleting lesson: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('削除中にエラーが発生しました: $e')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('授業が削除されました')),
+    );
+    Navigator.of(context).pop();
+  } catch (e) {
+    print('Error deleting lesson: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('削除中にエラーが発生しました: $e')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
