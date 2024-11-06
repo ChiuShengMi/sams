@@ -209,7 +209,8 @@ class StudentSelectionDialog extends StatefulWidget {
   });
 
   @override
-  _StudentSelectionDialogState createState() => _StudentSelectionDialogState();
+  _StudentSelectionDialogState createState() =>
+      _StudentSelectionDialogState();
 }
 
 class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
@@ -293,40 +294,36 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
       }
     });
   }
-  Future<void> saveSelectedStudents() async {
-    String classType = widget.classType; // IT または GAME
-    String classID = widget.classID; // 授業ID
 
-    // 選択された学生の情報を格納するマップ
+  Future<void> saveSelectedStudents() async {
+    String classType = widget.classType;
+    String classID = widget.classID;
+
     Map<String, dynamic> studentData = {
       for (var i = 0; i < filteredStudentList.length; i++)
         if (selectedStudentIds.contains(filteredStudentList[i]['uid']))
           i.toString(): {
-            'UID': filteredStudentList[i]['uid'], // 学生のUID
-            'NAME': filteredStudentList[i]['name'], // 学生の名前
-            'ID': filteredStudentList[i]['id'], // 学生のID
-            'CLASS': filteredStudentList[i]['class'], // 学生のクラス情報を追加
+            'UID': filteredStudentList[i]['uid'],
+            'NAME': filteredStudentList[i]['name'],
+            'ID': filteredStudentList[i]['id'],
+            'CLASS': filteredStudentList[i]['class'],
           },
     };
 
-    // Firestoreに保存するデータ構造
     Map<String, dynamic> data = {
-      'CLASS': widget.selectedClass, // 授業名
-      'STD': studentData, // 学生リストを含む子要素
+      'CLASS': widget.selectedClass,
+      'STD': studentData,
     };
 
-    // Firestoreにデータを保存（既存データの上書きを防ぐためにmerge: trueを使用）
     await FirebaseFirestore.instance
-        .collection('Class') // メインコレクション
-        .doc(classType) // IT または GAME のドキュメント
-        .collection('Subjects') // 授業サブコレクション
-        .doc(classID) // 授業IDに対応するドキュメント
-        .set(data, SetOptions(merge: true)); // データをマージして保存
+        .collection('Class')
+        .doc(classType)
+        .collection('Subjects')
+        .doc(classID)
+        .set(data, SetOptions(merge: true));
 
-    // ダイアログを閉じる
     Navigator.of(context).pop();
   }
-
 
   @override
   void dispose() {

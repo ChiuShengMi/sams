@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth パッケージ
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sams/pages/mainPages/homepage_admin.dart'; // ここでパスが正しいことを確認
+import 'package:sams/pages/mainPages/homepage_admin.dart'; // 管理者ページ
+import 'package:sams/pages/mainPages/homepage_student.dart'; // 学生ページ
+import 'package:sams/pages/mainPages/homepage_teacher.dart'; // 教師ページ
+import 'package:sams/utils/firebase_auth.dart'; // FiresbaseAuthクラスをインポート
 
 class LoginPage extends StatefulWidget {
   @override
@@ -14,20 +17,41 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false; // パスワード表示状態を管理するフラグ
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FiresbaseAuth _firebaseAuthService = FiresbaseAuth(); // FiresbaseAuthインスタンス作成
 
   // ログインメソッド
   Future<void> signInWithEmailPassword() async {
     try {
+      // Firebase Authを使用してサインイン
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-      // ログイン成功後、ホームページに遷移
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => HomePageAdmin()), // HomePage のパスが正しいことを確認
-      );
+
+      // ユーザーの役割を取得
+      String role = await _firebaseAuthService.getUserRole();
+      print("取得した役割: $role");
+
+      // 役割に応じて適切なホームページに遷移
+      if (role == "管理者") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePageAdmin()),
+        );
+      } else if (role == "学生") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePageStudent()),
+        );
+      } else if (role == "教師") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePageTeacher()),
+        );
+      } else {
+        // 役割が不明な場合のエラーメッセージを表示
+        Fluttertoast.showToast(msg: "役割が見つかりませんでした");
+      }
     } on FirebaseAuthException catch (e) {
       // ログインに失敗した場合、エラーメッセージを表示
       Fluttertoast.showToast(msg: e.message ?? "ログインに失敗しました");
@@ -43,7 +67,6 @@ class _LoginPageState extends State<LoginPage> {
         toolbarHeight: 20, // AppBar の高さ
       ),
       body: SingleChildScrollView(
-        // ページ全体をスクロール可能にする
         child: Container(
           height: MediaQuery.of(context).size.height, // デバイスの全高を使用
           decoration: BoxDecoration(
@@ -85,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextField(
-                          controller: emailController, // メール入力コントローラにバインド
+                          controller: emailController,
                           decoration: InputDecoration(
                             suffixIcon: Icon(Icons.check, color: Colors.grey),
                             label: Text(
@@ -100,8 +123,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         SizedBox(height: 20),
                         TextField(
-                          controller: passwordController, // パスワード入力コントローラにバインド
-                          obscureText: !_isPasswordVisible, // パスワードを表示するかどうか
+                          controller: passwordController,
+                          obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -111,7 +134,6 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               color: Colors.grey,
                               onPressed: () {
-                                // パスワードの表示/非表示を切り替える
                                 setState(() {
                                   _isPasswordVisible = !_isPasswordVisible;
                                 });
@@ -141,8 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         SizedBox(height: 40),
                         GestureDetector(
-                          onTap:
-                              signInWithEmailPassword, // ログインボタンをクリックした時にログインメソッドを呼び出す
+                          onTap: signInWithEmailPassword,
                           child: Container(
                             height: 55,
                             width: 300,
