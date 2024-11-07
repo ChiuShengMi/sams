@@ -209,7 +209,8 @@ class StudentSelectionDialog extends StatefulWidget {
   });
 
   @override
-  _StudentSelectionDialogState createState() => _StudentSelectionDialogState();
+  _StudentSelectionDialogState createState() =>
+      _StudentSelectionDialogState();
 }
 
 class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
@@ -295,8 +296,8 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
   }
 
   Future<void> saveSelectedStudents() async {
-    String classType = widget.classType; // IT  OR GAME
-    String classID = widget.classID; // 授業ID
+    String classType = widget.classType;
+    String classID = widget.classID;
 
     Map<String, dynamic> studentData = {
       for (var i = 0; i < filteredStudentList.length; i++)
@@ -305,20 +306,20 @@ class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
             'UID': filteredStudentList[i]['uid'],
             'NAME': filteredStudentList[i]['name'],
             'ID': filteredStudentList[i]['id'],
+            'CLASS': filteredStudentList[i]['class'],
           },
     };
 
     Map<String, dynamic> data = {
-      'CLASS': widget.selectedClass, // 授業名
+      'CLASS': widget.selectedClass,
       'STD': studentData,
     };
 
-    // SAVE PATH
     await FirebaseFirestore.instance
-        .collection('Class') // メインコレクション
-        .doc(classType) // IT or GAME ドキュメント
-        .collection('Subjects') // 授業をまとめるサブコレクション
-        .doc(classID) // 授業IDに対応するドキュメント
+        .collection('Class')
+        .doc(classType)
+        .collection('Subjects')
+        .doc(classID)
         .set(data, SetOptions(merge: true));
 
     Navigator.of(context).pop();

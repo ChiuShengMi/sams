@@ -38,25 +38,11 @@ class CustomModal extends StatelessWidget {
             SizedBox(height: 80),
             Align(
               alignment: Alignment.bottomRight,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  MediumButton(
-                    text: '確認',
-                    onPressed: () {
-                      onConfirm(); // 데이터베이스에 저장 실행
-                      Navigator.of(context).pop(); // 모달 닫기
-                    },
-                  ),
-                  SizedBox(width: 8),
-                  MediumButton(
-                    text: 'キャンセル',
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              ),
+              child: MediumButton(
+                  text: '確定',
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }),
             )
           ],
         ),
