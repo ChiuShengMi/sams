@@ -12,7 +12,7 @@ class ConfirmationModal extends StatelessWidget {
     return CustomModal(
       title: "お知らせ",
       content: "上記の内容で登録しますか？",
-      onConfirm: onConfirm, // onConfirm 전달
+      onConfirm: onConfirm, 
     );
   }
 }

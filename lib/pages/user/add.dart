@@ -18,8 +18,9 @@ class UserAdd extends StatelessWidget {
   final TextEditingController userNameInputController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
 
-  // Firestore에 유저 데이터를 추가하는 메서드
-  Future<void> _addUserToDatabase(BuildContext context) async {
+  String selectedRole = 'student';
+
+  Future<void> _registerUser(BuildContext context) async {
     if (passwordInputController.text != passwordConfirmInputController.text) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Passwords do not match!"),
@@ -29,24 +30,42 @@ class UserAdd extends StatelessWidget {
     }
 
     try {
-      // Firestore에 저장할 유저 데이터
       Map<String, dynamic> userData = {
-        'email': loginEmailInputController.text,
-        'dataId': dataIdInputController.text,
-        'userName': userNameInputController.text,
-        'phoneNumber': phoneNumberController.text,
-        'classGroup': passwordConfirmInputController.text,
+        'CLASS': passwordConfirmInputController.text,
+        'COURSE': 'IT', 
+        'CREATE_AT': Timestamp.now(),
+        'DELETE_FLG': 0,
+        'ID': int.tryParse(dataIdInputController.text) ?? 0,
+        'JOB': selectedRole == 'student'
+            ? '学生'
+            : (selectedRole == 'teacher' ? '教員' : '管理者'),
+        'MAIL': loginEmailInputController.text,
+        'NAME': userNameInputController.text,
+        'PHOTO': null,
+        'TEL': phoneNumberController.text,
       };
 
-      await FirebaseFirestore.instance.collection('Users').add(userData);
+      String collectionPath;
+      if (selectedRole == 'student') {
+        collectionPath = 'Users/Students/IT';
+      } else if (selectedRole == 'teacher') {
+        collectionPath = 'Users/Teachers/IT';
+      } else {
+        collectionPath = 'Users/Managers';
+      }
+
+      await FirebaseFirestore.instance.collection(collectionPath).add(userData);
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("User added successfully!"),
+        content: Text("User registered successfully!"),
         backgroundColor: Colors.green,
       ));
     } catch (e) {
+      String errorMessage = 'Failed to register user: $e';
+      print(errorMessage);
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Failed to add user: $e"),
+        content: Text(errorMessage),
         backgroundColor: Colors.red,
       ));
     }
@@ -94,7 +113,10 @@ class UserAdd extends StatelessWidget {
                               child: Text('管理者'),
                             ),
                           ],
-                          onChanged: (value) {},
+                          onChanged: (value) {
+                            selectedRole = value!;
+                            print(" $selectedRole");
+                          },
                         ),
                       ),
                     ],
@@ -159,13 +181,9 @@ class UserAdd extends StatelessWidget {
                           hintText: 'Select classGroup',
                           items: [
                             DropdownMenuItem(
-                              value: 'class1',
-                              child: Text('Class 1'),
-                            ),
+                                value: 'class1', child: Text('Class 1')),
                             DropdownMenuItem(
-                              value: 'class2',
-                              child: Text('Class 2'),
-                            ),
+                                value: 'class2', child: Text('Class 2')),
                           ],
                           onChanged: (value) {},
                         ),
@@ -187,12 +205,15 @@ class UserAdd extends StatelessWidget {
                   CustomButton(
                     text: '確認',
                     onPressed: () {
-                      // 확인 모달을 표시하고, 확인 버튼이 눌리면 Firebase에 유저 추가
+
                       showDialog(
                         context: context,
                         builder: (context) => ConfirmationModal(
-                          onConfirm: () =>
-                              _addUserToDatabase(context), // 데이터베이스 등록
+                          onConfirm: () async {
+
+                            Navigator.pop(context);
+                            await _registerUser(context);
+                          },
                         ),
                       );
                     },
