@@ -27,7 +27,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
   Future<void> checkUserRole() async {
     FiresbaseAuth firesbaseAuth = FiresbaseAuth();
     String role = await firesbaseAuth.getUserRole();
-    if (role == "教師") {
+    if (role == "教員") {
       setState(() {
         isTeacher = true;
       });
@@ -112,7 +112,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("教師用授業 QRコード")),
+      appBar: AppBar(title: Text("教員用授業 QRコード")),
       body: Center(
         child: isTeacher
             ? classList.isEmpty
@@ -175,7 +175,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                       );
                     },
                   )
-            : Text("教師ではないため、授業情報を表示できません"),
+            : Text("教員ではないため、授業情報を表示できません"),
       ),
     );
   }
