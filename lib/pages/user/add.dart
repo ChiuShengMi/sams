@@ -17,8 +17,10 @@ class UserAdd extends StatelessWidget {
       TextEditingController();
   final TextEditingController userNameInputController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController classInputController = TextEditingController();
 
   String selectedRole = 'student';
+  String selectedCourse = 'IT';
 
   Future<void> _registerUser(BuildContext context) async {
     if (passwordInputController.text != passwordConfirmInputController.text) {
@@ -31,8 +33,8 @@ class UserAdd extends StatelessWidget {
 
     try {
       Map<String, dynamic> userData = {
-        'CLASS': passwordConfirmInputController.text,
-        'COURSE': 'IT', 
+        'CLASS': classInputController.text,
+        'COURSE': selectedCourse,
         'CREATE_AT': Timestamp.now(),
         'DELETE_FLG': 0,
         'ID': int.tryParse(dataIdInputController.text) ?? 0,
@@ -47,12 +49,15 @@ class UserAdd extends StatelessWidget {
 
       String collectionPath;
       if (selectedRole == 'student') {
-        collectionPath = 'Users/Students/IT';
+        collectionPath = 'Users/Students/$selectedCourse';
       } else if (selectedRole == 'teacher') {
-        collectionPath = 'Users/Teachers/IT';
+        collectionPath = 'Users/Teachers/$selectedCourse';
       } else {
         collectionPath = 'Users/Managers';
       }
+
+      print("Storing user in Firestore path: $collectionPath");
+      print("User data: $userData");
 
       await FirebaseFirestore.instance.collection(collectionPath).add(userData);
 
@@ -101,21 +106,15 @@ class UserAdd extends StatelessWidget {
                           hintText: 'Select property',
                           items: [
                             DropdownMenuItem(
-                              value: 'student',
-                              child: Text('学生'),
-                            ),
+                                value: 'student', child: Text('学生')),
                             DropdownMenuItem(
-                              value: 'teacher',
-                              child: Text('教員'),
-                            ),
+                                value: 'teacher', child: Text('教員')),
                             DropdownMenuItem(
-                              value: 'admin',
-                              child: Text('管理者'),
-                            ),
+                                value: 'admin', child: Text('管理者')),
                           ],
                           onChanged: (value) {
                             selectedRole = value!;
-                            print(" $selectedRole");
+                            print("Selected role: $selectedRole");
                           },
                         ),
                       ),
@@ -178,17 +177,24 @@ class UserAdd extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: Customdropdown(
-                          hintText: 'Select classGroup',
+                          hintText: 'Select Course',
                           items: [
+                            DropdownMenuItem(value: 'IT', child: Text('IT')),
                             DropdownMenuItem(
-                                value: 'class1', child: Text('Class 1')),
-                            DropdownMenuItem(
-                                value: 'class2', child: Text('Class 2')),
+                                value: 'GAME', child: Text('GAME')),
                           ],
-                          onChanged: (value) {},
+                          onChanged: (value) {
+                            selectedCourse = value!;
+                            print("Selected course: $selectedCourse");
+                          },
                         ),
                       ),
                     ],
+                  ),
+                  SizedBox(height: 16),
+                  CustomInput(
+                    controller: classInputController,
+                    hintText: 'Class Name',
                   ),
                 ],
               ),
@@ -205,12 +211,10 @@ class UserAdd extends StatelessWidget {
                   CustomButton(
                     text: '確認',
                     onPressed: () {
-
                       showDialog(
                         context: context,
                         builder: (context) => ConfirmationModal(
                           onConfirm: () async {
-
                             Navigator.pop(context);
                             await _registerUser(context);
                           },
