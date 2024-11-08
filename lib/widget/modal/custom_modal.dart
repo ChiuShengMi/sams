@@ -5,12 +5,12 @@ import 'modal_styles.dart';
 class CustomModal extends StatelessWidget {
   final String title;
   final String content;
-  final VoidCallback onConfirm; // onConfirm 콜백 추가
+  final VoidCallback onConfirm;
 
   CustomModal({
     required this.title,
     required this.content,
-    required this.onConfirm, // onConfirm 사용
+    required this.onConfirm,
   });
 
   @override
@@ -39,11 +39,13 @@ class CustomModal extends StatelessWidget {
             Align(
               alignment: Alignment.bottomRight,
               child: MediumButton(
-                  text: '確定',
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-            )
+                text: '確定',
+                onPressed: () {
+                  Navigator.pop(context);
+                  onConfirm();
+                },
+              ),
+            ),
           ],
         ),
       ),

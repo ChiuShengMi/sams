@@ -17,9 +17,12 @@ class UserAdd extends StatelessWidget {
       TextEditingController();
   final TextEditingController userNameInputController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController classInputController = TextEditingController();
 
-  // Firestore에 유저 데이터를 추가하는 메서드
-  Future<void> _addUserToDatabase(BuildContext context) async {
+  String selectedRole = 'student';
+  String selectedCourse = 'IT';
+
+  Future<void> _registerUser(BuildContext context) async {
     if (passwordInputController.text != passwordConfirmInputController.text) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Passwords do not match!"),
@@ -29,24 +32,45 @@ class UserAdd extends StatelessWidget {
     }
 
     try {
-      // Firestore에 저장할 유저 데이터
       Map<String, dynamic> userData = {
-        'email': loginEmailInputController.text,
-        'dataId': dataIdInputController.text,
-        'userName': userNameInputController.text,
-        'phoneNumber': phoneNumberController.text,
-        'classGroup': passwordConfirmInputController.text,
+        'CLASS': classInputController.text,
+        'COURSE': selectedCourse,
+        'CREATE_AT': Timestamp.now(),
+        'DELETE_FLG': 0,
+        'ID': int.tryParse(dataIdInputController.text) ?? 0,
+        'JOB': selectedRole == 'student'
+            ? '学生'
+            : (selectedRole == 'teacher' ? '教員' : '管理者'),
+        'MAIL': loginEmailInputController.text,
+        'NAME': userNameInputController.text,
+        'PHOTO': null,
+        'TEL': phoneNumberController.text,
       };
 
-      await FirebaseFirestore.instance.collection('Users').add(userData);
+      String collectionPath;
+      if (selectedRole == 'student') {
+        collectionPath = 'Users/Students/$selectedCourse';
+      } else if (selectedRole == 'teacher') {
+        collectionPath = 'Users/Teachers/$selectedCourse';
+      } else {
+        collectionPath = 'Users/Managers';
+      }
+
+      print("Storing user in Firestore path: $collectionPath");
+      print("User data: $userData");
+
+      await FirebaseFirestore.instance.collection(collectionPath).add(userData);
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("User added successfully!"),
+        content: Text("User registered successfully!"),
         backgroundColor: Colors.green,
       ));
     } catch (e) {
+      String errorMessage = 'Failed to register user: $e';
+      print(errorMessage);
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Failed to add user: $e"),
+        content: Text(errorMessage),
         backgroundColor: Colors.red,
       ));
     }
@@ -82,19 +106,16 @@ class UserAdd extends StatelessWidget {
                           hintText: 'Select property',
                           items: [
                             DropdownMenuItem(
-                              value: 'student',
-                              child: Text('学生'),
-                            ),
+                                value: 'student', child: Text('学生')),
                             DropdownMenuItem(
-                              value: 'teacher',
-                              child: Text('教員'),
-                            ),
+                                value: 'teacher', child: Text('教員')),
                             DropdownMenuItem(
-                              value: 'admin',
-                              child: Text('管理者'),
-                            ),
+                                value: 'admin', child: Text('管理者')),
                           ],
-                          onChanged: (value) {},
+                          onChanged: (value) {
+                            selectedRole = value!;
+                            print("Selected role: $selectedRole");
+                          },
                         ),
                       ),
                     ],
@@ -156,21 +177,24 @@ class UserAdd extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: Customdropdown(
-                          hintText: 'Select classGroup',
+                          hintText: 'Select Course',
                           items: [
+                            DropdownMenuItem(value: 'IT', child: Text('IT')),
                             DropdownMenuItem(
-                              value: 'class1',
-                              child: Text('Class 1'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'class2',
-                              child: Text('Class 2'),
-                            ),
+                                value: 'GAME', child: Text('GAME')),
                           ],
-                          onChanged: (value) {},
+                          onChanged: (value) {
+                            selectedCourse = value!;
+                            print("Selected course: $selectedCourse");
+                          },
                         ),
                       ),
                     ],
+                  ),
+                  SizedBox(height: 16),
+                  CustomInput(
+                    controller: classInputController,
+                    hintText: 'Class Name',
                   ),
                 ],
               ),
@@ -187,12 +211,13 @@ class UserAdd extends StatelessWidget {
                   CustomButton(
                     text: '確認',
                     onPressed: () {
-                      // 확인 모달을 표시하고, 확인 버튼이 눌리면 Firebase에 유저 추가
                       showDialog(
                         context: context,
                         builder: (context) => ConfirmationModal(
-                          onConfirm: () =>
-                              _addUserToDatabase(context), // 데이터베이스 등록
+                          onConfirm: () async {
+                            Navigator.pop(context);
+                            await _registerUser(context);
+                          },
                         ),
                       );
                     },

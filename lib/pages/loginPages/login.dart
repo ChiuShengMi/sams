@@ -17,7 +17,8 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false; // パスワード表示状態を管理するフラグ
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FiresbaseAuth _firebaseAuthService = FiresbaseAuth(); // FiresbaseAuthインスタンス作成
+  final FiresbaseAuth _firebaseAuthService =
+      FiresbaseAuth(); // FiresbaseAuthインスタンス作成
 
   // ログインメソッド
   Future<void> signInWithEmailPassword() async {
@@ -43,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
           context,
           MaterialPageRoute(builder: (context) => HomePageStudent()),
         );
-      } else if (role == "教師") {
+      } else if (role == "教員") {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePageTeacher()),

@@ -6,10 +6,12 @@ import 'package:sams/utils/firebase_realtime.dart';
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/testPages/testPages_leaves.dart';
 import 'package:sams/pages/testPages/testPages_link.dart';
+import 'package:sams/pages/testPages/testPages_qrcode.dart';
 
 class TestPage extends StatelessWidget {
   final FirestoreService _firestoreService = FirestoreService();
-  final RealtimeDatabaseService _realtimeDatabaseService = RealtimeDatabaseService();
+  final RealtimeDatabaseService _realtimeDatabaseService =
+      RealtimeDatabaseService();
 
   // ログアウトメソッド
   Future<void> _signOut(BuildContext context) async {
@@ -79,7 +81,7 @@ class TestPage extends StatelessWidget {
                           selectedTeacherIds.add(null);
                         });
                       },
-                      child: Text('追加の教師を選択'),
+                      child: Text('追加の教員を選択'),
                     ),
                     DropdownButtonFormField<String>(
                       value: selectedDay,
@@ -139,8 +141,13 @@ class TestPage extends StatelessWidget {
                         });
                       },
                       items: [
-                        '国際１号館', '国際2号館', '国際3号館',
-                        '1号館', '2号館', '3号館', '4号館'
+                        '国際１号館',
+                        '国際2号館',
+                        '国際3号館',
+                        '1号館',
+                        '2号館',
+                        '3号館',
+                        '4号館'
                       ].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -164,22 +171,30 @@ class TestPage extends StatelessWidget {
                     try {
                       print("確定ボタンが押されました");
 
-                      if (classController.text.isNotEmpty && selectedCourse != null) {
+                      if (classController.text.isNotEmpty &&
+                          selectedCourse != null) {
                         String course = selectedCourse!;
-                        String classId = await _realtimeDatabaseService.generateClassId(course);
+                        String classId = await _realtimeDatabaseService
+                            .generateClassId(course);
 
                         Map<String, dynamic> teacherData = {};
-                        selectedTeacherIds.where((id) => id != null).forEach((id) {
-                          String cleanedTeacherName = id!.replaceFirst(RegExp(r'^(IT|GAME) - '), '');
+                        selectedTeacherIds
+                            .where((id) => id != null)
+                            .forEach((id) {
+                          String cleanedTeacherName =
+                              id!.replaceFirst(RegExp(r'^(IT|GAME) - '), '');
                           if (teacherMap.containsKey(cleanedTeacherName)) {
                             String teacherUid = teacherMap[cleanedTeacherName]!;
-                            teacherData[teacherUid] = {'NAME': cleanedTeacherName};
+                            teacherData[teacherUid] = {
+                              'NAME': cleanedTeacherName
+                            };
                           }
                         });
 
                         String qrCode = "https://example.com/qr/$classId";
 
-                        await _realtimeDatabaseService.saveClassData(course, classId, {
+                        await _realtimeDatabaseService
+                            .saveClassData(course, classId, {
                           'CLASS': classController.text,
                           'TEACHER_ID': teacherData,
                           'DAY': selectedDay,
@@ -241,7 +256,8 @@ class TestPage extends StatelessWidget {
                     ),
                     TextField(
                       controller: confirmPasswordController,
-                      decoration: InputDecoration(labelText: 'Confirm Password'),
+                      decoration:
+                          InputDecoration(labelText: 'Confirm Password'),
                     ),
                     DropdownButtonFormField<String>(
                       value: job,
@@ -250,7 +266,7 @@ class TestPage extends StatelessWidget {
                           job = newValue;
                         });
                       },
-                      items: ['教師', '学生', '管理者']
+                      items: ['教員', '学生', '管理者']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -308,7 +324,8 @@ class TestPage extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (passwordController.text != confirmPasswordController.text) {
+                    if (passwordController.text !=
+                        confirmPasswordController.text) {
                       setState(() {
                         errorMessage = 'パスワードが一致しません';
                       });
@@ -316,7 +333,7 @@ class TestPage extends StatelessWidget {
                     }
 
                     try {
-                      // Firestoreにユーザデータを追加する前にエラーチェック
+                      // Firestoreにユーザデータを追加するg前にエラーチェック
                       Map<String, dynamic> userData = {
                         'CLASS': classController.text,
                         'COURSE': course,
@@ -335,7 +352,8 @@ class TestPage extends StatelessWidget {
                           job ?? '学生', course ?? 'IT', '', userData);
 
                       // Firebase Authのユーザー作成はデータ保存が成功した場合のみ実行
-                      UserCredential userCredential = await FirebaseAuth.instance
+                      UserCredential userCredential = await FirebaseAuth
+                          .instance
                           .createUserWithEmailAndPassword(
                         email: emailController.text,
                         password: passwordController.text,
@@ -412,6 +430,16 @@ class TestPage extends StatelessWidget {
                 );
               },
               child: Text('休暇届出'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => QRCodeScreen()),
+                );
+              },
+              child: Text('QR_CODE生成'),
             ),
           ],
         ),
