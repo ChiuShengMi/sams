@@ -6,6 +6,7 @@ import 'package:sams/utils/firebase_realtime.dart';
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/testPages/testPages_leaves.dart';
 import 'package:sams/pages/testPages/testPages_link.dart';
+import 'package:sams/pages/testPages/testPages_qrcode.dart';
 
 class TestPage extends StatelessWidget {
   final FirestoreService _firestoreService = FirestoreService();
@@ -412,6 +413,16 @@ class TestPage extends StatelessWidget {
                 );
               },
               child: Text('休暇届出'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => QRCodeScreen()),
+                );
+              },
+              child: Text('QR_CODE生成'),
             ),
           ],
         ),
