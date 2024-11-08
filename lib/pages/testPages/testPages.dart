@@ -317,7 +317,7 @@ class TestPage extends StatelessWidget {
                     }
 
                     try {
-                      // Firestoreにユーザデータを追加する前にエラーチェック
+                      // Firestoreにユーザデータを追加するg前にエラーチェック
                       Map<String, dynamic> userData = {
                         'CLASS': classController.text,
                         'COURSE': course,

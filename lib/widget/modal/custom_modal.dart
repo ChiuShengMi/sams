@@ -5,10 +5,13 @@ import 'modal_styles.dart';
 class CustomModal extends StatelessWidget {
   final String title;
   final String content;
-  final VoidCallback onPressed;
+  final VoidCallback onConfirm;
 
-  CustomModal(
-      {required this.title, required this.content, required this.onPressed});
+  CustomModal({
+    required this.title,
+    required this.content,
+    required this.onConfirm,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,18 +19,16 @@ class CustomModal extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       child: Container(
         padding: const EdgeInsets.all(40.0),
-        width: MediaQuery.of(context).size.width *
-            0.6, // Reduced width to match example
+        width: MediaQuery.of(context).size.width * 0.6,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment:
-              CrossAxisAlignment.start, // Align title and content to the left
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: ModalStyles.modalTitleStyle,
             ),
-            SizedBox(height: 8), // Adjust spacing
+            SizedBox(height: 8),
             Divider(thickness: 1, color: Colors.grey[300]),
             SizedBox(height: 20),
             Text(
@@ -38,11 +39,13 @@ class CustomModal extends StatelessWidget {
             Align(
               alignment: Alignment.bottomRight,
               child: MediumButton(
-                  text: '確定',
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-            )
+                text: '確定',
+                onPressed: () {
+                  Navigator.pop(context);
+                  onConfirm();
+                },
+              ),
+            ),
           ],
         ),
       ),

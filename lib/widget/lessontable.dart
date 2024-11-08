@@ -59,19 +59,6 @@ class _LessonTableScreenState extends State<Lessontable> {
         return true;
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('授業リスト'),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              // キャッシュをクリアしてからホーム画面に戻る
-              setState(() {
-                _cachedData = null;
-              });
-              Navigator.of(context).pop();
-            },
-          ),
-        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -188,7 +175,7 @@ class _LessonTableScreenState extends State<Lessontable> {
               buildTableCell(data['QR_CODE'] ?? 'N/A'),
               buildTableCell(data['CLASSROOM'] ?? 'N/A'),
               buildTableCell(data['PLACE'] ?? 'N/A'),
-              buildEditCell(context, '編集', data,subjectKey, categoryKey),
+              buildEditCell(context, '編集', data, subjectKey, categoryKey),
             ],
           ),
         );
@@ -221,18 +208,18 @@ class _LessonTableScreenState extends State<Lessontable> {
     );
   }
 
-  Widget buildEditCell(
-      BuildContext context, String text, Map<String, dynamic> lessonData, String id, String course) {
+  Widget buildEditCell(BuildContext context, String text,
+      Map<String, dynamic> lessonData, String id, String course) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => SubjecttableEdit(
-                lessonData: lessonData,
-                id: id,
-                course: course,
-                ), // Use 'lessonData' here
+              lessonData: lessonData,
+              id: id,
+              course: course,
+            ), // Use 'lessonData' here
           ),
         );
       },
