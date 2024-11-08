@@ -13,38 +13,40 @@ class Lessontable extends StatefulWidget {
 class _LessonTableScreenState extends State<Lessontable> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Map<String, dynamic>? _cachedData;
-  bool _isLoading = true;
+  Map<String, dynamic>? _cachedData; // キャッシュされたデータ
+  bool _isLoading = true; // データ読み込み中かどうかのフラグ
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadData(); // データを読み込む
   }
 
+  // Firebase Realtime Database からデータを取得するメソッド
   Future<void> _loadData() async {
     setState(() {
-      _isLoading = true;
+      _isLoading = true; // ローディング状態を設定
     });
 
     try {
       final DatabaseEvent event = await _database.child('CLASS').once();
       if (event.snapshot.value != null) {
         setState(() {
-          _cachedData = Map<String, dynamic>.from(event.snapshot.value as Map);
-          _isLoading = false;
+          _cachedData = Map<String, dynamic>.from(
+              event.snapshot.value as Map); // キャッシュデータを設定
+          _isLoading = false; // ローディング終了
         });
       } else {
         setState(() {
-          _cachedData = null;
-          _isLoading = false;
+          _cachedData = null; // データが空の場合
+          _isLoading = false; // ローディング終了
         });
       }
     } catch (e) {
       setState(() {
-        _isLoading = false;
+        _isLoading = false; // ローディング終了
       });
-      print('Error loading data: $e');
+      print('データ読み込みエラー: $e');
     }
   }
 
@@ -52,7 +54,7 @@ class _LessonTableScreenState extends State<Lessontable> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // キャッシュをクリアしてからホーム画面に戻る
+        // キャッシュをクリアしてホーム画面に戻る
         setState(() {
           _cachedData = null;
         });
@@ -69,13 +71,13 @@ class _LessonTableScreenState extends State<Lessontable> {
                 border: Border.all(color: Colors.black, width: 0.1),
               ),
               child: SingleChildScrollView(
-                child: _buildTableContent(),
+                child: _buildTableContent(), // テーブルコンテンツを構築する
               ),
             ),
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: _loadData,
+          onPressed: _loadData, // 更新ボタン
           child: Icon(Icons.refresh),
           tooltip: 'データを更新',
         ),
@@ -83,13 +85,14 @@ class _LessonTableScreenState extends State<Lessontable> {
     );
   }
 
+  // テーブルのコンテンツを構築するメソッド
   Widget _buildTableContent() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator()); // ローディングスピナーを表示
     }
 
     if (_cachedData == null) {
-      return Center(child: Text('データがありません'));
+      return Center(child: Text('データがありません')); // データがない場合のメッセージ
     }
     List<TableRow> tableRows = [
       TableRow(
@@ -123,7 +126,7 @@ class _LessonTableScreenState extends State<Lessontable> {
           TableRow(
             children: [
               buildTableCell(data['CLASS'] ?? 'N/A'),
-              buildTableCell(categoryKey), // Display course name
+              buildTableCell(categoryKey), // コース名を表示
               TableCell(
                 child: FutureBuilder<DocumentSnapshot>(
                   future: _firestore
@@ -134,7 +137,7 @@ class _LessonTableScreenState extends State<Lessontable> {
                       .get(),
                   builder: (context, firestoreSnapshot) {
                     if (firestoreSnapshot.hasError) {
-                      return buildTableCell('Error');
+                      return buildTableCell('エラー');
                     }
                     if (firestoreSnapshot.connectionState ==
                         ConnectionState.waiting) {
@@ -147,29 +150,19 @@ class _LessonTableScreenState extends State<Lessontable> {
 
                     String teacherDisplay = 'N/A';
 
-                    if (firestoreData['TEACHER_ID'] is Map) {
-                      // Get the first key from the TEACHER_ID map
-                      var teacherMap = firestoreData['TEACHER_ID'] as Map;
-                      var firstKey = teacherMap.keys.first;
-                      teacherDisplay =
-                          teacherMap[firstKey]['NAME']?.toString() ?? 'N/A';
+                    if (data['TEACHER_ID'] is Map) {
+                      Map<dynamic, dynamic> teacherMap =
+                          data['TEACHER_ID'] as Map<dynamic, dynamic>;
+
+                      teacherDisplay = teacherMap.values
+                          .map((teacher) => teacher['NAME'].toString())
+                          .join('\n'); // 用逗号分隔名字
                     }
 
                     return buildTableCell(teacherDisplay);
                   },
-
-                  //   String teacherDisplay =
-                  //       (firestoreData['TEACHER_ID'] is List)
-                  //           ? (firestoreData['TEACHER_ID'] as List).join(', ')
-                  //           : firestoreData['TEACHER_ID']?.toString() ??
-                  //               data['TEACHER_ID']?.toString() ??
-                  //               'N/A';
-
-                  //   return buildTableCell(teacherDisplay);
-                  // },
                 ),
               ),
-
               buildTableCell(data['DAY'] ?? 'N/A'),
               buildTableCell(data['TIME'] ?? 'N/A'),
               buildTableCell(data['QR_CODE'] ?? 'N/A'),
@@ -197,6 +190,7 @@ class _LessonTableScreenState extends State<Lessontable> {
     );
   }
 
+  // テーブルのセルを構築するメソッド
   Widget buildTableCell(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
@@ -208,18 +202,20 @@ class _LessonTableScreenState extends State<Lessontable> {
     );
   }
 
+  // 編集セルを構築するメソッド
   Widget buildEditCell(BuildContext context, String text,
       Map<String, dynamic> lessonData, String id, String course) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        // 編集画面へ遷移し、戻り値で更新状態を取得
+        bool? result = await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => SubjecttableEdit(
               lessonData: lessonData,
               id: id,
               course: course,
-            ), // Use 'lessonData' here
+            ),
           ),
         );
       },
