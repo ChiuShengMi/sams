@@ -17,28 +17,49 @@ class FiresbaseAuth {
       String uid = currentUser.uid;
       print("UID: $uid");
 
+      // カテゴリ (IT, GAME) を定義
+      List<String> categories = ['IT', 'GAME'];
+
       // 1. MANAGERS コレクションで検索
-      DocumentSnapshot managerDoc =
-          await _db.collection('Users').doc('Managers').collection('IT').doc(uid).get();
-      if (managerDoc.exists) {
-        print("役割: 管理者");
-        return "管理者";
+      for (String category in categories) {
+        DocumentSnapshot managerDoc = await _db
+            .collection('Users')
+            .doc('Managers')
+            .collection(category)
+            .doc(uid)
+            .get();
+        if (managerDoc.exists) {
+          print("役割: 管理者 ($category)");
+          return "管理者";
+        }
       }
 
       // 2. STUDENTS コレクションで検索
-      DocumentSnapshot studentDoc =
-          await _db.collection('Users').doc('Students').collection('IT').doc(uid).get();
-      if (studentDoc.exists) {
-        print("役割: 学生");
-        return "学生";
+      for (String category in categories) {
+        DocumentSnapshot studentDoc = await _db
+            .collection('Users')
+            .doc('Students')
+            .collection(category)
+            .doc(uid)
+            .get();
+        if (studentDoc.exists) {
+          print("役割: 学生 ($category)");
+          return "学生";
+        }
       }
 
       // 3. TEACHERS コレクションで検索
-      DocumentSnapshot teacherDoc =
-          await _db.collection('Users').doc('Teachers').collection('IT').doc(uid).get();
-      if (teacherDoc.exists) {
-        print("役割: 教師");
-        return "教師";
+      for (String category in categories) {
+        DocumentSnapshot teacherDoc = await _db
+            .collection('Users')
+            .doc('Teachers')
+            .collection(category)
+            .doc(uid)
+            .get();
+        if (teacherDoc.exists) {
+          print("役割: 教師 ($category)");
+          return "教師";
+        }
       }
 
       // 何も見つからなかった場合
