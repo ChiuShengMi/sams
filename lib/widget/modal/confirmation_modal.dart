@@ -24,14 +24,27 @@ class EditModalSubEdit extends StatelessWidget {
 
   Widget build(BuildContext context) {
     return CustomModal(
-        title: "変更の確認",
-        content: "授業リストを編集しますか?",
-        onPressed: () {
-          Navigator.of(context).pop();
-        });
+      title: "変更の確認",
+      content: "授業リストを編集しますか?",
+      onConfirm: onConfirmEdit,
+    );
   }
 }
 
+// class EditModalSubEdit extends StatelessWidget {
+//   final VoidCallback onConfirmEdit;
+
+//   const EditModalSubEdit({required this.onConfirmEdit});
+
+//   Widget build(BuildContext context) {
+//     return CustomModal(
+//         title: "変更の確認",
+//         content: "授業リストを編集しますか?",
+//         onPressed: () {
+//           Navigator.of(context).pop();
+//         });
+//   }
+// }
 class DeleteModalSubEdit extends StatelessWidget {
   final VoidCallback onConfirmDelete;
 
@@ -40,11 +53,10 @@ class DeleteModalSubEdit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomModal(
-        title: "削除",
-        content: "削除しますか？?",
-        onPressed: () {
-          Navigator.of(context).pop();
-        });
+      title: "削除",
+      content: "削除しますか？?",
+      onConfirm: onConfirmDelete,
+    );
   }
   // Widget build(BuildContext context) {
   //   return AlertDialog(
