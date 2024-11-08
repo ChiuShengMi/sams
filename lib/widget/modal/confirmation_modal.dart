@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'custom_modal.dart';
+import 'package:sams/pages/mainPages/subjectlist/subjecttable_edit.dart';
 
 class ConfirmationModal extends StatelessWidget {
   @override
@@ -13,12 +14,15 @@ class ConfirmationModal extends StatelessWidget {
   }
 }
 
-class ConfirmationModalSubEdit extends StatelessWidget {
-  @override
+class EditModalSubEdit extends StatelessWidget {
+  final VoidCallback onConfirmEdit;
+
+  const EditModalSubEdit({required this.onConfirmEdit});
+
   Widget build(BuildContext context) {
     return CustomModal(
-        title: "授業リスト編集",
-        content: "授業リスト変更しますか",
+        title: "変更の確認",
+        content: "授業リストを編集しますか?",
         onPressed: () {
           Navigator.of(context).pop();
         });
@@ -26,13 +30,33 @@ class ConfirmationModalSubEdit extends StatelessWidget {
 }
 
 class DeleteModalSubEdit extends StatelessWidget {
+  final VoidCallback onConfirmDelete;
+
+  const DeleteModalSubEdit({required this.onConfirmDelete});
+
   @override
   Widget build(BuildContext context) {
     return CustomModal(
-        title: "授業リスト削除",
-        content: "授業リスト削除しますか",
+        title: "削除",
+        content: "削除しますか？?",
         onPressed: () {
           Navigator.of(context).pop();
         });
   }
+  // Widget build(BuildContext context) {
+  //   return AlertDialog(
+  //     title: Text("削除しますか？"),
+  //     content: Text('data'),
+  //     actions: [
+  //       TextButton(
+  //         onPressed: () => Navigator.of(context).pop(),
+  //         child: Text('data'),
+  //       ),
+  //       TextButton(
+  //         onPressed: onConfirmDelete,
+  //         child: Text('data'),
+  //       )
+  //     ],
+  //   );
+  // }
 }
