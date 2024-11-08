@@ -61,7 +61,7 @@ class AuthCheck extends StatelessWidget {
                   return HomePageAdmin();
                 } else if (role == "学生") {
                   return HomePageStudent();
-                } else if (role == "教師") {
+                } else if (role == "教員") {
                   return HomePageTeacher();
                 } else {
                   return Center(child: Text("役割が見つかりませんでした"));

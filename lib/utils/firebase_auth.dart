@@ -57,8 +57,8 @@ class FiresbaseAuth {
             .doc(uid)
             .get();
         if (teacherDoc.exists) {
-          print("役割: 教師 ($category)");
-          return "教師";
+          print("役割: 教員 ($category)");
+          return "教員";
         }
       }
 

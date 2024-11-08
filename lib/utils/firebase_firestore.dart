@@ -17,14 +17,13 @@ class FirestoreService {
           .get();
 
       List<Map<String, dynamic>> users = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>; 
+        final data = doc.data() as Map<String, dynamic>;
         return {
           "uid": doc.id, // ユーザのID
           "name": data["NAME"] ?? "Unknown",
-          "class": data["CLASS"] ?? "Unknown", 
+          "class": data["CLASS"] ?? "Unknown",
         };
       }).toList();
-
 
       return users;
     } catch (e) {
@@ -92,22 +91,16 @@ class FirestoreService {
   Future<List<String>> fetchTeachers(Map<String, String> teacherMap) async {
     List<String> teacherNames = [];
 
-    QuerySnapshot itTeachers = await _db
-        .collection('Users')
-        .doc('Teachers')
-        .collection('IT')
-        .get();
+    QuerySnapshot itTeachers =
+        await _db.collection('Users').doc('Teachers').collection('IT').get();
 
     for (var doc in itTeachers.docs) {
       teacherMap[doc['NAME']] = doc.id;
       teacherNames.add('IT - ${doc['NAME']}');
     }
 
-    QuerySnapshot gameTeachers = await _db
-        .collection('Users')
-        .doc('Teachers')
-        .collection('GAME')
-        .get();
+    QuerySnapshot gameTeachers =
+        await _db.collection('Users').doc('Teachers').collection('GAME').get();
 
     for (var doc in gameTeachers.docs) {
       teacherMap[doc['NAME']] = doc.id;
@@ -121,12 +114,16 @@ class FirestoreService {
   // 使用方法:
   // await addUser("学生", "IT", uid, userData);
   // ユーザデータが指定した場所に保存されます
-  Future<void> addUser(
-      String job, String course, String uid, Map<String, dynamic> userData) async {
+  Future<void> addUser(String job, String course, String uid,
+      Map<String, dynamic> userData) async {
     try {
       await _db
           .collection('Users')
-          .doc(job == '教師' ? 'Teachers' : job == '学生' ? 'Students' : 'Managers')
+          .doc(job == '教員'
+              ? 'Teachers'
+              : job == '学生'
+                  ? 'Students'
+                  : 'Managers')
           .collection(course == 'IT' ? 'IT' : 'GAME')
           .doc(uid)
           .set(userData);
@@ -141,14 +138,16 @@ class FirestoreService {
   // 使用方法:
   // List<Map<String, dynamic>> students = await fetchStudents(true, false);
   // `students` には指定したコースの学生データが返されます
-  Future<List<Map<String, dynamic>>> fetchStudents(bool isITSelected, bool isGameSelected) async {
+  Future<List<Map<String, dynamic>>> fetchStudents(
+      bool isITSelected, bool isGameSelected) async {
     List<Map<String, dynamic>> results = [];
 
     CollectionReference studentsITRef = _db.collection('Users/Students/IT');
     CollectionReference studentsGameRef = _db.collection('Users/Students/GAME');
 
     if (isITSelected) results.addAll(await _fetchStudentData(studentsITRef));
-    if (isGameSelected) results.addAll(await _fetchStudentData(studentsGameRef));
+    if (isGameSelected)
+      results.addAll(await _fetchStudentData(studentsGameRef));
 
     if (!isITSelected && !isGameSelected) {
       results.addAll(await _fetchStudentData(studentsITRef));
@@ -159,7 +158,8 @@ class FirestoreService {
   }
 
   // 内部メソッド: 指定されたコレクションから学生データを取得する
-  Future<List<Map<String, dynamic>>> _fetchStudentData(CollectionReference path) async {
+  Future<List<Map<String, dynamic>>> _fetchStudentData(
+      CollectionReference path) async {
     QuerySnapshot snapshot = await path.get();
     List<Map<String, dynamic>> result = [];
 
@@ -181,8 +181,8 @@ class FirestoreService {
   // 使用方法:
   // await saveSelectedStudents("IT", "classID123", "Math Class", studentData);
   // 学生データが授業情報に保存されます
-  Future<void> saveSelectedStudents(String classType, String classID, String selectedClass,
-      Map<String, dynamic> studentData) async {
+  Future<void> saveSelectedStudents(String classType, String classID,
+      String selectedClass, Map<String, dynamic> studentData) async {
     Map<String, dynamic> data = {
       'CLASS': selectedClass,
       'STD': studentData,
@@ -196,13 +196,11 @@ class FirestoreService {
         .set(data, SetOptions(merge: true));
   }
 
-
-
-    // 休暇申請のデータをFirestoreに保存するメソッド
+  // 休暇申請のデータをFirestoreに保存するメソッド
   // 使用方法:
   // await firestoreService.saveLeaveRequest(course, userId, leaveId, leaveData);
-  Future<void> saveLeaveRequest(
-      String course, String userId, String leaveId, Map<String, dynamic> leaveData) async {
+  Future<void> saveLeaveRequest(String course, String userId, String leaveId,
+      Map<String, dynamic> leaveData) async {
     try {
       await _db
           .collection('Leaves')
@@ -230,7 +228,7 @@ class FirestoreService {
           .get();
 
       if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>; 
+        final data = doc.data() as Map<String, dynamic>;
         return data['CLASS'] as String?;
       } else {
         print('クラスIDが見つかりませんでした: $classId');
