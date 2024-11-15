@@ -6,7 +6,7 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sams/pages/user/edit.dart';
 import 'package:sams/pages/user/list.dart';
-import 'package:sams/widget/modal/delete_modal.dart'; // DeleteModal import
+import 'package:sams/widget/modal/confirmation_modal.dart';
 
 class UserDetail extends StatelessWidget {
   final String documentPath;
@@ -96,9 +96,9 @@ class UserDetail extends StatelessWidget {
                           onPressed: () {
                             showDialog(
                               context: context,
-                              builder: (context) => DeleteModal(
-                                onConfirm: () async {
-                                  Navigator.of(context).pop(); // 모달 닫기
+                              builder: (context) => DeleteModalSubEdit(
+                                onConfirmDelete: () async {
+                                  Navigator.of(context).pop();
                                   await _deleteUser(context);
                                 },
                               ),

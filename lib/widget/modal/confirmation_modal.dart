@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'custom_modal.dart';
-import 'package:sams/pages/mainPages/subjectlist/subjecttable_edit.dart';
 
 class ConfirmationModal extends StatelessWidget {
   final VoidCallback onConfirm;
@@ -12,7 +11,7 @@ class ConfirmationModal extends StatelessWidget {
     return CustomModal(
       title: "お知らせ",
       content: "上記の内容で登録しますか？",
-      onConfirm: onConfirm, 
+      onConfirm: onConfirm,
     );
   }
 }
@@ -58,7 +57,7 @@ class DeleteModalSubEdit extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomModal(
       title: "削除",
-      content: "削除しますか？?",
+      content: "このユーザーを削除しますか？",
       onConfirm: onConfirmDelete,
     );
   }
