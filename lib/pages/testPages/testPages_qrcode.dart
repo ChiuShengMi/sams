@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestoreをインポート
 import 'package:sams/utils/firebase_auth.dart';
 import 'package:sams/utils/firebase_realtime.dart'; // データベースサービスをインポート
 import 'package:qr_flutter/qr_flutter.dart';
@@ -14,6 +15,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
   final String currentUID = FirebaseAuth.instance.currentUser!.uid; // 現在のユーザーID
   final RealtimeDatabaseService _databaseService =
       RealtimeDatabaseService(); // データベースサービス
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore
   bool isTeacher = false; // 教師であるかどうかのフラグ
   List<Map<String, dynamic>> classList = []; // 授業データを格納するリスト
 
@@ -41,51 +43,52 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
 
   // サービスの fetchClasses メソッドを呼び出して授業データを取得する
   Future<void> fetchClasses() async {
+    // 授業データを取得
     List<Map<String, dynamic>> results =
-        await _databaseService.fetchClasses(true, true); // 2つのパラメータを渡す
+        await _databaseService.fetchClasses(true, true); // 授業データを取得
+
+    // 現在のUIDに基づいてTEACHER_IDをフィルタリング
+    List<Map<String, dynamic>> filteredResults = results.where((classData) {
+      final teacherIdMap =
+          classData["TEACHER_ID"] as Map<dynamic, dynamic>?; // TEACHER_IDを取得
+      return teacherIdMap != null &&
+          teacherIdMap.containsKey(currentUID); // UIDが存在するか確認
+    }).toList();
+
+    // 授業データを更新する
     setState(() {
-      classList = results; // 授業データを更新する
+      classList = filteredResults;
     });
+  }
+
+  // FirestoreにATTENDANCEデータを追加する
+  Future<void> addAttendanceToSubject(
+      String classType, String classID, String currentDate) async {
+    try {
+      DocumentReference subjectDoc = _firestore
+          .collection('Class')
+          .doc(classType)
+          .collection('Subjects')
+          .doc(classID);
+
+      await subjectDoc.set({
+        'ATTENDANCE': {
+          currentDate: {
+            'GENERATEDAT': DateTime.now().toIso8601String(),
+            'STATUS': 'active',
+          },
+        },
+      }, SetOptions(merge: true)); // 既存データにマージ
+      print("ATTENDANCEデータを追加しました");
+    } catch (e) {
+      print("Firestoreのエラー: $e");
+    }
   }
 
   // 授業の曜日を確認するメソッド
   String _getJapaneseWeekday(int weekday) {
     const weekdays = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
     return weekdays[weekday - 1];
-  }
-
-  // 授業の時間範囲を確認するメソッド
-  bool _isWithinClassTime(DateTime now, int classTime) {
-    final schedule = {
-      1: {"start": "09:00", "end": "10:45"},
-      2: {"start": "11:00", "end": "12:30"},
-      3: {"start": "13:30", "end": "15:00"},
-      4: {"start": "15:15", "end": "16:45"},
-      5: {"start": "17:00", "end": "18:30"},
-    };
-
-    if (!schedule.containsKey(classTime)) return false;
-
-    // 授業の開始時間と終了時間をパースする
-    final startTime = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      int.parse(schedule[classTime]!["start"]!.split(":")[0]),
-      int.parse(schedule[classTime]!["start"]!.split(":")[1]),
-    );
-    final endTime = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      int.parse(schedule[classTime]!["end"]!.split(":")[0]),
-      int.parse(schedule[classTime]!["end"]!.split(":")[1]),
-    );
-
-    // 授業開始の15分前に対応
-    final allowedTime = startTime.subtract(Duration(minutes: 15));
-
-    return now.isAfter(allowedTime) && now.isBefore(endTime);
   }
 
   // 確認ダイアログを表示する
@@ -140,16 +143,14 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                               if (proceed == null || !proceed) return;
                             }
 
-                            // 時間のチェック
-                            int classTime =
-                                int.tryParse(classData["time"]) ?? 0;
-                            if (!_isWithinClassTime(now, classTime)) {
-                              bool? proceed = await _showWarningDialog(
-                                context,
-                                "授業の時間ではありません。それでも生成しますか？",
-                              );
-                              if (proceed == null || !proceed) return;
-                            }
+                            // FirestoreにATTENDANCEデータを追加
+                            String currentDate =
+                                "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+                            await addAttendanceToSubject(
+                              classData["classType"], // ITまたはGAME
+                              classData["classID"], // 授業ID
+                              currentDate, // 生成された日付
+                            );
 
                             // QRコードデータを生成
                             final qrData = jsonEncode({
