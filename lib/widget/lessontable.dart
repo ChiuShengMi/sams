@@ -6,6 +6,10 @@ import 'package:sams/pages/mainPages/subjectlist/subjecttable_edit.dart';
 import 'package:sams/widget/lessontable_edit.dart';
 
 class Lessontable extends StatefulWidget {
+  final String category; // Accept the category to filter by
+
+  Lessontable({required this.category});
+
   @override
   _LessonTableScreenState createState() => _LessonTableScreenState();
 }
@@ -52,7 +56,6 @@ class _LessonTableScreenState extends State<Lessontable> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // キャッシュをクリアしてからホーム画面に戻る
         setState(() {
           _cachedData = null;
         });
@@ -77,7 +80,7 @@ class _LessonTableScreenState extends State<Lessontable> {
         floatingActionButton: FloatingActionButton(
           onPressed: _loadData,
           child: Icon(Icons.refresh),
-          tooltip: 'データを更新',
+          tooltip: 'Refresh Data',
         ),
       ),
     );
@@ -89,8 +92,9 @@ class _LessonTableScreenState extends State<Lessontable> {
     }
 
     if (_cachedData == null) {
-      return Center(child: Text('データがありません'));
+      return Center(child: Text('No data available'));
     }
+
     List<TableRow> tableRows = [
       TableRow(
         decoration: BoxDecoration(
@@ -114,21 +118,22 @@ class _LessonTableScreenState extends State<Lessontable> {
       ),
     ];
 
-    _cachedData!.forEach((categoryKey, subjects) {
-      Map<String, dynamic> subjectMap = Map<String, dynamic>.from(subjects);
-      subjectMap.forEach((subjectKey, subjectData) {
+    // Filter data based on the selected category
+    if (_cachedData!.containsKey(widget.category)) {
+      Map<String, dynamic> categoryData =
+          Map<String, dynamic>.from(_cachedData![widget.category]);
+      categoryData.forEach((subjectKey, subjectData) {
         final data = Map<String, dynamic>.from(subjectData);
-
         tableRows.add(
           TableRow(
             children: [
               buildTableCell(data['CLASS'] ?? 'N/A'),
-              buildTableCell(categoryKey), // Display course name
+              buildTableCell(widget.category), // Display the course name
               TableCell(
                 child: FutureBuilder<DocumentSnapshot>(
                   future: _firestore
                       .collection('Class')
-                      .doc(categoryKey)
+                      .doc(widget.category)
                       .collection('Subjects')
                       .doc(subjectKey)
                       .get(),
@@ -147,40 +152,30 @@ class _LessonTableScreenState extends State<Lessontable> {
 
                     String teacherDisplay = 'N/A';
 
-                    if (firestoreData['TEACHER_ID'] is Map) {
-                      // Get the first key from the TEACHER_ID map
-                      var teacherMap = firestoreData['TEACHER_ID'] as Map;
-                      var firstKey = teacherMap.keys.first;
-                      teacherDisplay =
-                          teacherMap[firstKey]['NAME']?.toString() ?? 'N/A';
+                    if (data['TEACHER_ID'] is Map) {
+                      Map<dynamic, dynamic> teacherMap =
+                          data['TEACHER_ID'] as Map<dynamic, dynamic>;
+
+                      teacherDisplay = teacherMap.values
+                          .map((teacher) => teacher['NAME'].toString())
+                          .join('\n');
                     }
 
                     return buildTableCell(teacherDisplay);
                   },
-
-                  //   String teacherDisplay =
-                  //       (firestoreData['TEACHER_ID'] is List)
-                  //           ? (firestoreData['TEACHER_ID'] as List).join(', ')
-                  //           : firestoreData['TEACHER_ID']?.toString() ??
-                  //               data['TEACHER_ID']?.toString() ??
-                  //               'N/A';
-
-                  //   return buildTableCell(teacherDisplay);
-                  // },
                 ),
               ),
-
               buildTableCell(data['DAY'] ?? 'N/A'),
               buildTableCell(data['TIME'] ?? 'N/A'),
               buildTableCell(data['QR_CODE'] ?? 'N/A'),
               buildTableCell(data['CLASSROOM'] ?? 'N/A'),
               buildTableCell(data['PLACE'] ?? 'N/A'),
-              buildEditCell(context, '編集', data, subjectKey, categoryKey),
+              buildEditCell(context, 'Edit', data, subjectKey, widget.category),
             ],
           ),
         );
       });
-    });
+    }
 
     return Table(
       columnWidths: const {
@@ -196,46 +191,49 @@ class _LessonTableScreenState extends State<Lessontable> {
       children: tableRows,
     );
   }
+}
 
-  Widget buildTableCell(String text) {
-    return Padding(
+// テーブルのセルを構築するメソッド
+Widget buildTableCell(String text) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(fontWeight: FontWeight.bold),
+    ),
+  );
+}
+
+// 編集セルを構築するメソッド
+Widget buildEditCell(BuildContext context, String text,
+    Map<String, dynamic> lessonData, String id, String course) {
+  return InkWell(
+    onTap: () async {
+      // 編集画面へ遷移し、戻り値で更新状態を取得
+      bool? result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SubjecttableEdit(
+            lessonData: lessonData,
+            id: id,
+            course: course,
+          ),
+        ),
+      );
+    },
+    child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget buildEditCell(BuildContext context, String text,
-      Map<String, dynamic> lessonData, String id, String course) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SubjecttableEdit(
-              lessonData: lessonData,
-              id: id,
-              course: course,
-            ), // Use 'lessonData' here
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-          ),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.blue,
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 class TableCellHeader extends StatelessWidget {

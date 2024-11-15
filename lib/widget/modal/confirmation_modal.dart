@@ -19,32 +19,36 @@ class ConfirmationModal extends StatelessWidget {
 
 class EditModalSubEdit extends StatelessWidget {
   final VoidCallback onConfirmEdit;
+  final String title;
+  final String content;
 
-  const EditModalSubEdit({required this.onConfirmEdit});
+  //const EditModalSubEdit({required this.onConfirmEdit});
+  const EditModalSubEdit(
+      {required this.title,
+      required this.content,
+      required this.onConfirmEdit});
 
   Widget build(BuildContext context) {
-    return CustomModal(
-      title: "変更の確認",
-      content: "授業リストを編集しますか?",
-      onConfirm: onConfirmEdit,
+    return AlertDialog(
+      title: Text("変更の確認"),
+      content: Text("授業リストを編集しますか?"),
+      actions: [
+        TextButton(
+          child: Text("キャンセル"),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        TextButton(
+          child: Text("確認"),
+          onPressed: () {
+            onConfirmEdit();
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
     );
   }
 }
 
-// class EditModalSubEdit extends StatelessWidget {
-//   final VoidCallback onConfirmEdit;
-
-//   const EditModalSubEdit({required this.onConfirmEdit});
-
-//   Widget build(BuildContext context) {
-//     return CustomModal(
-//         title: "変更の確認",
-//         content: "授業リストを編集しますか?",
-//         onPressed: () {
-//           Navigator.of(context).pop();
-//         });
-//   }
-// }
 class DeleteModalSubEdit extends StatelessWidget {
   final VoidCallback onConfirmDelete;
 
@@ -58,20 +62,4 @@ class DeleteModalSubEdit extends StatelessWidget {
       onConfirm: onConfirmDelete,
     );
   }
-  // Widget build(BuildContext context) {
-  //   return AlertDialog(
-  //     title: Text("削除しますか？"),
-  //     content: Text('data'),
-  //     actions: [
-  //       TextButton(
-  //         onPressed: () => Navigator.of(context).pop(),
-  //         child: Text('data'),
-  //       ),
-  //       TextButton(
-  //         onPressed: onConfirmDelete,
-  //         child: Text('data'),
-  //       )
-  //     ],
-  //   );
-  // }
 }

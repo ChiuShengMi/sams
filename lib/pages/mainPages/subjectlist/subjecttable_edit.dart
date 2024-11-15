@@ -28,6 +28,24 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
   late TextEditingController _classroomController;
   late TextEditingController _placeController;
 
+  String? _selectedDay;
+
+  String? _selectedTime;
+
+  String? _selectedPlace;
+
+  final List<String> _days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜', '土曜日', '日曜日'];
+  final List<String> _times = ['1', '2', '3', '4', '5', '6'];
+  final List<String> _place = [
+    '国際1号館',
+    '国際2号館',
+    '国際3号館',
+    '1号館',
+    '2号館',
+    '3号館',
+    '4号館'
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -35,8 +53,20 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
         text: widget.lessonData['CLASS']?.toString() ?? '');
     _courseController =
         TextEditingController(text: widget.course.toString() ?? '');
-    _teacherController = TextEditingController(
-        text: widget.lessonData['TEACHER_ID']?.toString() ?? '');
+
+    String teacherDisplay = 'N/A';
+
+    if (widget.lessonData['TEACHER_ID'] is Map) {
+      Map<dynamic, dynamic> teacherMap =
+          widget.lessonData['TEACHER_ID'] as Map<dynamic, dynamic>;
+
+      teacherDisplay = teacherMap.values
+          .map((teacher) => teacher['NAME'].toString())
+          .join('\n'); // 用逗号分隔名字
+    }
+
+    _teacherController = TextEditingController(text: teacherDisplay);
+
     _dayController =
         TextEditingController(text: widget.lessonData['DAY']?.toString() ?? '');
     _timeController = TextEditingController(
@@ -63,27 +93,49 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
   }
 
   Future<void> _updateLesson(BuildContext context) async {
-    // ClassType and lessonId are fetched from widget's properties
+    // classTypeとlessonIdはwidgetのプロパティから取得
     String classType = widget.course;
     String lessonId = widget.id;
 
+    // 更新用のデータをMap形式で保持
+    Map<dynamic, dynamic> teacherMap =
+        widget.lessonData['TEACHER_ID'] as Map<dynamic, dynamic>? ?? {};
+
+    // updatedDataに`TEACHER_ID`フィールドをもとのMap形式で追加
     Map<String, dynamic> updatedData = {
       'CLASS': _classController.text,
       'COURSE': _courseController.text,
-      'TEACHER_ID': _teacherController.text,
-      'DAY': _dayController.text,
-      'TIME': _timeController.text,
+      'TEACHER_ID': teacherMap,
+      'DAY': _selectedDay,
+      'TIME': _selectedTime,
       'QR_CODE': _qrCodeController.text,
       'CLASSROOM': _classroomController.text,
-      'PLACE': _placeController.text,
+      'PLACE': _selectedPlace,
     };
 
+    // Firestore用のデータ（ここでは例として`CLASS`フィールドのみ更新）
     Map<String, dynamic> firestoreUpdatedData = {
-      'CLASS':
-          _classController.text, // Update only the CLASS field in Firestore
+      'CLASS': _classController.text,
     };
 
     try {
+      // Firestoreでドキュメントが存在するかを確認してから更新する
+      DocumentReference docRef = FirebaseFirestore.instance
+          .collection('Class')
+          .doc(classType)
+          .collection('Subjects')
+          .doc(lessonId);
+
+      // ドキュメントが存在するか確認
+      DocumentSnapshot docSnapshot = await docRef.get();
+      if (docSnapshot.exists) {
+        // ドキュメントが存在する場合は更新
+        await docRef.update(firestoreUpdatedData);
+      } else {
+        // ドキュメントが存在しない場合は新規作成
+        await docRef.set(firestoreUpdatedData);
+      }
+      // Firestoreの更新
       await FirebaseFirestore.instance
           .collection('Class')
           .doc(classType)
@@ -91,15 +143,18 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
           .doc(lessonId)
           .update(firestoreUpdatedData);
 
+      // Firebase Realtime Databaseの更新
       await FirebaseDatabase.instance
           .ref('CLASS/$classType/$lessonId')
           .update(updatedData);
 
+      // 更新成功メッセージ
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('授業情報が更新されました')),
       );
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     } catch (e) {
+      // エラー処理
       print('Error updating lesson: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('更新中にエラーが発生しました: $e')),
@@ -112,7 +167,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     String lessonId = widget.id;
 
     try {
-      // Deleting lesson from Firestore and Realtime Database
+      // Firestoreから授業データを削除
       await FirebaseFirestore.instance
           .collection('Class')
           .doc(classType)
@@ -120,6 +175,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
           .doc(lessonId)
           .delete();
 
+      // Realtime Databaseから授業データを削除
       await FirebaseDatabase.instance
           .ref('CLASS/$classType/$lessonId')
           .remove();
@@ -172,44 +228,55 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
                       child: Column(
                         children: [
                           TextField(
-                            controller: _classController,
-                            decoration: InputDecoration(labelText: '授業名'),
-                          ),
-                          SizedBox(height: 10),
+                              controller: _classController,
+                              decoration: InputDecoration(labelText: '授業名')),
                           TextField(
-                            controller: _courseController,
-                            decoration: InputDecoration(labelText: 'コース'),
-                          ),
-                          SizedBox(height: 10),
+                              controller: _courseController,
+                              decoration: InputDecoration(labelText: 'コース')),
                           TextField(
-                            controller: _teacherController,
-                            decoration: InputDecoration(labelText: '教師'),
-                          ),
-                          SizedBox(height: 10),
-                          TextField(
-                            controller: _dayController,
+                              controller: _teacherController,
+                              decoration: InputDecoration(labelText: '教師')),
+                          DropdownButtonFormField<String>(
+                            value: _selectedDay,
+                            items: _days
+                                .map((day) => DropdownMenuItem(
+                                    value: day, child: Text(day)))
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => _selectedDay = value),
                             decoration: InputDecoration(labelText: '授業曜日'),
                           ),
-                          SizedBox(height: 10),
-                          TextField(
-                            controller: _timeController,
+                          DropdownButtonFormField<String>(
+                            value: _selectedTime,
+                            items: _times
+                                .map((time) => DropdownMenuItem(
+                                    value: time, child: Text(time)))
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => _selectedTime = value),
                             decoration: InputDecoration(labelText: '時間割'),
                           ),
-                          SizedBox(height: 10),
                           TextField(
-                            controller: _qrCodeController,
-                            decoration: InputDecoration(labelText: 'QRコード'),
-                          ),
-                          SizedBox(height: 10),
+                              controller: _qrCodeController,
+                              decoration: InputDecoration(labelText: 'QRコード')),
                           TextField(
-                            controller: _classroomController,
-                            decoration: InputDecoration(labelText: '教室'),
-                          ),
-                          SizedBox(height: 10),
-                          TextField(
-                            controller: _placeController,
+                              controller: _classroomController,
+                              decoration: InputDecoration(labelText: '教室')),
+                          DropdownButtonFormField<String>(
+                            value: _selectedPlace,
+                            items: _place
+                                .map((place) => DropdownMenuItem(
+                                    value: place, child: Text(place)))
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => _selectedPlace = value),
                             decoration: InputDecoration(labelText: '号館'),
                           ),
+                          SizedBox(height: 20),
+                          // ElevatedButton(
+                          //   onPressed: () => _updateLesson(context),
+                          //   child: Text('更新'),
+                          // ),
                         ],
                       ),
                     ),
@@ -220,9 +287,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
                   Expanded(
                     flex: 1,
                     child: Container(
-                      //alignment: Alignment.topCenter, // Align to the right
                       padding: EdgeInsets.all(100),
-                      //color: Colors.grey[200], // background color
                       child: Column(
                         mainAxisAlignment:
                             MainAxisAlignment.center, // Center vertically
@@ -234,11 +299,23 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
                             onPressed: () {
                               showDialog(
                                 context: context,
-                                builder: (context) => DeleteModalSubEdit(
-                                  onConfirmDelete: () async {
-                                    Navigator.of(context).pop();
-                                    await _deleteLesson(context);
-                                  },
+                                builder: (context) => AlertDialog(
+                                  title: Text("削除の確認"),
+                                  content: Text("授業リストから削除しますか?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: Text("キャンセル"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.of(context).pop();
+                                        await _deleteLesson(context);
+                                      },
+                                      child: Text("削除"),
+                                    ),
+                                  ],
                                 ),
                               );
                             },
@@ -256,10 +333,23 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
                             onPressed: () {
                               showDialog(
                                 context: context,
-                                builder: (context) => EditModalSubEdit(
-                                  onConfirmEdit: () async {
-                                    await _updateLesson(context);
-                                  },
+                                builder: (context) => AlertDialog(
+                                  title: Text("変更の確認"),
+                                  content: Text("授業リストを編集しますか?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: Text("キャンセル"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.of(context).pop();
+                                        await _updateLesson(context);
+                                      },
+                                      child: Text("確認"),
+                                    ),
+                                  ],
                                 ),
                               );
                             },
