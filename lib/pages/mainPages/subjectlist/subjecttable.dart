@@ -16,6 +16,7 @@ class SubjectTable extends StatefulWidget {
 class _SubjectTableState extends State<SubjectTable> {
   // Track selected category and search term
   String selectedCategory = 'IT';
+
   TextEditingController _searchController = TextEditingController();
 
   @override
@@ -71,7 +72,7 @@ class _SubjectTableState extends State<SubjectTable> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: '検索する授業名を入力',
+                    hintText: '検索する内容を入力',
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(horizontal: 10),
                   ),
@@ -98,7 +99,6 @@ class _SubjectTableState extends State<SubjectTable> {
                   setState(() {
                     selectedCategory = index == 0 ? 'IT' : 'GAME';
                   });
-                  // Additional filter logic for selected category
                 },
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -116,11 +116,9 @@ class _SubjectTableState extends State<SubjectTable> {
           ),
 
           SizedBox(height: 20),
-
-          // Main content with Lesson Table
           Expanded(
             child: Center(
-              child: Lessontable(), // Load the LessonTable widget
+              child: Lessontable(category: selectedCategory),
             ),
           ),
         ],
