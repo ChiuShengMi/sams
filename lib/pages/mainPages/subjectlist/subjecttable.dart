@@ -16,37 +16,41 @@ class SubjectTable extends StatefulWidget {
 }
 
 class _SubjectTableState extends State<SubjectTable> {
-  TextEditingController searchController = TextEditingController();
-  List<Map<String, dynamic>> lessonList = [];
-  List<Map<String, dynamic>> filteredLessonList = [];
-  String? selectedCategory; // null means "all categories"
-  bool isLoading = true;
+  TextEditingController searchController =
+      TextEditingController(); // 検索バーのコントローラー
+  List<Map<String, dynamic>> lessonList = []; // 全授業データ
+  List<Map<String, dynamic>> filteredLessonList = []; // フィルタリングされた授業データ
+  List<bool> isSelected = [true, true]; // トグルボタンの選択状態（IT, GAME）
+  bool isLoading = true; // データ読み込み中フラグ
 
   @override
   void initState() {
     super.initState();
-    _fetchInitialData();
+    _fetchInitialData(); // 初期データを取得
   }
 
+  // 初期データを取得するメソッド
   Future<void> _fetchInitialData() async {
     setState(() {
-      isLoading = true;
+      isLoading = true; // ローディングを開始
     });
 
-    lessonList = await fetchClasses(true, true); // Fetch both IT and GAME
-    print('Fetched Lessons: ${lessonList.length}'); // Debug: Check the count
-    filterLessonList();
+    // ITとGAMEの授業データを取得
+    lessonList = await fetchClasses(true, true);
+    filterLessonList(); // デフォルトフィルタリング実行
 
     setState(() {
-      isLoading = false;
+      isLoading = false; // ローディングを終了
     });
   }
 
+  // 授業データを取得するメソッド
   Future<List<Map<String, dynamic>>> fetchClasses(
       bool isITSelected, bool isGameSelected) async {
-    final FirebaseDatabase _realtimeDatabase = FirebaseDatabase.instance;
-    DatabaseReference dbRef = _realtimeDatabase.ref('CLASS');
-    List<Map<String, dynamic>> results = [];
+    final FirebaseDatabase _realtimeDatabase =
+        FirebaseDatabase.instance; // Realtime Databaseのインスタンス
+    DatabaseReference dbRef = _realtimeDatabase.ref('CLASS'); // 授業データへの参照
+    List<Map<String, dynamic>> results = []; // 結果リスト
 
     if (isITSelected) {
       results.addAll(await _fetchClassData(dbRef.child('IT')));
@@ -56,7 +60,7 @@ class _SubjectTableState extends State<SubjectTable> {
       results.addAll(await _fetchClassData(dbRef.child('GAME')));
     }
 
-    return results;
+    return results; // 取得結果を返す
   }
 
   Future<List<Map<String, dynamic>>> _fetchClassData(
@@ -68,15 +72,16 @@ class _SubjectTableState extends State<SubjectTable> {
       Map<dynamic, dynamic> classes = snapshot.value as Map<dynamic, dynamic>;
       classes.forEach((key, value) {
         result.add({
-          'subject': value['SUBJECT'] ?? 'Unknown',
-          'day': value['DAY'] ?? 'Unknown',
-          'time': value['TIME'] ?? 'Unknown',
-          'classroom': value['CLASSROOM'] ?? 'Unknown',
-          'place': value['PLACE'] ?? 'Unknown',
-          'classID': key,
-          'QRコード': value['QRコード'] ?? '124356',
-          'classType': path.key,
-          'TEACHER_ID': value['TEACHER_ID'] ?? {},
+          'CLASS': value['CLASS'] ?? 'N/A', // 授業名
+          'CLASSROOM': value['CLASSROOM'] ?? 'N/A', // 教室
+          'COURSE': value['COURSE'] ?? 'N/A', // コース
+          'DAY': value['DAY'] ?? 'N/A', // 授業曜日
+          'PLACE': value['PLACE'] ?? 'N/A', // 号館
+          'QR_CODE': value['QR_CODE'] ?? 'N/A', // QRコード
+          'TEACHER_ID': value['TEACHER_ID'] ?? {}, // 教師ID
+          'TIME': value['TIME'] ?? 'N/A', // 時間
+          'classID': key, // 授業ID
+          'classType': path.key, // 授業タイプ (IT または GAME)
         });
       });
     }
@@ -85,27 +90,33 @@ class _SubjectTableState extends State<SubjectTable> {
 
   void filterLessonList() {
     setState(() {
-      if (selectedCategory == null || selectedCategory == 'All') {
-        // すべて授業リス表示
-        filteredLessonList = List.from(lessonList);
-      } else {
-        // Filter by selected category
-        filteredLessonList = lessonList
-            .where((lesson) => lesson['classType'] == selectedCategory)
-            .toList();
-      }
+      List<String> selectedCategories = [];
+      if (isSelected[0]) selectedCategories.add('IT');
+      if (isSelected[1]) selectedCategories.add('GAME');
+
+      String searchText = searchController.text.toLowerCase();
+
+      filteredLessonList = lessonList
+          .where((lesson) =>
+              selectedCategories.contains(lesson['classType']) &&
+              (lesson['CLASS'].toString().toLowerCase().contains(searchText)))
+          .toList();
+
+      print("Filtered Lesson List: ${filteredLessonList.length} items");
+      filteredLessonList.forEach((lesson) => print(lesson));
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(), // カスタムアプリバー
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator()) // ローディング表示
           : Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // タイトル行
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -119,18 +130,19 @@ class _SubjectTableState extends State<SubjectTable> {
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 20), // 余白
                 Divider(
-                  color: Colors.grey,
+                  color: Colors.grey, // ディバイダーの色
                   thickness: 1.5,
                   height: 15.0,
                 ),
                 SizedBox(height: 20),
+                // フィルタリングと検索バー
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CustomButton(
-                      text: "戻る",
+                      text: "戻る", // 戻るボタン
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
@@ -140,10 +152,14 @@ class _SubjectTableState extends State<SubjectTable> {
                       },
                     ),
                     SizedBox(width: 10),
+                    // 検索バー
                     Container(
-                      width: 1000,
+                      width: 500,
                       child: TextField(
                         controller: searchController,
+                        onChanged: (value) {
+                          filterLessonList(); // 檢索條件改變時重新篩選
+                        },
                         decoration: InputDecoration(
                           hintText: '検索する内容を入力',
                           border: OutlineInputBorder(),
@@ -152,6 +168,7 @@ class _SubjectTableState extends State<SubjectTable> {
                       ),
                     ),
                     SizedBox(width: 10),
+                    // ITとGAMEを切り替えるトグルボタン（複数選択可能）
                     ToggleButtons(
                       children: [
                         Padding(
@@ -163,24 +180,16 @@ class _SubjectTableState extends State<SubjectTable> {
                           child: Text('GAME'),
                         ),
                       ],
-                      isSelected: [
-                        selectedCategory == 'IT',
-                        selectedCategory == 'GAME',
-                      ],
+                      isSelected: isSelected, // 現在の選択状態
                       onPressed: (index) {
                         setState(() {
-                          if (index == 0) {
-                            selectedCategory = 'IT';
-                          } else if (index == 1) {
-                            selectedCategory = 'GAME';
-                          } else {
-                            selectedCategory = null; // Reset to "All"
-                          }
-                          filterLessonList();
+                          isSelected[index] = !isSelected[index]; // 選択状態をトグル
+                          filterLessonList(); // フィルタリングを実行
                         });
                       },
                     ),
                     SizedBox(width: 10),
+                    // 新しい授業作成ボタン
                     CustomButton(
                       text: "新しい授業作成",
                       onPressed: () {
@@ -194,25 +203,22 @@ class _SubjectTableState extends State<SubjectTable> {
                   ],
                 ),
                 SizedBox(height: 20),
+                // 授業リスト表示部分
                 Expanded(
                   child: filteredLessonList.isEmpty
                       ? Center(child: Text('データが見つかりませんでした。'))
-                      : Column(
-                          children: [
-                            Text(
-                                'Filtered Lessons: ${filteredLessonList.length}'),
-                            Expanded(
-                              child: Lessontable(
-                                lessonData: filteredLessonList,
-                                course: selectedCategory ?? 'All',
-                              ),
-                            ),
-                          ],
+                      : Lessontable(
+                          lessonData: filteredLessonList, // 傳遞過濾後的資料
+                          course: isSelected[0] && isSelected[1]
+                              ? 'All'
+                              : isSelected[0]
+                                  ? 'IT'
+                                  : 'GAME',
                         ),
                 ),
               ],
             ),
-      bottomNavigationBar: BottomBar(),
+      bottomNavigationBar: BottomBar(), // カスタムボトムバー
     );
   }
 }
