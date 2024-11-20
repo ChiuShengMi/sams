@@ -233,26 +233,6 @@ class _HomePageStudentState extends State<HomePageStudent> {
     );
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: CustomAppBar(),
-  //     body: Center(
-  //       child: Column(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: [
-  //           Text('Welcome to Student Home Page!'),
-  //           SizedBox(height: 20),
-  //           ElevatedButton(
-  //             onPressed: () => _navigateToQRScanner(context),
-  //             child: Text('出席する'),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
