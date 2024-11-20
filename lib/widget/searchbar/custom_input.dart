@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import './input_styles.dart';
 
 class CustomInput extends StatelessWidget {
@@ -8,6 +9,10 @@ class CustomInput extends StatelessWidget {
   final double borderRadius;
   final Color fillColor;
   final Color borderColor;
+  final List<TextInputFormatter>? InputFormatter;
+  final ValueChanged<String>? onChanged;
+  final TextInputType? keyboardType;
+  final bool obscureText;
 
   CustomInput(
       {required this.controller,
@@ -15,7 +20,11 @@ class CustomInput extends StatelessWidget {
       this.height = 50.0,
       this.borderRadius = 30.0,
       this.fillColor = Colors.white,
-      this.borderColor = Colors.grey});
+      this.borderColor = Colors.grey,
+      this.InputFormatter,
+      this.onChanged,
+      this.keyboardType,
+      this.obscureText = false});
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +32,10 @@ class CustomInput extends StatelessWidget {
       height: height,
       child: TextField(
         controller: controller,
+        keyboardType: keyboardType,
+        inputFormatters: InputFormatter,
+        onChanged: onChanged,
+        obscureText: obscureText,
         decoration: InputStyles.InputStyle.copyWith(
             hintText: hintText,
             fillColor: fillColor,

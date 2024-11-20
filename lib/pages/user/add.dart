@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase Authentication 추가
 import 'package:sams/widget/actionbar.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/dropbox/custom_dropdown.dart';
-import 'package:sams/widget/modal/confirmation_modal.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
+import 'package:sams/widget/modal/confirmation_modal.dart';
 
 class UserAdd extends StatelessWidget {
   final TextEditingController loginEmailInputController =
@@ -23,15 +25,41 @@ class UserAdd extends StatelessWidget {
   String selectedCourse = 'IT';
 
   Future<void> _registerUser(BuildContext context) async {
+    // 필드 검증
+    if (loginEmailInputController.text.isEmpty ||
+        dataIdInputController.text.isEmpty ||
+        passwordInputController.text.isEmpty ||
+        passwordConfirmInputController.text.isEmpty ||
+        userNameInputController.text.isEmpty ||
+        phoneNumberController.text.isEmpty ||
+        classInputController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("모든 필드를 입력해주세요."),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
+      ));
+      return;
+    }
+
+    // 비밀번호 일치 여부 확인
     if (passwordInputController.text != passwordConfirmInputController.text) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Passwords do not match!"),
         backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
       ));
       return;
     }
 
     try {
+      // Firebase Authentication 계정 생성
+      final UserCredential authResult =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: loginEmailInputController.text.trim(),
+        password: passwordInputController.text.trim(),
+      );
+
+      // Firestore에 사용자 데이터 저장
       Map<String, dynamic> userData = {
         'CLASS': classInputController.text,
         'COURSE': selectedCourse,
@@ -45,6 +73,7 @@ class UserAdd extends StatelessWidget {
         'NAME': userNameInputController.text,
         'PHOTO': null,
         'TEL': phoneNumberController.text,
+        'UID': authResult.user!.uid, // Authentication UID
       };
 
       String collectionPath;
@@ -56,14 +85,12 @@ class UserAdd extends StatelessWidget {
         collectionPath = 'Users/Managers';
       }
 
-      print("Storing user in Firestore path: $collectionPath");
-      print("User data: $userData");
-
       await FirebaseFirestore.instance.collection(collectionPath).add(userData);
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("User registered successfully!"),
         backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
       ));
     } catch (e) {
       String errorMessage = 'Failed to register user: $e';
@@ -72,8 +99,15 @@ class UserAdd extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(errorMessage),
         backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
       ));
     }
+  }
+
+  bool _isValidEmail(String value) {
+    final RegExp emailRegExp =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailRegExp.hasMatch(value);
   }
 
   @override
@@ -94,9 +128,29 @@ class UserAdd extends StatelessWidget {
                     children: [
                       Expanded(
                         flex: 5,
-                        child: CustomInput(
-                          controller: loginEmailInputController,
-                          hintText: 'Login E-mail',
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            if (!hasFocus &&
+                                !_isValidEmail(
+                                    loginEmailInputController.text)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('有効なE-mail形式で入力してください。'),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          child: CustomInput(
+                            controller: loginEmailInputController,
+                            hintText: 'Login E-mail',
+                            keyboardType: TextInputType.emailAddress,
+                            InputFormatter: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z0-9@._-]'))
+                            ],
+                          ),
                         ),
                       ),
                       SizedBox(width: 16),
@@ -129,6 +183,25 @@ class UserAdd extends StatelessWidget {
                         child: CustomInput(
                           controller: dataIdInputController,
                           hintText: 'Data ID',
+                          keyboardType: TextInputType.number,
+                          InputFormatter: [
+                            FilteringTextInputFormatter.allow(RegExp(r'\d'))
+                          ],
+                          onChanged: (value) {
+                            if (value.length > 7) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text("IDは最長7桁まで入力可能です。"),
+                                duration: Duration(seconds: 1),
+                              ));
+                              dataIdInputController.text =
+                                  value.substring(0, 7);
+                              dataIdInputController.selection =
+                                  TextSelection.fromPosition(TextPosition(
+                                      offset:
+                                          dataIdInputController.text.length));
+                            }
+                          },
                         ),
                       ),
                       SizedBox(width: 16),
@@ -150,6 +223,8 @@ class UserAdd extends StatelessWidget {
                         child: CustomInput(
                           controller: passwordInputController,
                           hintText: 'Password',
+                          keyboardType: TextInputType.visiblePassword,
+                          obscureText: true,
                         ),
                       ),
                       SizedBox(width: 16),
@@ -158,6 +233,26 @@ class UserAdd extends StatelessWidget {
                         child: CustomInput(
                           controller: phoneNumberController,
                           hintText: 'Phone Number',
+                          keyboardType: TextInputType.number,
+                          InputFormatter: [
+                            FilteringTextInputFormatter.allow(RegExp(r'\d'))
+                          ],
+                          onChanged: (value) {
+                            if (value.length > 11) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text("電話番号は11桁以内で入力してください。"),
+                                duration: Duration(seconds: 1),
+                                backgroundColor: Colors.red,
+                              ));
+                              phoneNumberController.text =
+                                  value.substring(0, 11);
+                              phoneNumberController.selection =
+                                  TextSelection.fromPosition(TextPosition(
+                                      offset:
+                                          phoneNumberController.text.length));
+                            }
+                          },
                         ),
                       ),
                     ],
@@ -168,9 +263,26 @@ class UserAdd extends StatelessWidget {
                     children: [
                       Expanded(
                         flex: 2,
-                        child: CustomInput(
-                          controller: passwordConfirmInputController,
-                          hintText: 'Confirm Password',
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            if (!hasFocus &&
+                                passwordConfirmInputController.text !=
+                                    passwordInputController.text) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('パスワードが一致してません。'),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          child: CustomInput(
+                            controller: passwordConfirmInputController,
+                            hintText: 'Confirm Password',
+                            keyboardType: TextInputType.visiblePassword,
+                            obscureText: true,
+                          ),
                         ),
                       ),
                       SizedBox(width: 16),
@@ -211,6 +323,20 @@ class UserAdd extends StatelessWidget {
                   CustomButton(
                     text: '確認',
                     onPressed: () {
+                      if (loginEmailInputController.text.isEmpty ||
+                          dataIdInputController.text.isEmpty ||
+                          passwordInputController.text.isEmpty ||
+                          passwordConfirmInputController.text.isEmpty ||
+                          userNameInputController.text.isEmpty ||
+                          phoneNumberController.text.isEmpty ||
+                          classInputController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("入力されてない欄があります。"),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 2),
+                        ));
+                        return;
+                      }
                       showDialog(
                         context: context,
                         builder: (context) => ConfirmationModal(
