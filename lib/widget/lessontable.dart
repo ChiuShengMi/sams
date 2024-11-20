@@ -6,9 +6,14 @@ import 'package:sams/pages/mainPages/subjectlist/subjecttable_edit.dart';
 import 'package:sams/widget/lessontable_edit.dart';
 
 class Lessontable extends StatefulWidget {
-  final String category; // Accept the category to filter by
+  final String course;
+  final List<Map<String, dynamic>> lessonData;
 
-  Lessontable({required this.category});
+  const Lessontable({
+    Key? key,
+    required this.course,
+    required this.lessonData,
+  }) : super(key: key);
 
   @override
   _LessonTableScreenState createState() => _LessonTableScreenState();
@@ -119,21 +124,21 @@ class _LessonTableScreenState extends State<Lessontable> {
     ];
 
     // Filter data based on the selected category
-    if (_cachedData!.containsKey(widget.category)) {
+    if (_cachedData!.containsKey(widget.course)) {
       Map<String, dynamic> categoryData =
-          Map<String, dynamic>.from(_cachedData![widget.category]);
+          Map<String, dynamic>.from(_cachedData![widget.course]);
       categoryData.forEach((subjectKey, subjectData) {
         final data = Map<String, dynamic>.from(subjectData);
         tableRows.add(
           TableRow(
             children: [
               buildTableCell(data['CLASS'] ?? 'N/A'),
-              buildTableCell(widget.category), // Display the course name
+              buildTableCell(widget.course), // Display the course name
               TableCell(
                 child: FutureBuilder<DocumentSnapshot>(
                   future: _firestore
                       .collection('Class')
-                      .doc(widget.category)
+                      .doc(widget.course)
                       .collection('Subjects')
                       .doc(subjectKey)
                       .get(),
@@ -170,7 +175,7 @@ class _LessonTableScreenState extends State<Lessontable> {
               buildTableCell(data['QR_CODE'] ?? 'N/A'),
               buildTableCell(data['CLASSROOM'] ?? 'N/A'),
               buildTableCell(data['PLACE'] ?? 'N/A'),
-              buildEditCell(context, 'Edit', data, subjectKey, widget.category),
+              buildEditCell(context, '編集', data, subjectKey, widget.course),
             ],
           ),
         );
