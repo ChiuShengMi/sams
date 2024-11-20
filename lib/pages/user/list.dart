@@ -8,6 +8,7 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/table/custom_table.dart';
+import 'package:sams/pages/user/detail.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -36,12 +37,10 @@ class _UserListState extends State<UserList> {
   }
 
   Stream<QuerySnapshot> _getUserStream() {
-    // Update Firestore query based on selected user type
     return firestore
         .collection('Users')
         .doc(selectedUserType)
-        .collection(
-            'IT') // Modify if needed based on user type and specific course
+        .collection('IT')
         .snapshots();
   }
 
@@ -90,7 +89,7 @@ class _UserListState extends State<UserList> {
                       child: MediumButton(
                         text: '検索',
                         onPressed: () {
-                          // Add search functionality if needed
+                          // 검색 기능 추가
                         },
                       ),
                     ),
@@ -126,6 +125,20 @@ class _UserListState extends State<UserList> {
                           '修正',
                         ],
                         data: data,
+                        onRowTap: (index) {
+                          final documentId = snapshot
+                              .data!.docs[index].id; // Firestore 문서 ID를 사용
+                          final documentPath =
+                              'Users/$selectedUserType/IT/$documentId'; // 전체 경로를 만듦
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  UserDetail(documentPath: documentPath),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),

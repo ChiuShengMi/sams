@@ -4,12 +4,12 @@ import 'table_styles.dart';
 class CustomTable extends StatelessWidget {
   final List<String> headers;
   final List<List<String>> data;
-  final List<Widget> Function(BuildContext, int)? customRowBuilder;
+  final void Function(int index)? onRowTap; // onRowTap 추가
 
   CustomTable({
     required this.headers,
     required this.data,
-    this.customRowBuilder,
+    this.onRowTap,
   });
 
   @override
@@ -54,9 +54,14 @@ class CustomTable extends StatelessWidget {
         decoration: BoxDecoration(
           color: rowIndex % 2 == 0 ? Colors.white : Colors.grey[100],
         ),
-        children: customRowBuilder != null
-            ? customRowBuilder!(context, rowIndex)
-            : rowData.map((cellData) => _buildTableCell(cellData)).toList(),
+        children: rowData.map((cellData) {
+          return GestureDetector(
+            onTap: () {
+              if (onRowTap != null) onRowTap!(rowIndex);
+            },
+            child: _buildTableCell(cellData),
+          );
+        }).toList(),
       );
     }).toList();
   }
