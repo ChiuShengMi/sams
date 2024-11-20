@@ -209,8 +209,7 @@ class StudentSelectionDialog extends StatefulWidget {
   });
 
   @override
-  _StudentSelectionDialogState createState() =>
-      _StudentSelectionDialogState();
+  _StudentSelectionDialogState createState() => _StudentSelectionDialogState();
 }
 
 class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
