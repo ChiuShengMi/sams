@@ -18,7 +18,7 @@ class HomePageTeacher extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 20),
+              // SizedBox(height: 20),
               Text(
                 "教員トップ画面",
                 style: TextStyle(

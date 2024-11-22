@@ -17,86 +17,104 @@ class HomePageAdmin extends StatelessWidget {
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CustomInputContainer(
-              inputWidgets: [
-                SizedBox(height: 20),
-
-                // 첫 번째 줄 버튼
-                Row(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: _buildBoxedButton(
-                        context: context,
-                        label: '出席総計管理',
-                        onPressed: () {
-                          // 첫 번째 버튼 동작
-                        },
+                    SizedBox(height: 20),
+                    Text(
+                      "管理者トップ画面",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
-                    SizedBox(width: 20), // 버튼 사이 간격
-                    Expanded(
-                      child: _buildBoxedButton(
-                        context: context,
-                        label: '全体出席データ管理',
-                        onPressed: () {
-                          // 두 번째 버튼 동작
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
+                    Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
+                    SizedBox(height: 100),
+                    CustomInputContainer(
+                      inputWidgets: [
+                        SizedBox(height: 20),
 
-                // 두 번째 줄 버튼
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildBoxedButton(
-                        context: context,
-                        label: '授業リスト',
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SubjectTable()),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 20), // 버튼 사이 간격
-                    Expanded(
-                      child: _buildBoxedButton(
-                        context: context,
-                        label: 'ユーザ管理',
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => UserList()),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
+                        // 첫 번째 줄 버튼
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: '出席総計管理',
+                                onPressed: () {
+                                  // 첫 번째 버튼 동작
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 20), // 버튼 사이 간격
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: '全体出席データ管理',
+                                onPressed: () {
+                                  // 두 번째 버튼 동작
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
 
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  _buildBoxedButton(
-                    context: context,
-                    label: 'Test Page',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => TestPage()),
-                      );
-                    },
-                  ),
-                ])
-                // Test Page 버튼
-              ],
-            ),
-          ),
+                        // 두 번째 줄 버튼
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: '授業リスト',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SubjectTable()),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 20), // 버튼 사이 간격
+                            Expanded(
+                              child: _buildBoxedButton(
+                                context: context,
+                                label: 'ユーザ管理',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => UserList()),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildBoxedButton(
+                                context: context,
+                                label: 'Test Page',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => TestPage()),
+                                  );
+                                },
+                              ),
+                            ])
+                        // Test Page 버튼
+                      ],
+                    ),
+                  ])),
         ),
       ),
       bottomNavigationBar: BottomBar(), // Custom BottomBar 적용
