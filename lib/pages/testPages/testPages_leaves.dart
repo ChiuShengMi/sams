@@ -153,7 +153,6 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
             isEnrolled = true;
             userClass = student['CLASS'];
             userName = student['NAME'];
-            selectedCourse = course;
             break;
           }
         }
@@ -167,6 +166,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
             'name': formattedClass,
             'selected': false,
             'day': day, // 後で使用するために曜日を含める
+            'className': className, // 授業名をここに保存
           });
         }
       }
@@ -217,7 +217,6 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
   }
 
   Future<void> _submitLeaveRequest() async {
-    // 必須項目が未入力の場合、エラーメッセージを表示
     if (startDate == null ||
         endDate == null ||
         selectedClasses.isEmpty ||
@@ -238,76 +237,59 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
       return;
     }
 
-    // 現在時刻を基にファイル名を生成
     String timestamp =
         DateTime.now().toLocal().toString().replaceAll(':', '').split('.')[0];
     String fileName = '$timestamp.jpg';
 
-    String? fileUrl; // ファイルのアップロード先URL
+    String? fileUrl;
     if (kIsWeb) {
       if (uploadedFileData != null) {
-        // 画像を保存：Leaves/{保存者のUID}/{ファイル名}
         Reference storageRef = FirebaseStorage.instance
             .ref()
-            .child('Leaves/$currentUserId/$fileName'); // ストレージパス
+            .child('Leaves/$currentUserId/$fileName');
         await storageRef.putData(uploadedFileData!);
         fileUrl = await storageRef.getDownloadURL();
       }
     } else {
       if (uploadedFile != null) {
-        // 画像を保存：Leaves/{保存者のUID}/{ファイル名}
         Reference storageRef = FirebaseStorage.instance
             .ref()
-            .child('Leaves/$currentUserId/$fileName'); // ストレージパス
+            .child('Leaves/$currentUserId/$fileName');
         await storageRef.putFile(uploadedFile!);
         fileUrl = await storageRef.getDownloadURL();
       }
     }
 
-    // 選択された授業ごとに休暇データを登録
     for (var classItem in selectedClasses) {
-      String classId = classItem['id']; // 授業ID
-      String day = classItem['day']; // 授業の曜日
-      DateTime leaveDate = _getCorrectLeaveDate(day); // 正しい休暇日を取得
+      String classId = classItem['id'];
+      String className = classItem['className']; // 直接使用 className
+      String day = classItem['day'];
+      DateTime leaveDate = _getCorrectLeaveDate(day);
 
-      // Firestoreの保存パス：Leaves/{授業ID}/Leaves_{編番号}
       CollectionReference leaveCollection =
           FirebaseFirestore.instance.collection('Leaves');
 
-      // 現在のコレクション内のドキュメント数から次のIDを生成
       QuerySnapshot leaveDocs = await leaveCollection.get();
       String leaveId =
           'Leaves_${(leaveDocs.docs.length + 1).toString().padLeft(3, '0')}';
 
-      if (userClass != null) {
-        DocumentSnapshot doc = await FirebaseFirestore.instance
-            .collection('Class')
-            .doc('Subjects')
-            .collection('Subjects')
-            .doc(classId)
-            .get();
-      }
-
-      // Firestoreに保存するデータ
       Map<String, dynamic> leaveData = {
-        'CLASS_ID': classId, // 授業ID
-        'CLASS': userClass, // クラス名
-        'FILE': fileUrl, // ファイルURL
-        'LEAVE_DATE':
-            '${leaveDate.year}-${leaveDate.month}-${leaveDate.day}', // 休暇日
-        'LEAVE_CATEGORY': selectedCategory, // 種別
-        'LEAVE_REASON': selectedReason, // 理由
-        'LEAVE_STATUS': 0, // 初期ステータス
-        'LEAVE_TEXT': remarksController.text, // 備考
-        'UID': currentUserId, // 現在のユーザーUID
-        'NAME': userName, // 学生名
+        'CLASS_ID': classId,
+        'CLASS_NAME': className, // 授業名を保存
+        'CLASS': userClass,
+        'FILE': fileUrl,
+        'LEAVE_DATE': '${leaveDate.year}-${leaveDate.month}-${leaveDate.day}',
+        'LEAVE_CATEGORY': selectedCategory,
+        'LEAVE_REASON': selectedReason,
+        'LEAVE_STATUS': 0,
+        'LEAVE_TEXT': remarksController.text,
+        'UID': currentUserId,
+        'NAME': userName,
       };
 
-      // Firestoreにデータを保存
       await leaveCollection.doc(leaveId).set(leaveData);
     }
 
-    // フォームをリセット
     setState(() {
       startDate = null;
       endDate = null;
@@ -319,7 +301,6 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
       selectedClasses.clear();
     });
 
-    // 成功メッセージを表示
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('申請が成功しました')),
     );

@@ -36,38 +36,35 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
     }
   }
 
-  // 動態遍歷所有分類和 UID，獲取所有請假資料
+  // 動態遍歷所有分類，獲取所有請假資料
   Future<void> fetchAllLeaves() async {
     List<Map<String, dynamic>> tempLeaveData = [];
     try {
-      final List<String> collections = ["IT", "GAME"]; // 父集合名稱列表
+      // 取得 "Leaves" 集合下的所有文件
+      final leavesSnapshot =
+          await FirebaseFirestore.instance.collection("Leaves").get();
 
-      for (String collection in collections) {
-        // 取得分類下的所有 UID 文件
-        final uidsSnapshot = await FirebaseFirestore.instance
-            .collection("Leaves")
-            .doc(collection)
-            .collection("UIDs") // 假設 UID 子集合統一存放在這裡
-            .get();
+      for (var leaveDoc in leavesSnapshot.docs) {
+        // 每個請假文檔的資料
+        final leaveData = leaveDoc.data();
 
-        for (var uidDoc in uidsSnapshot.docs) {
-          final uid = uidDoc.id; // UID 文件的 ID
-
-          // 遍歷該 UID 下的所有請假 ID 文件
-          final leaveDocsSnapshot = await FirebaseFirestore.instance
-              .collection("Leaves")
-              .doc(collection)
-              .collection(uid) // 指定 UID 子集合
-              .get();
-
-          for (var leaveDoc in leaveDocsSnapshot.docs) {
-            tempLeaveData.add(leaveDoc.data()); // 添加每個請假文件到列表
-          }
-        }
+        // 添加請假文檔到臨時列表
+        tempLeaveData.add({
+          "CLASS": leaveData["CLASS"] ?? "不明",
+          "CLASS_ID": leaveData["CLASS_ID"] ?? "不明",
+          "CLASS_NAME": leaveData["CLASS_NAME"] ?? "不明",
+          "LEAVE_CATEGORY": leaveData["LEAVE_CATEGORY"] ?? "不明",
+          "LEAVE_DATE": leaveData["LEAVE_DATE"] ?? "不明",
+          "LEAVE_REASON": leaveData["LEAVE_REASON"] ?? "不明",
+          "LEAVE_STATUS": leaveData["LEAVE_STATUS"] ?? 0,
+          "LEAVE_TEXT": leaveData["LEAVE_TEXT"] ?? "",
+          "NAME": leaveData["NAME"] ?? "不明",
+          "UID": leaveData["UID"] ?? "不明",
+        });
       }
 
       setState(() {
-        leaveData = tempLeaveData; // 更新資料
+        leaveData = tempLeaveData; // 更新請假資料
       });
 
       print("取得的請假資料筆數: ${leaveData.length}");
@@ -102,11 +99,11 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
                               horizontal: 16, vertical: 8),
                           child: ListTile(
                             title: Text(
-                              '理由: ${leave["LEAVE_REASON"] ?? "不明"}',
+                              '授業名: ${leave["CLASS_NAME"] ?? "不明"}',
                               style: const TextStyle(fontSize: 16),
                             ),
                             subtitle: Text(
-                              '日付: ${leave["LEAVE_DATE"] ?? "不明"}\n状態: ${leave["LEAVE_STATUS"] == 0 ? "未承認" : "承認済み"}',
+                              '日付: ${leave["LEAVE_DATE"] ?? "不明"}\n種別: ${leave["LEAVE_CATEGORY"] ?? "不明"}\n状態: ${leave["LEAVE_STATUS"] == 0 ? "未承認" : "承認済み"}',
                             ),
                           ),
                         );
