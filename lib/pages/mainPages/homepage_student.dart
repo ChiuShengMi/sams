@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sams/pages/loginPages/login.dart';
+import 'package:sams/pages/testPages/testPages_leaves.dart';
 import 'package:sams/widget/appbarlogout_mobile.dart';
 
 class HomePageStudent extends StatefulWidget {
@@ -260,9 +261,9 @@ class _HomePageStudentState extends State<HomePageStudent> {
                         color: Color(0xFF7B1FA2),
                       ),
                     ),
-
                     SizedBox(height: 100),
-                    // Styled "出席する" button
+
+                    // 出席するボタン
                     Container(
                       padding: const EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
@@ -284,6 +285,42 @@ class _HomePageStudentState extends State<HomePageStudent> {
                         ),
                         child: Text(
                           '出席する',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
+
+                    // 休暇届ボタン
+                    Container(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF7B1FA2),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => TestPageLeaves()),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          foregroundColor: Colors.white, // Text color
+                        ),
+                        child: Text(
+                          '休暇届',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

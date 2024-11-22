@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sams/pages/testPages/testPages_leavesManagement.dart';
 import 'package:sams/utils/firebase_firestore.dart';
 import 'package:sams/utils/firebase_realtime.dart';
 import 'package:sams/pages/loginPages/login.dart';
@@ -440,6 +441,17 @@ class TestPage extends StatelessWidget {
                 );
               },
               child: Text('QR_CODE生成'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => LeaveManagementPage()),
+                );
+              },
+              child: Text('休暇管理'),
             ),
           ],
         ),

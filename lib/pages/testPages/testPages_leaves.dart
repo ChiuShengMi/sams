@@ -25,6 +25,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
   String? selectedCategory;
   String? selectedReason;
   String? userClass; // 現在のユーザーのクラスを保存
+  String? userName; //username
   String? selectedCourse; // 選択されたコースタイプ（ITまたはGAME）を保存
   File? uploadedFile; // モバイル/デスクトップでファイルを保存
   Uint8List? uploadedFileData; // Web上でファイルデータを保存
@@ -104,7 +105,8 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
   }
 
   // 指定されたスナップショットから一致するクラス情報を取得
-  List<Map<String, dynamic>> _getMatchingClasses(DataSnapshot snapshot, String course) {
+  List<Map<String, dynamic>> _getMatchingClasses(
+      DataSnapshot snapshot, String course) {
     List<Map<String, dynamic>> classes = [];
     for (var child in snapshot.children) {
       String classId = child.key ?? "";
@@ -124,7 +126,8 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
   }
 
   // Firestoreからクラス名を取得
-  Future<void> _fetchClassNamesFromFirestore(List<Map<String, dynamic>> classes) async {
+  Future<void> _fetchClassNamesFromFirestore(
+      List<Map<String, dynamic>> classes) async {
     List<Map<String, dynamic>> fetchedClassNames = [];
 
     for (var classInfo in classes) {
@@ -149,6 +152,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
           if (student['UID'] == currentUserId) {
             isEnrolled = true;
             userClass = student['CLASS'];
+            userName = student['NAME'];
             selectedCourse = course;
             break;
           }
@@ -176,7 +180,8 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
   // クラスの選択を確定
   void _confirmSelection() {
     setState(() {
-      selectedClasses = classNames.where((classItem) => classItem['selected']).toList();
+      selectedClasses =
+          classNames.where((classItem) => classItem['selected']).toList();
       classNames.clear();
     });
   }
@@ -211,91 +216,114 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
     }
   }
 
-// 休暇申請を提出
-Future<void> _submitLeaveRequest() async {
-  
-  if (startDate == null || endDate == null || selectedClasses.isEmpty || selectedCategory == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('未完成の欄位が存在します。すべての必須項目を記入してください。')),
-    );
-    return;
-  }
-  
- 
-  if ((selectedCategory != 'その他' && (selectedReason == null || selectedReason!.isEmpty)) ||
-      (selectedCategory == 'その他' && (remarksController.text.isEmpty))) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('理由または備考を記入してください。')),
-    );
-    return;
-  }
-
-  String timestamp = DateTime.now().toLocal().toString().replaceAll(':', '').split('.')[0];
-  String fileName = '$timestamp.jpg';
-
-  String? fileUrl;
-  if (kIsWeb) {
-    if (uploadedFileData != null) {
-      Reference storageRef = FirebaseStorage.instance
-          .ref()
-          .child('Leaves/$currentUserId/$fileName');
-      await storageRef.putData(uploadedFileData!);
-      fileUrl = await storageRef.getDownloadURL();
+  Future<void> _submitLeaveRequest() async {
+    // 必須項目が未入力の場合、エラーメッセージを表示
+    if (startDate == null ||
+        endDate == null ||
+        selectedClasses.isEmpty ||
+        selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('未完成の欄位が存在します。すべての必須項目を記入してください。')),
+      );
+      return;
     }
-  } else {
-    if (uploadedFile != null) {
-      Reference storageRef = FirebaseStorage.instance
-          .ref()
-          .child('Leaves/$currentUserId/$fileName');
-      await storageRef.putFile(uploadedFile!);
-      fileUrl = await storageRef.getDownloadURL();
+
+    // 理由または備考が未入力の場合、エラーメッセージを表示
+    if ((selectedCategory != 'その他' &&
+            (selectedReason == null || selectedReason!.isEmpty)) ||
+        (selectedCategory == 'その他' && (remarksController.text.isEmpty))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('理由または備考を記入してください。')),
+      );
+      return;
     }
+
+    // 現在時刻を基にファイル名を生成
+    String timestamp =
+        DateTime.now().toLocal().toString().replaceAll(':', '').split('.')[0];
+    String fileName = '$timestamp.jpg';
+
+    String? fileUrl; // ファイルのアップロード先URL
+    if (kIsWeb) {
+      if (uploadedFileData != null) {
+        // 画像を保存：Leaves/{保存者のUID}/{ファイル名}
+        Reference storageRef = FirebaseStorage.instance
+            .ref()
+            .child('Leaves/$currentUserId/$fileName'); // ストレージパス
+        await storageRef.putData(uploadedFileData!);
+        fileUrl = await storageRef.getDownloadURL();
+      }
+    } else {
+      if (uploadedFile != null) {
+        // 画像を保存：Leaves/{保存者のUID}/{ファイル名}
+        Reference storageRef = FirebaseStorage.instance
+            .ref()
+            .child('Leaves/$currentUserId/$fileName'); // ストレージパス
+        await storageRef.putFile(uploadedFile!);
+        fileUrl = await storageRef.getDownloadURL();
+      }
+    }
+
+    // 選択された授業ごとに休暇データを登録
+    for (var classItem in selectedClasses) {
+      String classId = classItem['id']; // 授業ID
+      String day = classItem['day']; // 授業の曜日
+      DateTime leaveDate = _getCorrectLeaveDate(day); // 正しい休暇日を取得
+
+      // Firestoreの保存パス：Leaves/{授業ID}/Leaves_{編番号}
+      CollectionReference leaveCollection =
+          FirebaseFirestore.instance.collection('Leaves');
+
+      // 現在のコレクション内のドキュメント数から次のIDを生成
+      QuerySnapshot leaveDocs = await leaveCollection.get();
+      String leaveId =
+          'Leaves_${(leaveDocs.docs.length + 1).toString().padLeft(3, '0')}';
+
+      if (userClass != null) {
+        DocumentSnapshot doc = await FirebaseFirestore.instance
+            .collection('Class')
+            .doc('Subjects')
+            .collection('Subjects')
+            .doc(classId)
+            .get();
+      }
+
+      // Firestoreに保存するデータ
+      Map<String, dynamic> leaveData = {
+        'CLASS_ID': classId, // 授業ID
+        'CLASS': userClass, // クラス名
+        'FILE': fileUrl, // ファイルURL
+        'LEAVE_DATE':
+            '${leaveDate.year}-${leaveDate.month}-${leaveDate.day}', // 休暇日
+        'LEAVE_CATEGORY': selectedCategory, // 種別
+        'LEAVE_REASON': selectedReason, // 理由
+        'LEAVE_STATUS': 0, // 初期ステータス
+        'LEAVE_TEXT': remarksController.text, // 備考
+        'UID': currentUserId, // 現在のユーザーUID
+        'NAME': userName, // 学生名
+      };
+
+      // Firestoreにデータを保存
+      await leaveCollection.doc(leaveId).set(leaveData);
+    }
+
+    // フォームをリセット
+    setState(() {
+      startDate = null;
+      endDate = null;
+      selectedCategory = null;
+      selectedReason = null;
+      remarksController.clear();
+      uploadedFile = null;
+      uploadedFileData = null;
+      selectedClasses.clear();
+    });
+
+    // 成功メッセージを表示
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('申請が成功しました')),
+    );
   }
-
-  for (var classItem in selectedClasses) {
-    String classId = classItem['id'];
-    String course = selectedCourse ?? 'UNKNOWN';
-    String day = classItem['day']; // 正しい日付を取得
-    DateTime leaveDate = _getCorrectLeaveDate(day);
-
-    CollectionReference leaveCollection = FirebaseFirestore.instance
-        .collection('Leaves')
-        .doc(course)
-        .collection(currentUserId!);
-
-    QuerySnapshot leaveDocs = await leaveCollection.get();
-    String leaveId = 'Leaves_${(leaveDocs.docs.length + 1).toString().padLeft(3, '0')}';
-
-    Map<String, dynamic> leaveData = {
-      'CLASS_ID': classId,
-      'CLASS': userClass,
-      'FILE': fileUrl,
-      'LEAVE_DATE': '${leaveDate.year}-${leaveDate.month}-${leaveDate.day}',
-      'LEAVE_CATEGORY': selectedCategory,
-      'LEAVE_REASON': selectedReason,
-      'LEAVE_STATUS': 0,
-      'LEAVE_TEXT': remarksController.text,
-    };
-
-    await leaveCollection.doc(leaveId).set(leaveData);
-  }
-
-  setState(() {
-    startDate = null;
-    endDate = null;
-    selectedCategory = null;
-    selectedReason = null;
-    remarksController.clear();
-    uploadedFile = null;
-    uploadedFileData = null;
-    selectedClasses.clear();
-  });
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('申請が成功しました')),
-  );
-}
-
 
   // 正しい休暇日を取得
   DateTime _getCorrectLeaveDate(String day) {
