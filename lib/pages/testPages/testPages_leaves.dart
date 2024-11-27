@@ -467,7 +467,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: '理由'),
                   value: selectedReason,
-                  items: ['体調不良', '怪我', '就職活動', '電車遅延', 'その他']
+                  items: ['学校行事', '法定伝染病', '結婚式', '忌引', 'その他']
                       .map((reason) => DropdownMenuItem(
                             value: reason,
                             child: Text(reason),
@@ -483,7 +483,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: '理由'),
                   value: selectedReason,
-                  items: ['体調不良', '怪我', '就職活動', 'その他']
+                  items: ['学校行事', '法定伝染病', '結婚式', '忌引', 'その他']
                       .map((reason) => DropdownMenuItem(
                             value: reason,
                             child: Text(reason),
