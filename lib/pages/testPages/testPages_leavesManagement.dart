@@ -69,7 +69,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
         leaveData = tempLeaveData; // 更新請假資料
       });
 
-      print("取得的請假資料筆數: ${leaveData.length}");
+      print("取得したデータ: ${leaveData.length}");
     } catch (e) {
       print("エラー: $e");
     }
