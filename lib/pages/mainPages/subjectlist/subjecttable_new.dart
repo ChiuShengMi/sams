@@ -167,12 +167,9 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                 ],
               ),
               SizedBox(height: 24),
-              ElevatedButton(
+              CustomButton(
+                text: '授業作成確定',
                 onPressed: _submitClassData,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                ),
-                child: Text('授業を作成確定', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
