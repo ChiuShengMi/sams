@@ -10,31 +10,40 @@ class Customdropdown extends StatelessWidget {
   final String? value;
   final DropboxSize size;
 
-  Customdropdown(
-      {required this.hintText,
-      required this.items,
-      required this.onChanged,
-      this.value,
-      this.size = DropboxSize.medium});
+  Customdropdown({
+    required this.hintText,
+    required this.items,
+    required this.onChanged,
+    this.value,
+    this.size = DropboxSize.medium,
+  });
 
   @override
   Widget build(BuildContext context) {
     final double width = getWidthForSize(size);
-    final EdgeInsets padding = getPaddingForSize(size);
 
     return Container(
-        width: width,
-        child: DropdownButtonFormField<String>(
-          value: value,
-          decoration: DropboxStyles.dropdownDecoration.copyWith(
-              hintText: hintText,
-              hintStyle: TextStyle(color: Colors.grey),
-              contentPadding: padding),
-          style: DropboxStyles.dropdownItemStyle,
-          items: items,
-          onChanged: onChanged,
-          dropdownColor: Colors.white,
-        ));
+      width: width,
+      child: DropdownButtonFormField<String>(
+        value: value,
+        decoration: DropboxStyles.dropdownDecoration.copyWith(
+          contentPadding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+          alignLabelWithHint: true,
+        ),
+        isDense: false,
+        style: DropboxStyles.dropdownItemStyle,
+        hint: Container(
+          alignment: Alignment.center,
+          child: Text(
+            hintText,
+            style: TextStyle(color: Colors.grey, fontSize: 16.0),
+          ),
+        ),
+        items: items,
+        onChanged: onChanged,
+        dropdownColor: Colors.white,
+      ),
+    );
   }
 
   double getWidthForSize(DropboxSize size) {
@@ -49,34 +58,28 @@ class Customdropdown extends StatelessWidget {
         return 200.0;
     }
   }
-
-  EdgeInsets getPaddingForSize(DropboxSize size) {
-    switch (size) {
-      case DropboxSize.small:
-        return EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0);
-      case DropboxSize.medium:
-        return EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0);
-      case DropboxSize.large:
-        return EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0);
-      default:
-        return EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0);
-    }
-  }
 }
 
 
 
-// Expanded(
-// flex: 1,
-// child: Customdropdown(
-//   hintText: 'Select Option',
-//   items: [
-//   DropdownMenuItem(child: Text(''),
-//   value : '1',
-// ),
-//   ],
-//   onChanged: (value) {
-//      //ここに動さを入力
-//   },
-//   size: DropboxSize.medium,
-// )
+// Customdropdown(
+//                     hintText: 'ユーザ',
+//                     items: [
+//                       DropdownMenuItem(
+//                         child: Text('1'),
+//                         value: '1',
+//                       ),
+//                       DropdownMenuItem(
+//                         child: Text('2'),
+//                         value: '2',
+//                       ),
+//                       DropdownMenuItem(
+//                         child: Text('3'),
+//                         value: '3',
+//                       ),
+//                       DropdownMenuItem(
+//                         child: Text('4'),
+//                         value: '4',
+//                       )
+//                     ],
+//                     onChanged: (value) {})

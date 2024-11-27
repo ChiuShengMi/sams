@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class DropboxStyles {
   static final InputDecoration dropdownDecoration = InputDecoration(
-      contentPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+      contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(
