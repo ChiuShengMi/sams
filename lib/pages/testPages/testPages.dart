@@ -11,6 +11,7 @@ import 'package:sams/pages/testPages/testPages_qrcode.dart';
 
 class TestPage extends StatelessWidget {
   final FirestoreService _firestoreService = FirestoreService();
+
   final RealtimeDatabaseService _realtimeDatabaseService =
       RealtimeDatabaseService();
 

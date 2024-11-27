@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:sams/utils/firebase_firestore.dart';
+import 'package:sams/utils/firebase_realtime.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/custom_input_container.dart';
-;
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/bottombar.dart';
 
 class SubjecttableNew extends StatefulWidget {
-  //final FirestoreService _firestoreService = FirestoreService();
   @override
   _SubjecttableNewState createState() => _SubjecttableNewState();
 }
@@ -16,6 +17,7 @@ class SubjecttableNew extends StatefulWidget {
 class _SubjecttableNewState extends State<SubjecttableNew> {
   final TextEditingController classController = TextEditingController();
   final TextEditingController classroomController = TextEditingController();
+
   String? selectedCourse;
   String? selectedPlace;
   String? selectedDay;
@@ -23,84 +25,44 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
   List<String?> selectedTeacherIds = [null];
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirestoreService _firestoreService = FirestoreService();
+  final RealtimeDatabaseService _realtimeDatabaseService =
+      RealtimeDatabaseService();
+
   List<String> teacherNames = [];
   Map<String, String> teacherMap = {};
+  bool _isLoading = true;
 
-  // Fetch the teacher list from Firestore and update the teacher names and map
   @override
   void initState() {
     super.initState();
-    fetchTeacherList();
+    _fetchTeachers();
   }
 
-  Future<void> fetchTeacherList() async {
+  Future<void> _fetchTeachers() async {
     try {
-      final snapshot = await firestore.collection('teachers').get();
-      if (snapshot.docs.isEmpty) {
-        print('教師が見つかりません');
-      }
+      final names = await _firestoreService.fetchTeachers(teacherMap);
       setState(() {
-        teacherNames =
-            snapshot.docs.map((doc) => doc['name'].toString()).toList();
-        teacherMap = {
-          for (var doc in snapshot.docs) doc['name'].toString(): doc.id
-        };
+        teacherNames = names;
+        _isLoading = false;
       });
-      print('Teacher names loaded: $teacherNames');
     } catch (e) {
-      print('Error fetching teacher list: $e');
-    }
-  }
-
-  void debugPrintTeachers() async {
-    final snapshot = await firestore.collection('teachers').get();
-    snapshot.docs.forEach((doc) {
-      print('Teacher ID: ${doc.id}, Name: ${doc['name']}');
-    });
-  }
-
-  Future<void> saveLessonInfo() async {
-    if (classController.text.isEmpty ||
-        selectedCourse == null ||
-        selectedDay == null ||
-        selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('すべてのフィールドは必須です。フォームに記入してください'),
-      ));
-      return;
-    }
-
-    try {
-      Map<String, dynamic> teacherData = {};
-      selectedTeacherIds.where((id) => id != null).forEach((id) {
-        String cleanedTeacherName =
-            id!.replaceFirst(RegExp(r'^(IT|GAME) - '), '');
-        if (teacherMap.containsKey(cleanedTeacherName)) {
-          String teacherUid = teacherMap[cleanedTeacherName]!;
-          teacherData[teacherUid] = {'NAME': cleanedTeacherName};
-        }
+      print('Error fetching teachers: $e');
+      setState(() {
+        _isLoading = false;
       });
-
-      await firestore.collection('lessons').add({
-        'class': classController.text,
-        'course': selectedCourse,
-        'teachers': teacherData,
-        'classroom': classroomController.text,
-        'time': selectedTime,
-        'day': selectedDay,
-        'place': selectedPlace,
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lesson information saved successfully!')));
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving lesson information: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: CustomAppBar(),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
@@ -205,9 +167,12 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                 ],
               ),
               SizedBox(height: 24),
-              CustomButton(
-                text: '確定',
-                onPressed: saveLessonInfo,
+              ElevatedButton(
+                onPressed: _submitClassData,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text('授業を作成確定', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
@@ -216,9 +181,103 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
       bottomNavigationBar: BottomBar(),
     );
   }
+
+  Future<void> _submitClassData() async {
+    // Validate required fields
+    if (classController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('クラス名を入力してください')),
+      );
+      return;
+    }
+
+    if (selectedCourse == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('コースを選択してください')),
+      );
+      return;
+    }
+
+    if (selectedTeacherIds.every((id) => id == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('少なくとも1人の教師を選択してください')),
+      );
+      return;
+    }
+
+    if (selectedDay == null || selectedTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('曜日と時間を選択してください')),
+      );
+      return;
+    }
+
+    if (classroomController.text.isEmpty || selectedPlace == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('教室名と場所を選択してください')),
+      );
+      return;
+    }
+
+    try {
+      String course = selectedCourse!;
+      String classId = await _realtimeDatabaseService.generateClassId(course);
+
+      Map<String, dynamic> teacherData = {};
+      selectedTeacherIds.where((id) => id != null).forEach((id) {
+        String cleanedTeacherName =
+            id!.replaceFirst(RegExp(r'^(IT|GAME) - '), '');
+        if (teacherMap.containsKey(cleanedTeacherName)) {
+          String teacherUid = teacherMap[cleanedTeacherName]!;
+          teacherData[teacherUid] = {'NAME': cleanedTeacherName};
+        }
+      });
+
+      String qrCode = "https://example.com/qr/$classId";
+
+      await _realtimeDatabaseService.saveClassData(course, classId, {
+        'CLASS': classController.text,
+        'TEACHER_ID': teacherData,
+        'DAY': selectedDay,
+        'TIME': selectedTime,
+        'CLASSROOM': classroomController.text,
+        'PLACE': selectedPlace,
+        'QR_CODE': qrCode,
+      });
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('授業が正常に作成されました'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      _clearForm();
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('授業の作成中にエラーが発生しました: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _clearForm() {
+    classController.clear();
+    classroomController.clear();
+    setState(() {
+      selectedCourse = null;
+      selectedPlace = null;
+      selectedDay = null;
+      selectedTime = null;
+      selectedTeacherIds = [null];
+    });
+  }
 }
 
-// Custom Dropdown Widget
 class Customdropdown extends StatelessWidget {
   final List<String> items;
   final String? value;
@@ -234,6 +293,7 @@ class Customdropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('Available teacher names: $items');
     return InputDecorator(
       decoration: InputDecoration(
         labelText: hintText,
