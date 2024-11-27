@@ -87,6 +87,34 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
     }
   }
 
+  // MIME タイプを設定してファイルをアップロード
+  Future<String?> _uploadFileToStorage(String fileName) async {
+    String? fileUrl; //
+    try {
+      Reference storageRef = FirebaseStorage.instance
+          .ref()
+          .child('Leaves/$currentUserId/$fileName');
+
+      if (kIsWeb && uploadedFileData != null) {
+        // Web 環境
+        await storageRef.putData(
+          uploadedFileData!,
+          SettableMetadata(contentType: 'image/jpeg'), // MIME
+        );
+        fileUrl = await storageRef.getDownloadURL();
+      } else if (uploadedFile != null) {
+        await storageRef.putFile(
+          uploadedFile!,
+          SettableMetadata(contentType: 'image/jpeg'),
+        );
+        fileUrl = await storageRef.getDownloadURL();
+      }
+    } catch (e) {
+      print('ファイルアップロード中にエラーが発生しました: $e');
+    }
+    return fileUrl;
+  }
+
   // Realtime Databaseからクラス情報を取得
   Future<void> _fetchClassesFromRealtimeDatabase() async {
     if (selectedDays.isEmpty || currentUserId == null) return;
@@ -217,6 +245,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
   }
 
   Future<void> _submitLeaveRequest() async {
+    // 開始日、終了日、選択したクラス、またはカテゴリが未設定の場合、エラーを表示
     if (startDate == null ||
         endDate == null ||
         selectedClasses.isEmpty ||
@@ -237,59 +266,51 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
       return;
     }
 
+    // 現在の日時を使用してユニークなファイル名を作成
     String timestamp =
         DateTime.now().toLocal().toString().replaceAll(':', '').split('.')[0];
     String fileName = '$timestamp.jpg';
 
-    String? fileUrl;
-    if (kIsWeb) {
-      if (uploadedFileData != null) {
-        Reference storageRef = FirebaseStorage.instance
-            .ref()
-            .child('Leaves/$currentUserId/$fileName');
-        await storageRef.putData(uploadedFileData!);
-        fileUrl = await storageRef.getDownloadURL();
-      }
-    } else {
-      if (uploadedFile != null) {
-        Reference storageRef = FirebaseStorage.instance
-            .ref()
-            .child('Leaves/$currentUserId/$fileName');
-        await storageRef.putFile(uploadedFile!);
-        fileUrl = await storageRef.getDownloadURL();
-      }
-    }
+    // ファイルをアップロードし、URLを取得
+    String? fileUrl = await _uploadFileToStorage(fileName);
 
+    // 選択されたクラスごとに休暇データを作成し、Firestoreに保存
     for (var classItem in selectedClasses) {
       String classId = classItem['id'];
-      String className = classItem['className']; // 直接使用 className
+      String className = classItem['className']; // クラス名を取得
       String day = classItem['day'];
-      DateTime leaveDate = _getCorrectLeaveDate(day);
+      DateTime leaveDate = _getCorrectLeaveDate(day); // 正しい日付を取得
 
+      // Firestoreコレクションへの参照を取得
       CollectionReference leaveCollection =
           FirebaseFirestore.instance.collection('Leaves');
 
+      // 新しいドキュメントIDを作成
       QuerySnapshot leaveDocs = await leaveCollection.get();
       String leaveId =
           'Leaves_${(leaveDocs.docs.length + 1).toString().padLeft(3, '0')}';
 
+      // 休暇データを作成
       Map<String, dynamic> leaveData = {
-        'CLASS_ID': classId,
-        'CLASS_NAME': className, // 授業名を保存
-        'CLASS': userClass,
-        'FILE': fileUrl,
-        'LEAVE_DATE': '${leaveDate.year}-${leaveDate.month}-${leaveDate.day}',
-        'LEAVE_CATEGORY': selectedCategory,
-        'LEAVE_REASON': selectedReason,
-        'LEAVE_STATUS': 0,
-        'LEAVE_TEXT': remarksController.text,
-        'UID': currentUserId,
-        'NAME': userName,
+        'CLASS_ID': classId, // クラスID
+        'CLASS_NAME': className, // クラス名
+        'USER_CLASS': userClass, // ユーザークラス
+        'FILE': fileUrl, // アップロードされたファイルのURL
+        'LEAVE_DATE':
+            '${leaveDate.year}-${leaveDate.month}-${leaveDate.day}', // 休暇日
+        'LEAVE_CATEGORY': selectedCategory, // カテゴリ（欠席、遅刻など）
+        'LEAVE_REASON': selectedReason, // 理由
+        'LEAVE_STATUS': 0, // ステータス（0 = 未承認）
+        'LEAVE_TEXT': remarksController.text, // 備考
+        'USER_UID': currentUserId, // ユーザーUID
+        'USER_NAME': userName, // ユーザー名
       };
 
+      // Firestoreにデータを保存
       await leaveCollection.doc(leaveId).set(leaveData);
     }
 
+    // フォームデータをリセット
     setState(() {
       startDate = null;
       endDate = null;
@@ -301,6 +322,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
       selectedClasses.clear();
     });
 
+    // 成功メッセージを表示
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('申請が成功しました')),
     );

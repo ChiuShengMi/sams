@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sams/pages/testPages/testPages_leaves_edit.dart';
 import 'package:sams/utils/firebase_firestore.dart';
 import 'package:sams/utils/firebase_auth.dart';
 import 'package:sams/utils/firebase_realtime.dart';
@@ -50,7 +51,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
 
         // 添加請假文檔到臨時列表
         tempLeaveData.add({
-          "CLASS": leaveData["CLASS"] ?? "不明",
+          "USER_CLASS": leaveData["USER_CLASS"] ?? "不明",
           "CLASS_ID": leaveData["CLASS_ID"] ?? "不明",
           "CLASS_NAME": leaveData["CLASS_NAME"] ?? "不明",
           "LEAVE_CATEGORY": leaveData["LEAVE_CATEGORY"] ?? "不明",
@@ -58,8 +59,9 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
           "LEAVE_REASON": leaveData["LEAVE_REASON"] ?? "不明",
           "LEAVE_STATUS": leaveData["LEAVE_STATUS"] ?? 0,
           "LEAVE_TEXT": leaveData["LEAVE_TEXT"] ?? "",
-          "NAME": leaveData["NAME"] ?? "不明",
-          "UID": leaveData["UID"] ?? "不明",
+          "USER_NAME": leaveData["USER_NAME"] ?? "不明",
+          "USER_UID": leaveData["USER_UID"] ?? "不明",
+          "FILE": leaveData["FILE"] ?? "不明",
         });
       }
 
@@ -103,8 +105,18 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
                               style: const TextStyle(fontSize: 16),
                             ),
                             subtitle: Text(
-                              '日付: ${leave["LEAVE_DATE"] ?? "不明"}\n種別: ${leave["LEAVE_CATEGORY"] ?? "不明"}\n状態: ${leave["LEAVE_STATUS"] == 0 ? "未承認" : "承認済み"}',
+                              '日付: ${leave["LEAVE_DATE"] ?? "不明"}\n申請者: ${leave["USER_CLASS"] ?? "不明"}\t${leave["USER_NAME"] ?? "不明"}\n種別: ${leave["LEAVE_CATEGORY"] ?? "不明"}\n状態: ${leave["LEAVE_STATUS"] == 0 ? "未承認" : "承認済み"}',
                             ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LeaveEditPage(
+                                    leaveDetails: leave,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         );
                       },
