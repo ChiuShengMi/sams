@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:sams/pages/loginPages/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sams/pages/loginPages/login.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
-    final double appBarHeight = 130.0;
+    // Calculate dynamic appBar height for mobile devices
+    final double appBarHeight = MediaQuery.of(context).size.height * 0.15;
 
     return AppBar(
-      title: Text(''),
-      backgroundColor: Color(0xFF7B1FA2),
-      elevation: MediaQuery.of(context).size.height * 0.2,
+      title: const Text(''),
+      backgroundColor: const Color(0xFF7B1FA2),
+      elevation: MediaQuery.of(context).size.height * 0.02,
       toolbarHeight: appBarHeight,
       leadingWidth: appBarHeight,
       leading: Center(
@@ -21,13 +22,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(appBarHeight * 0.25),
-              onTap: () {},
+              onTap: () {}, // Add your action here
               child: Padding(
                 padding: EdgeInsets.all(appBarHeight * 0.1),
                 child: Image.asset(
                   'assets/icon/HelloECC_icon_big.png',
-                  height: 150,
-                  width: 150,
+                  height: appBarHeight,
+                  width: appBarHeight,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -37,24 +38,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.logout, size: appBarHeight * 0.5),
+          icon: Icon(Icons.logout, size: appBarHeight * 0.4),
           tooltip: 'Logout',
           onPressed: () async {
             await FirebaseAuth.instance.signOut();
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => LoginPage()),
-            // );
-            try {
-              // FirebaseAuth の signOut メソッドを使ってログアウト
-              // ログアウト後、ログインページに戻る
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
-            } catch (e) {
-              print('ログアウトエラー: $e'); // エラーハンドリング
-            }
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),
+            );
           },
         ),
       ],
@@ -62,5 +53,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

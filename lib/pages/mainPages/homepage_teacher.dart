@@ -1,53 +1,93 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // FirebaseAuth パッケージをインポート
-import 'package:sams/pages/loginPages/login.dart';  
+import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth パッケージをインポート
+import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/testPages/testPages.dart';
+import 'package:sams/widget/appbarlogout.dart';
+import 'package:sams/widget/bottombar.dart';
+import 'package:sams/pages/mainPages/teacher/teacher_qrcode.dart';
+import 'package:sams/widget/custom_input_container.dart';
+
 class HomePageTeacher extends StatelessWidget {
-
-  // ログアウトメソッド
-  Future<void> _signOut(BuildContext context) async {
-    try {
-      await FirebaseAuth.instance.signOut();  // FirebaseAuth の signOut メソッドを使ってログアウト
-      // ログアウト後、ログインページに戻る
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-      );
-    } catch (e) {
-      print('ログアウトエラー: $e');  // エラーハンドリング
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Home Page'),
-        actions: [
-          // ログアウトボタン
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () => _signOut(context),  // ログアウトメソッドを呼び出す
+      appBar: CustomAppBar(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // SizedBox(height: 20),
+              Text(
+                "教員トップ画面",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
+              SizedBox(height: 100),
+              CustomInputContainer(
+                inputWidgets: [
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildBoxedButton(
+                          context: context,
+                          label: 'ＱＲコード作成',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TeacherQrcode(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: _buildBoxedButton(
+                          context: context,
+                          label: '2',
+                          onPressed: () {},
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildBoxedButton(
+                          context: context,
+                          label: '3',
+                          onPressed: () {},
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: _buildBoxedButton(
+                          context: context,
+                          label: '4',
+                          onPressed: () {},
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Center(
-        child: _buildBoxedButton(
-          context: context,
-          label: 'Test Page',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TestPage()),
-            );
-          },
         ),
       ),
+      bottomNavigationBar: BottomBar(),
     );
   }
-}
-
-
 
   Widget _buildBoxedButton({
     required BuildContext context,
@@ -55,16 +95,16 @@ class HomePageTeacher extends StatelessWidget {
     required VoidCallback onPressed,
   }) {
     return Container(
-      height: 60, // Fixed height for consistent button size
+      height: 60, //
       decoration: BoxDecoration(
-        color: Color(0xFF7B1FA2), // Box color
-        borderRadius: BorderRadius.circular(10), // Rounded corners
+        color: Color(0xFF7B1FA2),
+        borderRadius: BorderRadius.circular(10), //
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5), // Shadow effect
+            color: Colors.grey.withOpacity(0.5),
             spreadRadius: 3,
             blurRadius: 5,
-            offset: Offset(0, 3), // Shadow position
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -73,11 +113,12 @@ class HomePageTeacher extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: Colors.white, // Text color
+            color: Colors.white,
             fontSize: 16, // Text size
-            fontWeight: FontWeight.bold, // Bold text
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
     );
   }
+}
