@@ -41,10 +41,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           tooltip: 'Logout',
           onPressed: () async {
             await FirebaseAuth.instance.signOut();
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => LoginPage()),
-            );
+            // Navigator.pushReplacement(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => LoginPage()),
+            // );
+            try {
+              // FirebaseAuth の signOut メソッドを使ってログアウト
+              // ログアウト後、ログインページに戻る
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            } catch (e) {
+              print('ログアウトエラー: $e'); // エラーハンドリング
+            }
           },
         ),
       ],

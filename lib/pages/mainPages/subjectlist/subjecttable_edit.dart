@@ -203,7 +203,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "授業リスト編集",
