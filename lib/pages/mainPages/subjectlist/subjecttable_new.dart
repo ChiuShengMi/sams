@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sams/pages/mainPages/subjectlist/subjecttable.dart';
 
 import 'package:sams/utils/firebase_firestore.dart';
 import 'package:sams/utils/firebase_realtime.dart';
@@ -109,14 +110,35 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                       ],
                     );
                   }).toList(),
-                  CustomButton(
-                    text: '追加の教員を選択',
+                  // ElevatedButton(
+                  //   text: '追加の教員を選択',
+                  //   onPressed: () {
+                  //     setState(() {
+                  //       selectedTeacherIds.add(null);
+                  //     });
+                  //   },
+                  // ),
+                  ElevatedButton(
                     onPressed: () {
                       setState(() {
                         selectedTeacherIds.add(null);
                       });
                     },
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize
+                          .min, // Ensures the button shrinks to fit its content
+                      children: [
+                        Icon(Icons.add, size: 18), // Plus arrow icon
+                        SizedBox(width: 8), // Space between icon and text
+                        Text('追加の教員'), // Button text
+                      ],
+                    ),
                   ),
+
                   SizedBox(height: 16),
                   Customdropdown(
                     items: ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'],
@@ -166,10 +188,27 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                   ),
                 ],
               ),
-              SizedBox(height: 24),
-              CustomButton(
-                text: '授業作成確定',
-                onPressed: _submitClassData,
+              SizedBox(
+                height: 16,
+              ), // Push the buttons to the bottom
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CustomButton(
+                    text: 'キャンセル',
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => SubjectTable()),
+                      );
+                    },
+                  ),
+                  //SizedBox(width: 200),
+                  CustomButton(
+                    text: '確定',
+                    onPressed: _submitClassData,
+                  ),
+                ],
               ),
             ],
           ),
@@ -290,7 +329,7 @@ class Customdropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Available teacher names: $items');
+    print('利用可能な教師名: $items');
     return InputDecorator(
       decoration: InputDecoration(
         labelText: hintText,

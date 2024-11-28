@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/mainPages/subjectlist/subjecttable.dart';
 import 'package:sams/pages/mainPages/subjectlist/subjecttable_new.dart';
-import 'package:sams/pages/user/add.dart';
+//import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/list.dart';
 import 'package:sams/widget/appbarlogout.dart';
 import 'package:sams/widget/bottombar.dart';
@@ -85,11 +85,11 @@ class HomePageAdmin extends StatelessWidget {
                                 context: context,
                                 label: 'ユーザ管理',
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    // MaterialPageRoute(
-                                    // builder: (context) => UserList()),
-                                  );
+                                  // Navigator.push(
+                                  //context,
+                                  // MaterialPageRoute(
+                                  // builder: (context) => UserList()),
+                                  // );
                                 },
                               ),
                             ),
