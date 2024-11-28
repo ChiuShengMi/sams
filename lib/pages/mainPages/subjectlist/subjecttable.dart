@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:sams/pages/mainPages/homepage_admin.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
@@ -6,8 +5,7 @@ import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/lessontable.dart';
 import 'package:flutter/material.dart';
 import 'package:sams/pages/mainPages/subjectlist/subjecttable_new.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sams/widget/custom_input_container.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class SubjectTable extends StatefulWidget {
@@ -113,94 +111,115 @@ class _SubjectTableState extends State<SubjectTable> {
       appBar: CustomAppBar(), // カスタムアプリバー
       body: isLoading
           ? Center(child: CircularProgressIndicator()) // ローディング表示
+
           : Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // タイトル行
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "授業リスト",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
+                // タイトル行と検索ボックス、ボタンを含むコンテナ
+                SizedBox(
+                  height: 24,
                 ),
-                SizedBox(height: 20), // 余白
-                Divider(
-                  color: Colors.grey, // ディバイダーの色
-                  thickness: 1.5,
-                  height: 15.0,
-                ),
-                SizedBox(height: 20),
-                // フィルタリングと検索バー
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomButton(
-                      text: "戻る", // 戻るボタン
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => HomePageAdmin()),
-                        );
-                      },
-                    ),
-                    SizedBox(width: 10),
-                    // 検索バー
-                    Container(
-                      width: 500,
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: (value) {
-                          filterLessonList(); // 檢索條件改變時重新篩選
-                        },
-                        decoration: InputDecoration(
-                          hintText: '検索する内容を入力',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                        ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // タイトル行
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "授業リスト",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    SizedBox(width: 10),
-                    // ITとGAMEを切り替えるトグルボタン（複数選択可能）
-                    ToggleButtons(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('IT'),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('GAME'),
-                        ),
-                      ],
-                      isSelected: isSelected, // 現在の選択状態
-                      onPressed: (index) {
-                        setState(() {
-                          isSelected[index] = !isSelected[index]; // 選択状態をトグル
-                          filterLessonList(); // フィルタリングを実行
-                        });
-                      },
-                    ),
-                    SizedBox(width: 10),
-                    // 新しい授業作成ボタン
-                    CustomButton(
-                      text: "新しい授業作成",
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SubjecttableNew()),
-                        );
-                      },
-                    ),
-                  ],
+                      SizedBox(height: 10), // 余白
+                      // Divider(
+                      //   color: Colors.grey, // ディバイダーの色
+                      //   thickness: 1.5,
+                      //   height: 15.0,
+                      // ),
+
+                      // フィルタリングと検索バー
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CustomButton(
+                            text: "戻る", // 戻るボタン
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => HomePageAdmin()),
+                              );
+                            },
+                          ),
+                          SizedBox(width: 30),
+                          // 検索バー
+                          Container(
+                            width: 500,
+                            child: TextField(
+                              controller: searchController,
+                              onChanged: (value) {
+                                filterLessonList(); // 檢索條件改變時重新篩選
+                              },
+                              decoration: InputDecoration(
+                                hintText: '検索する内容を入力',
+                                border: OutlineInputBorder(),
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 10),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 30),
+                          // ITとGAMEを切り替えるトグルボタン（複数選択可能）
+                          ToggleButtons(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                child: Text('IT'),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                child: Text('GAME'),
+                              ),
+                            ],
+                            isSelected: isSelected, // 現在の選択状態
+                            onPressed: (index) {
+                              setState(() {
+                                isSelected[index] =
+                                    !isSelected[index]; // 選択状態をトグル
+                                filterLessonList(); // フィルタリングを実行
+                              });
+                            },
+                          ),
+                          SizedBox(width: 30),
+                          // 新しい授業作成ボタン
+                          CustomButton(
+                            text: "新しい授業作成",
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SubjecttableNew()),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: 20),
                 // 授業リスト表示部分
