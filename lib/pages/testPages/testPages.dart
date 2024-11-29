@@ -454,6 +454,16 @@ class TestPage extends StatelessWidget {
               },
               child: Text('休暇管理'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //       builder: (context) => LeaveManagementPage()),
+                // );
+              },
+              child: Text('ログ'),
+            ),
           ],
         ),
       ),
