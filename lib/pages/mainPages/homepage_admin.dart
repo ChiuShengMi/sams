@@ -97,16 +97,32 @@ class HomePageAdmin extends StatelessWidget {
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildBoxedButton(
-                                context: context,
-                                label: 'Test Page',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => TestPage()),
-                                  );
-                                },
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: 'Test Page',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => TestPage()),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: 'ログ',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => TestPage()),
+                                    );
+                                  },
+                                ),
                               ),
                             ])
                         // Test Page 버튼
