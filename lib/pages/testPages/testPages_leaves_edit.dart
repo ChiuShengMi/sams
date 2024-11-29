@@ -143,7 +143,6 @@ class LeaveEditPage extends StatelessWidget {
     );
   }
 
-  // FirestoreのLEAVE_STATUSを更新する
   Future<void> _updateLeaveStatus(BuildContext context, int status) async {
     try {
       // ログインユーザーのUIDを取得
@@ -192,7 +191,9 @@ class LeaveEditPage extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(status == 1 ? '承認しました' : '不承認にしました')),
       );
-      Navigator.of(context).pop(); // 現在の画面を閉じる
+
+      // 前のページに戻る際にリフレッシュを指示
+      Navigator.of(context).pop('refresh');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('エラーが発生しました: $e')),
