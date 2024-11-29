@@ -11,24 +11,24 @@ class LeaveManagementPage extends StatefulWidget {
 
 class _LeaveManagementPageState extends State<LeaveManagementPage> {
   bool? isManager;
-  List<Map<String, dynamic>> leaveData = []; // 儲存所有的請假資料
-  List<Map<String, dynamic>> filteredLeaveData = []; // 篩選後的請假資料
-  int filterStatus = 0; // 篩選條件（預設顯示未承認資料）
+  List<Map<String, dynamic>> leaveData = []; // 全ての休暇データを保存する
+  List<Map<String, dynamic>> filteredLeaveData = []; // フィルタリングされた休暇データ
+  int filterStatus = 0; // フィルター条件（デフォルトは未承認データを表示）
 
   @override
   void initState() {
     super.initState();
-    checkUserRole(); // 檢查是否為管理者
+    checkUserRole(); // ユーザーが管理者かどうかを確認する
   }
 
-  // 檢查使用者角色
+  // ユーザーの役割を確認する
   Future<void> checkUserRole() async {
-    String role = "管理者"; // 假設角色檢測邏輯
+    String role = "管理者"; // 仮の役割チェックロジック
     if (role == "管理者") {
       setState(() {
         isManager = true;
       });
-      fetchAllLeaves(); // 如果是管理者，取得所有請假資料
+      fetchAllLeaves(); // 管理者であれば、全ての休暇データを取得する
     } else {
       setState(() {
         isManager = false;
@@ -36,19 +36,19 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
     }
   }
 
-  // 動態遍歷所有分類，獲取所有請假資料
+  // 全てのカテゴリーを動的に遍歴し、休暇データを取得する
   Future<void> fetchAllLeaves() async {
     List<Map<String, dynamic>> tempLeaveData = [];
     try {
-      // 取得 "Leaves" 集合下的所有文件
+      // "Leaves" コレクション内の全てのドキュメントを取得
       final leavesSnapshot =
           await FirebaseFirestore.instance.collection("Leaves").get();
 
       for (var leaveDoc in leavesSnapshot.docs) {
-        // 每個請假文檔的資料
+        // 各休暇ドキュメントのデータ
         final leaveData = leaveDoc.data();
 
-        // 添加請假文檔到臨時列表
+        // 一時リストに休暇ドキュメントを追加
         tempLeaveData.add({
           "LEAVE_ID": leaveDoc.id,
           "USER_CLASS": leaveData["USER_CLASS"] ?? "不明",
@@ -67,8 +67,8 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
       }
 
       setState(() {
-        leaveData = tempLeaveData; // 更新請假資料
-        applyFilter(); // 根據篩選條件更新資料
+        leaveData = tempLeaveData; // 休暇データを更新
+        applyFilter(); // フィルター条件に基づいてデータを更新
       });
 
       print("取得したデータ: ${leaveData.length}");
@@ -77,7 +77,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
     }
   }
 
-  // 根據篩選條件過濾資料
+  // フィルター条件に基づいてデータをフィルタリングする
   void applyFilter() {
     setState(() {
       filteredLeaveData = leaveData
@@ -94,7 +94,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
       ),
       body: Column(
         children: [
-          // 篩選器和重新整理按鈕
+          // フィルターと再読み込みボタン
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -124,22 +124,22 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
                     if (value != null) {
                       setState(() {
                         filterStatus = value;
-                        applyFilter(); // 更新篩選結果
+                        applyFilter(); // フィルター結果を更新
                       });
                     }
                   },
                 ),
-                const SizedBox(width: 16), // 空隙
+                const SizedBox(width: 16), // 空白スペース
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: () {
-                    fetchAllLeaves(); // 重新取得資料
+                    fetchAllLeaves(); // データを再取得
                   },
                 ),
               ],
             ),
           ),
-          // 主體內容
+          // メインコンテンツ
           Expanded(
             child: isManager == null
                 ? const Center(child: CircularProgressIndicator()) // 確認中
@@ -167,8 +167,8 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
                                   subtitle: Text(
                                     '日付: ${leave["LEAVE_DATE"] ?? "不明"}\n申請者: ${leave["USER_CLASS"] ?? "不明"}\t${leave["USER_NAME"] ?? "不明"}\n種別: ${leave["LEAVE_CATEGORY"] ?? "不明"}\n状態: ${leave["LEAVE_STATUS"] == 0 ? "未承認" : (leave["LEAVE_STATUS"] == 1 ? "承認済み" : "却下")}',
                                   ),
-                                  onTap: () {
-                                    Navigator.push(
+                                  onTap: () async {
+                                    final result = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => LeaveEditPage(
@@ -176,6 +176,10 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
                                         ),
                                       ),
                                     );
+                                    // 前のページから戻ってきた時にデータを更新
+                                    if (result == 'refresh') {
+                                      fetchAllLeaves(); // データを再取得
+                                    }
                                   },
                                 ),
                               );
