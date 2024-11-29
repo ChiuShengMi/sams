@@ -310,6 +310,7 @@ class _StudentLeavesState extends State<StudentLeaves> {
         'LEAVE_TEXT': remarksController.text, // 備考
         'USER_UID': currentUserId, // ユーザーUID
         'USER_NAME': userName, // ユーザー名
+        'APPROVER': null,
       };
 
       // Firestoreにデータを保存
@@ -360,52 +361,16 @@ class _StudentLeavesState extends State<StudentLeaves> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        '休暇届出',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // CustomButton(
-                        //   text: 'キャンセル',
-                        //   onPressed: () {
-                        //     Navigator.pushReplacement(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //         builder: (context) => SubjectTable(),
-                        //       ),
-                        //     );
-                        //   },
-                        // ),
-
-                        // CustomButton(
-                        //   text: '確定',
-                        //   onPressed: _submitClassData,
-                        // ),
-                      ],
-                    ),
-                  ],
+              Text(
+                '休暇届出',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
+              Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
+
               SizedBox(height: 20),
               // Container(
 
@@ -524,6 +489,88 @@ class _StudentLeavesState extends State<StudentLeaves> {
                   '選択された授業：',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                SizedBox(height: 20),
+                if (classNames.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '授業を選択してください：',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      // Add a container to style the checkbox list
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Column(
+                          children: classNames.map((classItem) {
+                            return CheckboxListTile(
+                              title: Text(
+                                classItem['name'],
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              value: classItem['selected'],
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  classItem['selected'] = value ?? false;
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton.icon(
+                          onPressed: _confirmSelection,
+                          icon: Icon(Icons.check),
+                          label: Text('確定'),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                if (selectedClasses.isNotEmpty) ...[
+                  SizedBox(height: 20),
+                  Text(
+                    '選択された授業：',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  // Add a styled container for the selected classes
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: selectedClasses.map((classItem) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Text(
+                            '- ${classItem['name']}',
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.black87),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                ],
                 ...selectedClasses.map((classItem) {
                   return Text(
                     classItem['name'],
@@ -534,9 +581,13 @@ class _StudentLeavesState extends State<StudentLeaves> {
                     ),
                   );
                 }).toList(),
-                TextButton(
+                SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton.icon(
                   onPressed: _resetSelection,
-                  child: Text('選びなおす'),
+                  icon: Icon(Icons.refresh),
+                  label: Text('選びなおす'),
                 ),
               ],
               SizedBox(height: 20),
