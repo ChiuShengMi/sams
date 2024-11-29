@@ -110,6 +110,32 @@ class FirestoreService {
     return teacherNames;
   }
 
+  // ーーーーーーー`管理者`データを取得するメソッドーーーーーーーーー
+  // 使用方法:
+  // List<String> admins = await fetchAdmins(adminMap);
+  // `admins` には管理者のリストが返されます
+  Future<List<String>> fetchAdmin(Map<String, String> adminMap) async {
+    List<String> adminNames = [];
+
+    QuerySnapshot itAdmin =
+        await _db.collection('Users').doc('Managers').collection('IT').get();
+
+    for (var doc in itAdmin.docs) {
+      adminMap[doc['NAME']] = doc.id;
+      adminNames.add('IT - ${doc['NAME']}');
+    }
+
+    QuerySnapshot gameAdmin =
+        await _db.collection('Users').doc('Managers').collection('GAME').get();
+
+    for (var doc in gameAdmin.docs) {
+      adminMap[doc['NAME']] = doc.id;
+      adminNames.add('GAME - ${doc['NAME']}');
+    }
+
+    return adminNames;
+  }
+
   // ーーーーーーーユーザデータを追加するメソッドーーーーーーーーー
   // 使用方法:
   // await addUser("学生", "IT", uid, userData);
