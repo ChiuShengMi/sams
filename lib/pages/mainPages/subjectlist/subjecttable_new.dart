@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/custom_input_container.dart';
-;
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/bottombar.dart';
 

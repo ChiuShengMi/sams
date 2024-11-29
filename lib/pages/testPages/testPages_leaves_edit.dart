@@ -27,14 +27,14 @@ class LeaveEditPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        detailRow('授業名\t', leaveDetails['CLASS_NAME']),
-                        detailRow('授業ID\t', leaveDetails['CLASS_ID']),
-                        detailRow('申請者\t', leaveDetails['USER_NAME']),
-                        detailRow('申請別\t', leaveDetails['LEAVE_CATEGORY']),
-                        detailRow('申請日付\t', leaveDetails['LEAVE_DATE']),
-                        detailRow('理由\t', leaveDetails['LEAVE_REASON']),
+                        detailRow('授業名', leaveDetails['CLASS_NAME']),
+                        detailRow('授業ID', leaveDetails['CLASS_ID']),
+                        detailRow('申請者', leaveDetails['USER_NAME']),
+                        detailRow('申請別', leaveDetails['LEAVE_CATEGORY']),
+                        detailRow('申請日付', leaveDetails['LEAVE_DATE']),
+                        detailRow('理由', leaveDetails['LEAVE_REASON']),
                         detailRow(
-                          '申請状態\t',
+                          '申請状態',
                           leaveDetails['LEAVE_STATUS'] == 0 ? '未承認' : '承認済み',
                         ),
                       ],
@@ -48,16 +48,23 @@ class LeaveEditPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         if (leaveDetails['FILE'] != null &&
-                            leaveDetails['FILE'].isNotEmpty)
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey, width: 1),
-                              borderRadius: BorderRadius.circular(8),
+                            leaveDetails['FILE'] != '' &&
+                            leaveDetails['FILE'] != 'null')
+                          GestureDetector(
+                            onTap: () {
+                              _showImageDialog(context, leaveDetails['FILE']);
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.grey, width: 1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.all(8.0),
+                              child: _buildImageWidget(leaveDetails['FILE']),
                             ),
-                            padding: const EdgeInsets.all(8.0),
-                            child: _buildImageWidget(leaveDetails['FILE']),
                           ),
-                        const SizedBox(height: 50),
+                        const SizedBox(height: 30),
                         Align(
                           alignment: Alignment.center,
                           child: Row(
@@ -121,7 +128,10 @@ class LeaveEditPage extends StatelessWidget {
     );
   }
 
-  Widget _buildImageWidget(String imageUrl) {
+  Widget _buildImageWidget(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return const SizedBox.shrink();
+    }
     try {
       return CachedNetworkImage(
         imageUrl: imageUrl,
@@ -141,6 +151,30 @@ class LeaveEditPage extends StatelessWidget {
     }
   }
 
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.contain,
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) {
+              _logImageError(error, null, imageUrl);
+              return _buildErrorWidget();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _logImageError(Object error, StackTrace? stackTrace, String imageUrl) {
     debugPrint('画像読み込みエラー: $error');
     if (stackTrace != null) debugPrint('スタックトレース: $stackTrace');
@@ -148,15 +182,9 @@ class LeaveEditPage extends StatelessWidget {
   }
 
   Widget _buildErrorWidget() {
-    return Column(
-      children: const [
-        Icon(Icons.broken_image, size: 100, color: Colors.red),
-        SizedBox(height: 10),
-        Text(
-          '画像を読み込めませんでした',
-          style: TextStyle(fontSize: 16, color: Colors.black54),
-        ),
-      ],
+    return Text(
+      '添付ファイルなし',
+      style: TextStyle(fontSize: 12, color: Colors.black54),
     );
   }
 
