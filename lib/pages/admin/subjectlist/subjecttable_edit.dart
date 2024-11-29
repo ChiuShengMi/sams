@@ -5,7 +5,7 @@ import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 
-import 'package:sams/pages/subjectlist/subjecttable.dart';
+import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
 
 class SubjecttableEdit extends StatefulWidget {
   final Map<String, dynamic> lessonData;

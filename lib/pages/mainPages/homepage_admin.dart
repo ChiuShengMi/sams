@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sams/pages/subjectlist/subjecttable.dart';
+import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
 // import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/list.dart';
 import 'package:sams/widget/appbarlogout.dart';
