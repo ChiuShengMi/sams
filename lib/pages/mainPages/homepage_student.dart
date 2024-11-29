@@ -7,6 +7,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/testPages/testPages_leaves.dart';
 import 'package:sams/widget/appbarlogout_mobile.dart';
+import 'package:sams/pages/student/student_leaves.dart';
 
 class HomePageStudent extends StatefulWidget {
   @override
@@ -313,7 +314,7 @@ class _HomePageStudentState extends State<HomePageStudent> {
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => TestPageLeaves()),
+                              builder: (context) => StudentLeaves()),
                         ),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),

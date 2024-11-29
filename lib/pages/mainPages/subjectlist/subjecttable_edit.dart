@@ -6,6 +6,18 @@ import 'package:sams/widget/bottombar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/modal/confirmation_modal.dart';
 
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sams/pages/mainPages/subjectlist/subjecttable.dart';
+
+import 'package:sams/utils/firebase_firestore.dart';
+import 'package:sams/utils/firebase_realtime.dart';
+import 'package:sams/widget/appbar.dart';
+
+import 'package:sams/widget/custom_input_container.dart';
+import 'package:sams/widget/searchbar/custom_input.dart';
+import 'package:sams/widget/bottombar.dart';
+
 class SubjecttableEdit extends StatefulWidget {
   final Map<String, dynamic> lessonData;
   final String id;
@@ -45,7 +57,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     '3号館',
     '4号館'
   ];
-
+  bool _isLoading = true;
   @override
   void initState() {
     super.initState();
@@ -368,3 +380,203 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     );
   }
 }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: CustomAppBar(),
+//       body: _isLoading
+//           ? Center(child: CircularProgressIndicator())
+//           : Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 SizedBox(height: 20),
+
+//                 // Fixed container for the title and buttons
+//                 Container(
+//                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+//                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+//                   decoration: BoxDecoration(
+//                     color: Colors.white,
+//                     border: Border.all(color: Colors.grey),
+//                     borderRadius: BorderRadius.circular(8),
+//                   ),
+//                   child: Column(
+//                     children: [
+//                       Align(
+//                         alignment: Alignment.topLeft,
+//                         child: Text(
+//                           '授業編集',
+//                           style: TextStyle(
+//                             fontSize: 40,
+//                             fontWeight: FontWeight.bold,
+//                             color: Colors.black,
+//                           ),
+//                         ),
+//                       ),
+//                       SizedBox(height: 20),
+//                       Row(
+//                         mainAxisAlignment: MainAxisAlignment.end,
+//                         children: [
+//                           CustomButton(
+//                             text: '戻る',
+//                             onPressed: () {
+//                               Navigator.pushReplacement(
+//                                 context,
+//                                 MaterialPageRoute(
+//                                   builder: (context) => SubjectTable(),
+//                                 ),
+//                               );
+//                             },
+//                           ),
+//                           SizedBox(
+//                             width: 250,
+//                           ),
+//                           CustomButton(
+//                             text: '削除',
+//                             onPressed: () async {
+//                               Navigator.of(context).pop();
+//                               await _deleteLesson(context);
+//                             },
+//                           ),
+//                           SizedBox(width: 20),
+//                           CustomButton(
+//                             text: '更新前',
+//                             onPressed: () async {
+//                               Navigator.of(context).pop();
+//                               await _updateLesson(context);
+//                             },
+//                           ),
+//                         ],
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+
+//                 SizedBox(height: 30),
+
+//                 // Scrollable content area
+//                 Expanded(
+//                   child: SingleChildScrollView(
+//                     padding: EdgeInsets.symmetric(horizontal: 16.0),
+//                     child: CustomInputContainer(
+//                       inputWidgets: [
+//                         CustomInput(
+//                           controller: _classController,
+//                           hintText: '授業名',
+//                           keyboardType: TextInputType.name,
+//                         ),
+//                         SizedBox(height: 16),
+//                         Customdropdown(
+//                           items: ['IT', 'GAME'],
+//                           value: selectedCourse,
+//                           onChanged: (String? newValue) {
+//                             setState(() {
+//                               selectedCourse = newValue;
+//                             });
+//                           },
+//                           hintText: 'コースを選択',
+//                         ),
+//                         SizedBox(height: 16),
+//                         ...selectedTeacherIds.asMap().entries.map((entry) {
+//                           int index = entry.key;
+//                           return Column(
+//                             children: [
+//                               Customdropdown(
+//                                 items: teacherNames,
+//                                 value: selectedTeacherIds[index],
+//                                 onChanged: (String? newValue) {
+//                                   setState(() {
+//                                     selectedTeacherIds[index] = newValue;
+//                                   });
+//                                 },
+//                                 hintText: '教師を選択',
+//                               ),
+//                               SizedBox(height: 8),
+//                             ],
+//                           );
+//                         }).toList(),
+//                         ElevatedButton(
+//                           onPressed: () {
+//                             setState(() {
+//                               selectedTeacherIds.add(null);
+//                             });
+//                           },
+//                           style: ElevatedButton.styleFrom(
+//                             padding: EdgeInsets.symmetric(
+//                                 horizontal: 16, vertical: 12),
+//                           ),
+//                           child: Row(
+//                             mainAxisSize: MainAxisSize.min,
+//                             children: [
+//                               Icon(Icons.add, size: 18), // Plus arrow icon
+//                               SizedBox(width: 8), // Space between icon and text
+//                               Text('追加の教員'),
+//                             ],
+//                           ),
+//                         ),
+//                         SizedBox(height: 16),
+//                         Customdropdown(
+//                           items: [
+//                             '月曜日',
+//                             '火曜日',
+//                             '水曜日',
+//                             '木曜日',
+//                             '金曜日',
+//                             '土曜日',
+//                             '日曜日'
+//                           ],
+//                           value: selectedDay,
+//                           onChanged: (String? newValue) {
+//                             setState(() {
+//                               selectedDay = newValue;
+//                             });
+//                           },
+//                           hintText: '曜日を選択',
+//                         ),
+//                         SizedBox(height: 16),
+//                         Customdropdown(
+//                           items: ['1', '2', '3', '4', '5'],
+//                           value: selectedTime,
+//                           onChanged: (String? newValue) {
+//                             setState(() {
+//                               selectedTime = newValue;
+//                             });
+//                           },
+//                           hintText: '時間を選択',
+//                         ),
+//                         SizedBox(height: 16),
+//                         CustomInput(
+//                           controller: classroomController,
+//                           hintText: '教室名',
+//                           keyboardType: TextInputType.name,
+//                         ),
+//                         SizedBox(height: 16),
+//                         Customdropdown(
+//                           items: [
+//                             '国際１号館',
+//                             '国際2号館',
+//                             '国際3号館',
+//                             '1号館',
+//                             '2号館',
+//                             '3号館',
+//                             '4号館'
+//                           ],
+//                           value: selectedPlace,
+//                           onChanged: (String? newValue) {
+//                             setState(() {
+//                               selectedPlace = newValue;
+//                             });
+//                           },
+//                           hintText: '場所を選択',
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//       bottomNavigationBar: BottomBar(),
+//     );
+//   }
+// }
