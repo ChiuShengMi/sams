@@ -38,8 +38,52 @@ class _LessonTableScreenState extends State<Lessontable> {
                 borderRadius: BorderRadius.all(Radius.circular(20.0)),
                 border: Border.all(color: Colors.black, width: 0.1),
               ),
-              child: SingleChildScrollView(
-                child: _buildTableContent(),
+              child: Column(
+                children: [
+                  // Fixed Header
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        topRight: Radius.circular(20.0),
+                      ),
+                    ),
+                    child: Table(
+                      columnWidths: const {
+                        0: FlexColumnWidth(2),
+                        1: FlexColumnWidth(1),
+                        2: FlexColumnWidth(2),
+                        3: FlexColumnWidth(1),
+                        4: FlexColumnWidth(1),
+                        5: FlexColumnWidth(2),
+                        6: FlexColumnWidth(1),
+                        7: FlexColumnWidth(1),
+                      },
+                      children: const [
+                        TableRow(
+                          children: [
+                            TableCellHeader(text: '授業名'),
+                            TableCellHeader(text: "コース"),
+                            TableCellHeader(text: '教師'),
+                            TableCellHeader(text: '授業曜日'),
+                            TableCellHeader(text: '時間割'),
+                            TableCellHeader(text: 'QRコード'),
+                            TableCellHeader(text: '教室'),
+                            TableCellHeader(text: '号館'),
+                            TableCellHeader(text: '編集'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Scrollable Content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: _buildTableContent(),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -54,28 +98,7 @@ class _LessonTableScreenState extends State<Lessontable> {
       return Center(child: Text('データが見つかりませんでした。'));
     }
 
-    List<TableRow> tableRows = [
-      TableRow(
-        decoration: BoxDecoration(
-          color: Colors.purple,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.0),
-            topRight: Radius.circular(20.0),
-          ),
-        ),
-        children: const [
-          TableCellHeader(text: '授業名'),
-          TableCellHeader(text: "コース"),
-          TableCellHeader(text: '教師'),
-          TableCellHeader(text: '授業曜日'),
-          TableCellHeader(text: '時間割'),
-          TableCellHeader(text: 'QRコード'),
-          TableCellHeader(text: '教室'),
-          TableCellHeader(text: '号館'),
-          TableCellHeader(text: '編集'),
-        ],
-      ),
-    ];
+    List<TableRow> tableRows = [];
 
     // 基於 widget.lessonData 生成資料行
     for (final data in widget.lessonData) {

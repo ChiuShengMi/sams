@@ -64,12 +64,11 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 20),
+                //SizedBox(height: 20),
 
-                // Fixed container for the title and buttons
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Colors.grey),
@@ -82,13 +81,13 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                         child: Text(
                           '新しい授業作成',
                           style: TextStyle(
-                            fontSize: 40,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 5),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -104,7 +103,7 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                             },
                           ),
                           SizedBox(
-                            width: 250,
+                            width: 90,
                           ),
                           CustomButton(
                             text: '確定',
@@ -116,12 +115,12 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                   ),
                 ),
 
-                SizedBox(height: 30),
+                //SizedBox(height: 5),
 
                 // Scrollable content area
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: EdgeInsets.symmetric(horizontal: 1.0),
                     child: CustomInputContainer(
                       inputWidgets: [
                         CustomInput(

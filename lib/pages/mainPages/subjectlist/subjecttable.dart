@@ -111,17 +111,14 @@ class _SubjectTableState extends State<SubjectTable> {
       appBar: CustomAppBar(), // カスタムアプリバー
       body: isLoading
           ? Center(child: CircularProgressIndicator()) // ローディング表示
-
           : Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // タイトル行と検索ボックス、ボタンを含むコンテナ
-                SizedBox(
-                  height: 24,
-                ),
+
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Colors.grey),
@@ -132,40 +129,23 @@ class _SubjectTableState extends State<SubjectTable> {
                     children: [
                       // タイトル行
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
                             "授業リスト",
                             style: TextStyle(
-                              fontSize: 40,
+                              fontSize: 30,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10), // 余白
-                      // Divider(
-                      //   color: Colors.grey, // ディバイダーの色
-                      //   thickness: 1.5,
-                      //   height: 15.0,
-                      // ),
 
                       // フィルタリングと検索バー
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CustomButton(
-                            text: "戻る", // 戻るボタン
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => HomePageAdmin()),
-                              );
-                            },
-                          ),
-                          SizedBox(width: 30),
                           // 検索バー
                           Container(
                             width: 500,
@@ -204,8 +184,21 @@ class _SubjectTableState extends State<SubjectTable> {
                               });
                             },
                           ),
-                          SizedBox(width: 30),
-                          // 新しい授業作成ボタン
+                          SizedBox(
+                            width: 90,
+                          ),
+
+                          CustomButton(
+                            text: "戻る",
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => HomePageAdmin()),
+                              );
+                            },
+                          ),
+                          SizedBox(width: 20),
                           CustomButton(
                             text: "新しい授業作成",
                             onPressed: () {
@@ -218,10 +211,12 @@ class _SubjectTableState extends State<SubjectTable> {
                           ),
                         ],
                       ),
+
+                      // 戻る and 新しい授業作成ボタン
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
+
                 // 授業リスト表示部分
                 Expanded(
                   child: filteredLessonList.isEmpty
