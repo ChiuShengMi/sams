@@ -1,6 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LeaveEditPage extends StatelessWidget {
   final Map<String, dynamic> leaveDetails;
@@ -27,37 +28,56 @@ class LeaveEditPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        detailRow('授業名\t', leaveDetails['CLASS_NAME']),
-                        detailRow('授業ID\t', leaveDetails['CLASS_ID']),
-                        detailRow('申請者\t', leaveDetails['USER_NAME']),
-                        detailRow('申請別\t', leaveDetails['LEAVE_CATEGORY']),
-                        detailRow('申請日付\t', leaveDetails['LEAVE_DATE']),
-                        detailRow('理由\t', leaveDetails['LEAVE_REASON']),
+                        detailRow('授業名', leaveDetails['CLASS_NAME']),
+                        detailRow('授業ID', leaveDetails['CLASS_ID']),
+                        detailRow('申請者', leaveDetails['USER_NAME']),
+                        detailRow('申請別', leaveDetails['LEAVE_CATEGORY']),
+                        detailRow('申請日付', leaveDetails['LEAVE_DATE']),
+                        detailRow('理由', leaveDetails['LEAVE_REASON']),
                         detailRow(
-                          '申請状態\t',
-                          leaveDetails['LEAVE_STATUS'] == 0 ? '未承認' : '承認済み',
+                          '審査者',
+                          leaveDetails['APPROVER'] != null &&
+                                  leaveDetails['APPROVER']
+                                      is Map<String, dynamic>
+                              ? '${leaveDetails['APPROVER']['NAME'] ?? ''}-${leaveDetails['APPROVER']['ID'] ?? ''}'
+                              : '',
+                        ),
+                        detailRow(
+                          '申請状態',
+                          leaveDetails['LEAVE_STATUS'] == 0
+                              ? '未承認'
+                              : (leaveDetails['LEAVE_STATUS'] == 1
+                                  ? '承認済み'
+                                  : '却下'),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 40), // 左右間隔
-                  // 右側：圖片和備考
+                  // 右側：画像と備考
                   Expanded(
                     flex: 1,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         if (leaveDetails['FILE'] != null &&
-                            leaveDetails['FILE'].isNotEmpty)
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey, width: 1),
-                              borderRadius: BorderRadius.circular(8),
+                            leaveDetails['FILE'] != '' &&
+                            leaveDetails['FILE'] != 'null')
+                          GestureDetector(
+                            onTap: () {
+                              _showImageDialog(context, leaveDetails['FILE']);
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.grey, width: 1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.all(8.0),
+                              child: _buildImageWidget(leaveDetails['FILE']),
                             ),
-                            padding: const EdgeInsets.all(8.0),
-                            child: _buildImageWidget(leaveDetails['FILE']),
                           ),
-                        const SizedBox(height: 50),
+                        const SizedBox(height: 30),
                         Align(
                           alignment: Alignment.center,
                           child: Row(
@@ -89,28 +109,30 @@ class LeaveEditPage extends StatelessWidget {
                 ],
               ),
             ),
-            // 右下方的按鈕
+            // 下方のボタン
             Align(
               alignment: Alignment.bottomRight,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // 取消按鈕
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _confirmAction(context, '休暇不承認しますか？', 2);
+                    },
                     style: TextButton.styleFrom(
                       foregroundColor: const Color.fromARGB(255, 19, 19, 19),
                     ),
-                    child: const Text('取消'),
+                    child: const Text('不承認'),
                   ),
                   const SizedBox(width: 16),
-                  // 保存按鈕
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _confirmAction(context, '休暇を承認しますか？', 1);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(79, 190, 198, 205),
                     ),
-                    child: const Text('保存'),
+                    child: const Text('承認'),
                   ),
                 ],
               ),
@@ -121,7 +143,95 @@ class LeaveEditPage extends StatelessWidget {
     );
   }
 
-  Widget _buildImageWidget(String imageUrl) {
+  // FirestoreのLEAVE_STATUSを更新する
+  Future<void> _updateLeaveStatus(BuildContext context, int status) async {
+    try {
+      // ログインユーザーのUIDを取得
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('ユーザーがログインしていません');
+      final uid = user.uid;
+
+      // FirestoreでUIDを使用して管理者情報を取得（ITとGAME両方を検索）
+      DocumentSnapshot? managerSnapshot;
+      managerSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Managers')
+          .collection('IT')
+          .doc(uid)
+          .get();
+
+      if (!managerSnapshot.exists) {
+        managerSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Managers')
+            .collection('GAME')
+            .doc(uid)
+            .get();
+      }
+
+      if (!managerSnapshot.exists) {
+        throw Exception('管理者情報が見つかりません');
+      }
+
+      final managerData = managerSnapshot.data() as Map<String, dynamic>;
+      final approver = {
+        'UID': uid,
+        'ID': managerData['ID'].toString(),
+        'NAME': managerData['NAME'],
+      };
+
+      // 申請データを更新
+      String leaveId = leaveDetails['LEAVE_ID'];
+      await FirebaseFirestore.instance.collection('Leaves').doc(leaveId).update(
+        {
+          'LEAVE_STATUS': status,
+          'APPROVER': approver,
+        },
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(status == 1 ? '承認しました' : '不承認にしました')),
+      );
+      Navigator.of(context).pop(); // 現在の画面を閉じる
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('エラーが発生しました: $e')),
+      );
+    }
+  }
+
+  // 確認ダイアログを表示する
+  void _confirmAction(BuildContext context, String message, int status) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('確認'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('いいえ'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _updateLeaveStatus(context, status); // 状態を更新する
+              },
+              child: const Text('はい'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildImageWidget(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return const SizedBox.shrink();
+    }
     try {
       return CachedNetworkImage(
         imageUrl: imageUrl,
@@ -141,6 +251,30 @@ class LeaveEditPage extends StatelessWidget {
     }
   }
 
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.contain,
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) {
+              _logImageError(error, null, imageUrl);
+              return _buildErrorWidget();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _logImageError(Object error, StackTrace? stackTrace, String imageUrl) {
     debugPrint('画像読み込みエラー: $error');
     if (stackTrace != null) debugPrint('スタックトレース: $stackTrace');
@@ -148,15 +282,9 @@ class LeaveEditPage extends StatelessWidget {
   }
 
   Widget _buildErrorWidget() {
-    return Column(
-      children: const [
-        Icon(Icons.broken_image, size: 100, color: Colors.red),
-        SizedBox(height: 10),
-        Text(
-          '画像を読み込めませんでした',
-          style: TextStyle(fontSize: 16, color: Colors.black54),
-        ),
-      ],
+    return const Text(
+      '添付ファイルなし',
+      style: TextStyle(fontSize: 12, color: Colors.black54),
     );
   }
 

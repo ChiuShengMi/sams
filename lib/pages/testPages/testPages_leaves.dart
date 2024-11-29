@@ -304,6 +304,7 @@ class _TestPageLeavesState extends State<TestPageLeaves> {
         'LEAVE_TEXT': remarksController.text, // 備考
         'USER_UID': currentUserId, // ユーザーUID
         'USER_NAME': userName, // ユーザー名
+        'APPROVER': null,
       };
 
       // Firestoreにデータを保存

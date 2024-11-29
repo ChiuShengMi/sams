@@ -7,6 +7,7 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/table/custom_table.dart';
+import 'package:sams/pages/user/add.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -59,7 +60,7 @@ class _UserListState extends State<UserList> {
                     Expanded(
                       flex: 1,
                       child: Customdropdown(
-                        hintText: 'Select User Type',
+                        hintText: 'ユーザ',
                         items: [
                           DropdownMenuItem(
                               child: Text('学生'), value: 'Students'),
@@ -73,7 +74,24 @@ class _UserListState extends State<UserList> {
                             selectedUserType = value!;
                           });
                         },
-                        size: DropboxSize.medium,
+                        size: DropboxSize.small,
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Expanded(
+                      flex: 1,
+                      child: Customdropdown(
+                        hintText: 'コース',
+                        items: [
+                          DropdownMenuItem(child: Text('IT'), value: 'It'),
+                          DropdownMenuItem(child: Text('GAME'), value: 'Game'),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            // selectedUserType = value!;
+                          });
+                        },
+                        size: DropboxSize.small,
                       ),
                     ),
                     SizedBox(width: 20),
@@ -143,10 +161,10 @@ class _UserListState extends State<UserList> {
                   MediumButton(
                     text: '追加',
                     onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) => UserAdd()),
-                      // );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => UserAdd()),
+                      );
                     },
                   ),
                   SizedBox(width: 16),
