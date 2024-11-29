@@ -7,6 +7,7 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/table/custom_table.dart';
+import 'package:sams/pages/user/add.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -160,10 +161,10 @@ class _UserListState extends State<UserList> {
                   MediumButton(
                     text: '追加',
                     onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) => UserAdd()),
-                      // );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => UserAdd()),
+                      );
                     },
                   ),
                   SizedBox(width: 16),
