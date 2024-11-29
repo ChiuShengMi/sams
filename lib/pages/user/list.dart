@@ -59,7 +59,7 @@ class _UserListState extends State<UserList> {
                     Expanded(
                       flex: 1,
                       child: Customdropdown(
-                        hintText: 'Select User Type',
+                        hintText: 'ユーザ',
                         items: [
                           DropdownMenuItem(
                               child: Text('学生'), value: 'Students'),
@@ -73,7 +73,24 @@ class _UserListState extends State<UserList> {
                             selectedUserType = value!;
                           });
                         },
-                        size: DropboxSize.medium,
+                        size: DropboxSize.small,
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Expanded(
+                      flex: 1,
+                      child: Customdropdown(
+                        hintText: 'コース',
+                        items: [
+                          DropdownMenuItem(child: Text('IT'), value: 'It'),
+                          DropdownMenuItem(child: Text('GAME'), value: 'Game'),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            // selectedUserType = value!;
+                          });
+                        },
+                        size: DropboxSize.small,
                       ),
                     ),
                     SizedBox(width: 20),
