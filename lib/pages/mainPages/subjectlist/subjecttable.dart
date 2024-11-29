@@ -211,8 +211,6 @@ class _SubjectTableState extends State<SubjectTable> {
                           ),
                         ],
                       ),
-
-                      // 戻る and 新しい授業作成ボタン
                     ],
                   ),
                 ),
