@@ -4,19 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/widget/button/custom_button.dart';
-import 'package:sams/widget/modal/confirmation_modal.dart';
 
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sams/pages/mainPages/subjectlist/subjecttable.dart';
-
-import 'package:sams/utils/firebase_firestore.dart';
-import 'package:sams/utils/firebase_realtime.dart';
-import 'package:sams/widget/appbar.dart';
-
-import 'package:sams/widget/custom_input_container.dart';
-import 'package:sams/widget/searchbar/custom_input.dart';
-import 'package:sams/widget/bottombar.dart';
+import 'package:sams/pages/subjectlist/subjecttable.dart';
 
 class SubjecttableEdit extends StatefulWidget {
   final Map<String, dynamic> lessonData;

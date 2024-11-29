@@ -4,7 +4,7 @@ import 'package:sams/widget/bottombar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/lessontable.dart';
 import 'package:flutter/material.dart';
-import 'package:sams/pages/mainPages/subjectlist/subjecttable_new.dart';
+import 'package:sams/pages/subjectlist/subjecttable_new.dart';
 import 'package:sams/widget/custom_input_container.dart';
 import 'package:firebase_database/firebase_database.dart';
 

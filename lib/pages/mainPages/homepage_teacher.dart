@@ -4,7 +4,7 @@ import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/testPages/testPages.dart';
 import 'package:sams/widget/appbarlogout.dart';
 import 'package:sams/widget/bottombar.dart';
-import 'package:sams/pages/mainPages/teacher/teacher_qrcode.dart';
+import 'package:sams/pages/teacher/teacher_qrcode.dart';
 import 'package:sams/widget/custom_input_container.dart';
 
 class HomePageTeacher extends StatelessWidget {

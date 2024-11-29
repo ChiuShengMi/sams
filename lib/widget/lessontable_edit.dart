@@ -35,7 +35,7 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'package:sams/pages/mainPages/subjectlist/subjecttable_edit.dart';
+import 'package:sams/pages/subjectlist/subjecttable_edit.dart';
 
 class Lessontable extends StatefulWidget {
   final String course; // コース (IT, GAME, All)
