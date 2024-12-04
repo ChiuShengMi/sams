@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sams/pages/mainPages/homepage_student.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:sams/widget/bottombar.dart';
@@ -12,6 +13,7 @@ import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
+import 'package:sams/pages/mainPages/homepage_student.dart';
 
 class StudentLeaves extends StatefulWidget {
   @override
@@ -370,12 +372,6 @@ class _StudentLeavesState extends State<StudentLeaves> {
                 ),
               ),
               Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
-
-              SizedBox(height: 20),
-              // Container(
-
-              SizedBox(height: 10),
-
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -462,7 +458,6 @@ class _StudentLeavesState extends State<StudentLeaves> {
                   ),
                 ],
               ),
-
               SizedBox(height: 20),
               if (classNames.isNotEmpty)
                 Column(
@@ -497,10 +492,9 @@ class _StudentLeavesState extends State<StudentLeaves> {
                       Text(
                         '授業を選択してください：',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                            fontSize: 25, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 10),
-                      // Add a container to style the checkbox list
                       Container(
                         padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -540,37 +534,6 @@ class _StudentLeavesState extends State<StudentLeaves> {
                       ),
                     ],
                   ),
-                if (selectedClasses.isNotEmpty) ...[
-                  SizedBox(height: 20),
-                  Text(
-                    '選択された授業：',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  // Add a styled container for the selected classes
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: selectedClasses.map((classItem) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Text(
-                            '- ${classItem['name']}',
-                            style:
-                                TextStyle(fontSize: 16, color: Colors.black87),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                ],
                 ...selectedClasses.map((classItem) {
                   return Text(
                     classItem['name'],
@@ -591,9 +554,55 @@ class _StudentLeavesState extends State<StudentLeaves> {
                 ),
               ],
               SizedBox(height: 20),
-              CustomButton(
-                onPressed: _pickFile,
-                text: 'ファイル追加',
+              // CustomButton(
+              //   onPressed: _pickFile,
+              //   text: 'ファイル追加',
+              // ),
+              Center(
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF7B1FA2),
+                        Color(0xFF7B1FA2)
+                      ], // Gradient colors
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12), // Rounded corners
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: Offset(0, 3), // Shadow position
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _pickFile,
+                      borderRadius: BorderRadius.circular(12),
+                      splashColor: Colors.white.withOpacity(0.2),
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                        child: Text(
+                          'ファイル追加',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
               if (uploadedFile != null || uploadedFileData != null)
                 Padding(
@@ -605,24 +614,67 @@ class _StudentLeavesState extends State<StudentLeaves> {
                 ),
               SizedBox(height: 20),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: '種別選択'),
+                decoration: InputDecoration(
+                  labelText: '種別選択',
+                  labelStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey, width: 1),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
                 value: selectedCategory,
-                items: ['欠席', '遅刻', '早退', 'その他'].map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
+                icon: Icon(Icons.arrow_drop_down, size: 24),
+                iconEnabledColor: Colors.blueAccent,
+                dropdownColor: Colors.white,
+                items: ['欠席', '遅刻', '早退', 'その他']
+                    .map((category) => DropdownMenuItem(
+                          value: category,
+                          child: Text(
+                            category,
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ))
+                    .toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedCategory = value;
                     selectedReason = null;
                   });
                 },
+                style: TextStyle(color: Colors.black, fontSize: 14),
+              ),
+              SizedBox(
+                height: 5,
               ),
               if (selectedCategory == '欠席' || selectedCategory == '遅刻') ...[
                 DropdownButtonFormField<String>(
-                  decoration: InputDecoration(labelText: '理由'),
+                  decoration: InputDecoration(
+                    labelText: '理由',
+                    labelStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
                   value: selectedReason,
                   items: ['学校行事', '法定伝染病', '結婚式', '忌引', 'その他']
                       .map((reason) => DropdownMenuItem(
@@ -654,14 +706,42 @@ class _StudentLeavesState extends State<StudentLeaves> {
                 ),
               ],
               if (selectedCategory != null) ...[
-                SizedBox(height: 10),
+                SizedBox(height: 5),
+                // TextField(
+                //   controller: remarksController,
+                //   decoration: InputDecoration(labelText: '備考'),
+                //   maxLines: 3,
+                // ),
                 TextField(
                   controller: remarksController,
-                  decoration: InputDecoration(labelText: '備考'),
-                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: '備考',
+                    labelStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: Colors.blue, width: 2), // Focused border color
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8), // Padding inside the text field
+                  ),
+                  maxLines: 3, // Allow up to 3 lines of text
+                  keyboardType:
+                      TextInputType.multiline, // Support multiline input
+                  textInputAction: TextInputAction
+                      .newline, // Ensure the Enter key moves to the next line
                 ),
               ],
-              SizedBox(height: 20),
+              SizedBox(height: 40),
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -676,15 +756,28 @@ class _StudentLeavesState extends State<StudentLeaves> {
                   ],
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    Expanded(
+                      child: CustomButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HomePageStudent(),
+                            ),
+                          );
+                        },
+                        text: '戻る',
+                      ),
+                    ),
+                    SizedBox(width: 10),
                     Expanded(
                       child: CustomButton(
                         onPressed: _submitLeaveRequest,
                         text: '申請を提出',
                       ),
                     ),
-                    SizedBox(width: 10),
                   ],
                 ),
               ),
