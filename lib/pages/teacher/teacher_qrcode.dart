@@ -72,7 +72,7 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
       await subjectDoc.set({
         'ATTENDANCE': {
           currentDate: {
-            'GENERATEDAT': DateTime.now().toIso8601String(),
+            'GENERATEDAE': DateTime.now().toIso8601String(),
             'STATUS': 'active',
           },
         },
