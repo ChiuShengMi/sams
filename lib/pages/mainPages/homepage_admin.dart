@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sams/pages/admin/log/log.dart';
 import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
 // import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/list.dart';
@@ -119,7 +120,7 @@ class HomePageAdmin extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => TestPage()),
+                                          builder: (context) => logPage()),
                                     );
                                   },
                                 ),

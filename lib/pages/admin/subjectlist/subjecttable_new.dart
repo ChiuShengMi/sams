@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
@@ -9,6 +10,8 @@ import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/bottombar.dart';
+
+import 'package:sams/utils/log.dart';
 
 class SubjecttableNew extends StatefulWidget {
   @override
@@ -52,6 +55,48 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _updateLeaveStatus(BuildContext context, int status) async {
+    try {
+      // ログインユーザーのUIDを取得
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('ユーザーがログインしていません');
+      final uid = user.uid;
+
+      // FirestoreでUIDを使用して管理者情報を取得（ITとGAME両方を検索）
+      DocumentSnapshot? managerSnapshot;
+      managerSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Managers')
+          .collection('IT')
+          .doc(uid)
+          .get();
+
+      if (!managerSnapshot.exists) {
+        managerSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Managers')
+            .collection('GAME')
+            .doc(uid)
+            .get();
+      }
+
+      if (!managerSnapshot.exists) {
+        throw Exception('管理者情報が見つかりません');
+      }
+
+      final managerData = managerSnapshot.data() as Map<String, dynamic>;
+      final userData = {
+        'UID': uid,
+        'ID': managerData['ID'].toString(),
+        'NAME': managerData['NAME'],
+      };
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('エラーが発生しました: $e')),
+      );
     }
   }
 
@@ -279,6 +324,38 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
     }
 
     try {
+      // 取得當前登入的使用者
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('ユーザーがログインしていません');
+      final uid = user.uid;
+
+      // 使用者資訊取得 (假設 Firestore 中的管理者資訊包含 NAME 和 ID)
+      DocumentSnapshot? managerSnapshot;
+      managerSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Managers')
+          .collection('IT')
+          .doc(uid)
+          .get();
+
+      if (!managerSnapshot.exists) {
+        managerSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Managers')
+            .collection('GAME')
+            .doc(uid)
+            .get();
+      }
+
+      if (!managerSnapshot.exists) {
+        throw Exception('管理者情報が見つかりません');
+      }
+
+      final managerData = managerSnapshot.data() as Map<String, dynamic>;
+      final userId = managerData['ID'];
+      final userName = managerData['NAME'];
+
+      // 授業データを保存
       String course = selectedCourse!;
       String classId = await _realtimeDatabaseService.generateClassId(course);
 
@@ -304,7 +381,12 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
         'QR_CODE': qrCode,
       });
 
-      // Show success message
+      // Log に保存
+      await Utils.logMessage(
+        '$userName-$userId が新しい授業（${classController.text}） を追加しました。',
+      );
+
+      // 成功メッセージを表示
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('授業が正常に作成されました'),
@@ -314,7 +396,7 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
 
       _clearForm();
     } catch (e) {
-      // Show error message
+      // エラーメッセージを表示
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('授業の作成中にエラーが発生しました: $e'),
