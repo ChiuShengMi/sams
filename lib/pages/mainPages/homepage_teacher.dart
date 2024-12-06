@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth パッケージをインポート
+import 'package:sams/pages/admin/log/log.dart';
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/testPages/testPages.dart';
 import 'package:sams/widget/appbarlogout.dart';
@@ -53,7 +54,13 @@ class HomePageTeacher extends StatelessWidget {
                         child: _buildBoxedButton(
                           context: context,
                           label: '2',
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TestPage()),
+                            );
+                          },
                         ),
                       ),
                     ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sams/pages/admin/admin_leavesManagement.dart';
+import 'package:sams/pages/admin/admin_link.dart';
 import 'package:sams/pages/admin/log/log.dart';
 import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
 // import 'package:sams/pages/user/add.dart';
@@ -53,7 +55,11 @@ class HomePageAdmin extends StatelessWidget {
                                 context: context,
                                 label: '全体出席データ管理',
                                 onPressed: () {
-                                  // 두 번째 버튼 동작
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => UserList()),
+                                  );
                                 },
                               ),
                             ),
@@ -125,7 +131,42 @@ class HomePageAdmin extends StatelessWidget {
                                   },
                                 ),
                               ),
-                            ])
+                            ]),
+                        SizedBox(height: 20),
+
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: '休暇管理',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              adminLeaveManagement()),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: '授業と学生紐付け',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              adminPageLink()),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ]),
                         // Test Page 버튼
                       ],
                     ),

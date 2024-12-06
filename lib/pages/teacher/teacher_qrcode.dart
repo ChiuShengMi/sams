@@ -9,6 +9,7 @@ import 'package:sams/utils/firebase_auth.dart';
 import 'package:sams/utils/firebase_realtime.dart'; // データベースサービスをインポート
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sams/widget/button/custom_button.dart';
+import 'package:sams/utils/log.dart';
 
 class TeacherQrcode extends StatefulWidget {
   @override
@@ -42,6 +43,22 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
         isTeacher = false;
       });
     }
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("エラー"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> fetchClasses() async {
@@ -185,14 +202,11 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
                                         DateTime now = DateTime.now();
                                         String todayDay =
                                             _getJapaneseWeekday(now.weekday);
+
                                         if (classData["day"] != todayDay) {
-                                          bool? proceed =
-                                              await _showWarningDialog(
-                                            context,
-                                            "授業の曜日ではありません。それでも生成しますか？",
-                                          );
-                                          if (proceed == null || !proceed)
-                                            return;
+                                          _showMessage(
+                                              context, "授業の曜日ではありません。");
+                                          return;
                                         }
 
                                         String currentDate =
@@ -201,6 +215,10 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
                                           classData["classType"],
                                           classData["classID"],
                                           currentDate,
+                                        );
+
+                                        await Utils.logMessage(
+                                          '${className}の授業QRCODEが生成されました。',
                                         );
 
                                         Navigator.push(

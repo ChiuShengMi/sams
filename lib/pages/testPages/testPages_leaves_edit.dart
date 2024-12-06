@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sams/utils/log.dart';
 
 class LeaveEditPage extends StatelessWidget {
   final Map<String, dynamic> leaveDetails;
@@ -178,6 +179,10 @@ class LeaveEditPage extends StatelessWidget {
         'ID': managerData['ID'].toString(),
         'NAME': managerData['NAME'],
       };
+
+      await Utils.logMessage(
+        '${managerData['NAME']}が${leaveDetails['USER_NAME']}の休暇を変動しました。',
+      );
 
       // 申請データを更新
       String leaveId = leaveDetails['LEAVE_ID'];
