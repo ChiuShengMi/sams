@@ -53,7 +53,7 @@ class HomePageTeacher extends StatelessWidget {
                       Expanded(
                         child: _buildBoxedButton(
                           context: context,
-                          label: '2',
+                          label: 'TestPage',
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -71,7 +71,7 @@ class HomePageTeacher extends StatelessWidget {
                       Expanded(
                         child: _buildBoxedButton(
                           context: context,
-                          label: '3',
+                          label: '',
                           onPressed: () {},
                         ),
                       ),

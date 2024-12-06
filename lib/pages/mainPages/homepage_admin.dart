@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sams/pages/admin/admin_attendanceCalculator.dart';
 import 'package:sams/pages/admin/admin_leavesManagement.dart';
 import 'package:sams/pages/admin/admin_link.dart';
 import 'package:sams/pages/admin/log/log.dart';
@@ -58,7 +59,8 @@ class HomePageAdmin extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => UserList()),
+                                        builder: (context) =>
+                                            AdminAttendanceCalculator()),
                                   );
                                 },
                               ),
