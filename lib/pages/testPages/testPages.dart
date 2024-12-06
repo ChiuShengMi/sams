@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sams/pages/student/attendance_std.dart';
 import 'package:sams/pages/testPages/testPages_leavesManagement.dart';
 import 'package:sams/utils/firebase_firestore.dart';
 import 'package:sams/utils/firebase_realtime.dart';
@@ -454,15 +455,15 @@ class TestPage extends StatelessWidget {
               },
               child: Text('休暇管理'),
             ),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //       builder: (context) => LeaveManagementPage()),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AttendanceRatePage()),
+                );
               },
-              child: Text('ログ'),
+              child: Text('出席率'),
             ),
           ],
         ),
