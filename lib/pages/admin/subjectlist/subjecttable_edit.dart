@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/widget/button/custom_button.dart';
-
-import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
+import 'package:sams/widget/custom_input_container.dart';
 
 class SubjecttableEdit extends StatefulWidget {
   final Map<String, dynamic> lessonData;
@@ -23,11 +22,9 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
   late TextEditingController _classController;
   late TextEditingController _courseController;
   late TextEditingController _teacherController;
-  late TextEditingController _dayController;
-  late TextEditingController _timeController;
+
   late TextEditingController _qrCodeController;
   late TextEditingController _classroomController;
-  late TextEditingController _placeController;
 
   String? _selectedDay;
 
@@ -35,7 +32,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
 
   String? _selectedPlace;
 
-  final List<String> _days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜', '土曜日', '日曜日'];
+  final List<String> _days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
   final List<String> _times = ['1', '2', '3', '4', '5', '6'];
   final List<String> _place = [
     '国際1号館',
@@ -46,7 +43,8 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     '3号館',
     '4号館'
   ];
-  bool _isLoading = true;
+
+  // List<Map<String, String>> teacherList = [];
   @override
   void initState() {
     super.initState();
@@ -68,28 +66,21 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
 
     _teacherController = TextEditingController(text: teacherDisplay);
 
-    _dayController =
-        TextEditingController(text: widget.lessonData['DAY']?.toString() ?? '');
-    _timeController = TextEditingController(
-        text: widget.lessonData['TIME']?.toString() ?? '');
     _qrCodeController = TextEditingController(
         text: widget.lessonData['QR_CODE']?.toString() ?? '');
     _classroomController = TextEditingController(
         text: widget.lessonData['CLASSROOM']?.toString() ?? '');
-    _placeController = TextEditingController(
-        text: widget.lessonData['PLACE']?.toString() ?? '');
+    _selectedDay = widget.lessonData['DAY']?.toString();
+    _selectedTime = widget.lessonData['TIME']?.toString();
+    _selectedPlace = widget.lessonData['PLACE']?.toString();
   }
 
   @override
   void dispose() {
     _classController.dispose();
-    _courseController.dispose();
     _teacherController.dispose();
-    _dayController.dispose();
-    _timeController.dispose();
     _qrCodeController.dispose();
     _classroomController.dispose();
-    _placeController.dispose();
     super.dispose();
   }
 
@@ -203,369 +194,170 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "授業リスト編集",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        '授業編集',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    // SizedBox(height: 5),
+                  ],
+                ),
               ),
-              Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
-              SizedBox(height: 20),
+              // SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    flex: 2,
-                    child: Container(
+                    child: CustomInputContainer(
                       padding: EdgeInsets.all(10),
-                      color: Colors.grey[200], //  background color
-                      child: Column(
-                        children: [
-                          TextField(
-                              controller: _classController,
-                              decoration: InputDecoration(labelText: '授業名')),
-                          TextField(
-                              controller: _courseController,
-                              decoration: InputDecoration(labelText: 'コース')),
-                          TextField(
-                              controller: _teacherController,
-                              decoration: InputDecoration(labelText: '教師')),
-                          DropdownButtonFormField<String>(
-                            value: _selectedDay,
-                            items: _days
-                                .map((day) => DropdownMenuItem(
-                                    value: day, child: Text(day)))
-                                .toList(),
-                            onChanged: (value) =>
-                                setState(() => _selectedDay = value),
-                            decoration: InputDecoration(labelText: '授業曜日'),
-                          ),
-                          DropdownButtonFormField<String>(
-                            value: _selectedTime,
-                            items: _times
-                                .map((time) => DropdownMenuItem(
-                                    value: time, child: Text(time)))
-                                .toList(),
-                            onChanged: (value) =>
-                                setState(() => _selectedTime = value),
-                            decoration: InputDecoration(labelText: '時間割'),
-                          ),
-                          TextField(
-                              controller: _qrCodeController,
-                              decoration: InputDecoration(labelText: 'QRコード')),
-                          TextField(
-                              controller: _classroomController,
-                              decoration: InputDecoration(labelText: '教室')),
-                          DropdownButtonFormField<String>(
-                            value: _selectedPlace,
-                            items: _place
-                                .map((place) => DropdownMenuItem(
-                                    value: place, child: Text(place)))
-                                .toList(),
-                            onChanged: (value) =>
-                                setState(() => _selectedPlace = value),
-                            decoration: InputDecoration(labelText: '号館'),
-                          ),
-                          SizedBox(height: 20),
-                          // ElevatedButton(
-                          //   onPressed: () => _updateLesson(context),
-                          //   child: Text('更新'),
-                          // ),
-                        ],
-                      ),
+                      margin: EdgeInsets.all(16),
+                      borderRadius: 15.0,
+                      borderColor: Colors.black,
+                      borderWidth: 0.1,
+                      inputWidgets: [
+                        TextField(
+                          controller: _classController,
+                          decoration: InputDecoration(labelText: '授業名'),
+                        ),
+                        TextField(
+                          controller: _teacherController,
+                          decoration: InputDecoration(labelText: '教師'),
+                        ),
+                        DropdownButtonFormField<String>(
+                          value: _selectedDay,
+                          items: _days
+                              .map((day) => DropdownMenuItem(
+                                  value: day, child: Text(day)))
+                              .toList(),
+                          onChanged: (value) =>
+                              setState(() => _selectedDay = value),
+                          decoration: InputDecoration(labelText: '授業曜日'),
+                        ),
+                        DropdownButtonFormField<String>(
+                          value: _selectedTime,
+                          items: _times
+                              .map((time) => DropdownMenuItem(
+                                  value: time, child: Text(time)))
+                              .toList(),
+                          onChanged: (value) =>
+                              setState(() => _selectedTime = value),
+                          decoration: InputDecoration(labelText: '時間割'),
+                        ),
+                        TextField(
+                          controller: _qrCodeController,
+                          decoration: InputDecoration(labelText: 'QRコード'),
+                        ),
+                        TextField(
+                          controller: _classroomController,
+                          decoration: InputDecoration(labelText: '教室'),
+                        ),
+                        DropdownButtonFormField<String>(
+                          value: _selectedPlace,
+                          items: _place
+                              .map((place) => DropdownMenuItem(
+                                  value: place, child: Text(place)))
+                              .toList(),
+                          onChanged: (value) =>
+                              setState(() => _selectedPlace = value),
+                          decoration: InputDecoration(labelText: '号館'),
+                        ),
+                        SizedBox(height: 20),
+                      ],
                     ),
                   ),
-                  SizedBox(width: 20),
-                  //右側ボタン
-
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.all(100),
-                      child: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center, // Center vertically
-                        crossAxisAlignment:
-                            CrossAxisAlignment.center, // Center horizontally
-                        children: [
-                          CustomButton(
-                            text: '削除',
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text("削除の確認"),
-                                  content: Text("授業リストから削除しますか?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: Text("キャンセル"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.of(context).pop();
-                                        await _deleteLesson(context);
-                                      },
-                                      child: Text("削除"),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(height: 20),
-                          CustomButton(
-                            text: '戻る',
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                          SizedBox(height: 10),
-                          CustomButton(
-                            text: '更新',
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text("変更の確認"),
-                                  content: Text("授業リストを編集しますか?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: Text("キャンセル"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.of(context).pop();
-                                        await _updateLesson(context);
-                                      },
-                                      child: Text("確認"),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
                 ],
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomBar(),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CustomButton(
+                  text: '戻る',
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                CustomButton(
+                  text: '更新',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("変更の確認"),
+                        content: Text("授業リストを編集しますか?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text("キャンセル"),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await _updateLesson(context);
+                            },
+                            child: Text("確認"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                CustomButton(
+                  text: '削除',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("削除の確認"),
+                        content: Text("授業リストから削除しますか?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text("キャンセル"),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await _deleteLesson(context);
+                            },
+                            child: Text("削除"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          BottomBar(),
+        ],
+      ),
     );
   }
 }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: CustomAppBar(),
-//       body: _isLoading
-//           ? Center(child: CircularProgressIndicator())
-//           : Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 SizedBox(height: 20),
-
-//                 // Fixed container for the title and buttons
-//                 Container(
-//                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-//                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-//                   decoration: BoxDecoration(
-//                     color: Colors.white,
-//                     border: Border.all(color: Colors.grey),
-//                     borderRadius: BorderRadius.circular(8),
-//                   ),
-//                   child: Column(
-//                     children: [
-//                       Align(
-//                         alignment: Alignment.topLeft,
-//                         child: Text(
-//                           '授業編集',
-//                           style: TextStyle(
-//                             fontSize: 40,
-//                             fontWeight: FontWeight.bold,
-//                             color: Colors.black,
-//                           ),
-//                         ),
-//                       ),
-//                       SizedBox(height: 20),
-//                       Row(
-//                         mainAxisAlignment: MainAxisAlignment.end,
-//                         children: [
-//                           CustomButton(
-//                             text: '戻る',
-//                             onPressed: () {
-//                               Navigator.pushReplacement(
-//                                 context,
-//                                 MaterialPageRoute(
-//                                   builder: (context) => SubjectTable(),
-//                                 ),
-//                               );
-//                             },
-//                           ),
-//                           SizedBox(
-//                             width: 250,
-//                           ),
-//                           CustomButton(
-//                             text: '削除',
-//                             onPressed: () async {
-//                               Navigator.of(context).pop();
-//                               await _deleteLesson(context);
-//                             },
-//                           ),
-//                           SizedBox(width: 20),
-//                           CustomButton(
-//                             text: '更新前',
-//                             onPressed: () async {
-//                               Navigator.of(context).pop();
-//                               await _updateLesson(context);
-//                             },
-//                           ),
-//                         ],
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-
-//                 SizedBox(height: 30),
-
-//                 // Scrollable content area
-//                 Expanded(
-//                   child: SingleChildScrollView(
-//                     padding: EdgeInsets.symmetric(horizontal: 16.0),
-//                     child: CustomInputContainer(
-//                       inputWidgets: [
-//                         CustomInput(
-//                           controller: _classController,
-//                           hintText: '授業名',
-//                           keyboardType: TextInputType.name,
-//                         ),
-//                         SizedBox(height: 16),
-//                         Customdropdown(
-//                           items: ['IT', 'GAME'],
-//                           value: selectedCourse,
-//                           onChanged: (String? newValue) {
-//                             setState(() {
-//                               selectedCourse = newValue;
-//                             });
-//                           },
-//                           hintText: 'コースを選択',
-//                         ),
-//                         SizedBox(height: 16),
-//                         ...selectedTeacherIds.asMap().entries.map((entry) {
-//                           int index = entry.key;
-//                           return Column(
-//                             children: [
-//                               Customdropdown(
-//                                 items: teacherNames,
-//                                 value: selectedTeacherIds[index],
-//                                 onChanged: (String? newValue) {
-//                                   setState(() {
-//                                     selectedTeacherIds[index] = newValue;
-//                                   });
-//                                 },
-//                                 hintText: '教師を選択',
-//                               ),
-//                               SizedBox(height: 8),
-//                             ],
-//                           );
-//                         }).toList(),
-//                         ElevatedButton(
-//                           onPressed: () {
-//                             setState(() {
-//                               selectedTeacherIds.add(null);
-//                             });
-//                           },
-//                           style: ElevatedButton.styleFrom(
-//                             padding: EdgeInsets.symmetric(
-//                                 horizontal: 16, vertical: 12),
-//                           ),
-//                           child: Row(
-//                             mainAxisSize: MainAxisSize.min,
-//                             children: [
-//                               Icon(Icons.add, size: 18), // Plus arrow icon
-//                               SizedBox(width: 8), // Space between icon and text
-//                               Text('追加の教員'),
-//                             ],
-//                           ),
-//                         ),
-//                         SizedBox(height: 16),
-//                         Customdropdown(
-//                           items: [
-//                             '月曜日',
-//                             '火曜日',
-//                             '水曜日',
-//                             '木曜日',
-//                             '金曜日',
-//                             '土曜日',
-//                             '日曜日'
-//                           ],
-//                           value: selectedDay,
-//                           onChanged: (String? newValue) {
-//                             setState(() {
-//                               selectedDay = newValue;
-//                             });
-//                           },
-//                           hintText: '曜日を選択',
-//                         ),
-//                         SizedBox(height: 16),
-//                         Customdropdown(
-//                           items: ['1', '2', '3', '4', '5'],
-//                           value: selectedTime,
-//                           onChanged: (String? newValue) {
-//                             setState(() {
-//                               selectedTime = newValue;
-//                             });
-//                           },
-//                           hintText: '時間を選択',
-//                         ),
-//                         SizedBox(height: 16),
-//                         CustomInput(
-//                           controller: classroomController,
-//                           hintText: '教室名',
-//                           keyboardType: TextInputType.name,
-//                         ),
-//                         SizedBox(height: 16),
-//                         Customdropdown(
-//                           items: [
-//                             '国際１号館',
-//                             '国際2号館',
-//                             '国際3号館',
-//                             '1号館',
-//                             '2号館',
-//                             '3号館',
-//                             '4号館'
-//                           ],
-//                           value: selectedPlace,
-//                           onChanged: (String? newValue) {
-//                             setState(() {
-//                               selectedPlace = newValue;
-//                             });
-//                           },
-//                           hintText: '場所を選択',
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//       bottomNavigationBar: BottomBar(),
-//     );
-//   }
-// }
