@@ -3,27 +3,70 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sams/utils/log.dart';
+import 'package:sams/widget/appbar.dart';
+import 'package:sams/widget/bottombar.dart';
+import 'package:sams/widget/button/custom_button.dart';
 
 class LeaveEditPage extends StatelessWidget {
   final Map<String, dynamic> leaveDetails;
 
   const LeaveEditPage({super.key, required this.leaveDetails});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('休暇資料編集画面'),
-      ),
-      body: Padding(
+      appBar: CustomAppBar(),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Expanded(
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      '休暇資料編集',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  // SizedBox(width: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CustomButton(
+                        text: '戻る',
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 左側：詳細情報
+                  // Left Column: Details
                   Expanded(
                     flex: 1,
                     child: Column(
@@ -54,8 +97,8 @@ class LeaveEditPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 40), // 左右間隔
-                  // 右側：画像と備考
+                  const SizedBox(width: 40),
+                  // Right Column: Image and Notes
                   Expanded(
                     flex: 1,
                     child: Column(
@@ -79,30 +122,27 @@ class LeaveEditPage extends StatelessWidget {
                             ),
                           ),
                         const SizedBox(height: 30),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                '備考: ',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              '備考: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Flexible(
+                              child: Text(
+                                leaveDetails['LEAVE_TEXT'] ?? '不明',
+                                style: const TextStyle(
                                   fontSize: 16,
-                                  color: Colors.black87,
+                                  color: Colors.black54,
                                 ),
                               ),
-                              Flexible(
-                                child: Text(
-                                  leaveDetails['LEAVE_TEXT'] ?? '不明',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -110,36 +150,36 @@ class LeaveEditPage extends StatelessWidget {
                 ],
               ),
             ),
-            // 下方のボタン
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      _confirmAction(context, '休暇不承認しますか？', 2);
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color.fromARGB(255, 19, 19, 19),
-                    ),
-                    child: const Text('不承認'),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      _confirmAction(context, '休暇を承認しますか？', 1);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(79, 190, 198, 205),
-                    ),
-                    child: const Text('承認'),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CustomButton(
+                  text: '不承認',
+                  onPressed: () {
+                    _confirmAction(context, '休暇不承認しますか？', 2);
+                  },
+                ),
+                SizedBox(width: 10),
+                CustomButton(
+                  text: '承認',
+                  onPressed: () {
+                    _confirmAction(context, '休暇を承認しますか？', 1);
+                  },
+                ),
+              ],
+            ),
+          ),
+          BottomBar(),
+        ],
       ),
     );
   }
