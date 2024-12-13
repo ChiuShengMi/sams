@@ -245,33 +245,110 @@ class _adminLink2State extends State<AdminLink2> {
             ),
             // Use a ListView for displaying students
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredStudentList.length,
-                itemBuilder: (context, index) {
-                  final studentData = filteredStudentList[index];
-                  return Table(
-                    columnWidths: {
-                      0: FlexColumnWidth(2),
-                      1: FlexColumnWidth(1),
-                      2: FlexColumnWidth(1),
-                      3: FlexColumnWidth(1),
-                    },
-                    children: [
-                      TableRow(
-                        children: [
-                          //buildTableCell(studentData['id'] ?? ''),
-                          buildTableCell(studentData['id'].toString() ?? ''),
-
-                          buildTableCell(studentData['name'] ?? ''),
-                          buildTableCell(studentData['class'] ?? ''),
-                          buildTableCell('checkbox'),
-                        ],
+              child: Column(
+                children: [
+                  // Header Container
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        topRight: Radius.circular(20.0),
                       ),
-                    ],
-                  );
-                },
+                    ),
+                    child: Table(
+                      columnWidths: const {
+                        0: FlexColumnWidth(2),
+                        1: FlexColumnWidth(1),
+                        2: FlexColumnWidth(1),
+                        3: FlexColumnWidth(1),
+                      },
+                      border:
+                          TableBorder.all(color: Colors.black12, width: 0.5),
+                      children: [
+                        // Header Row
+                        TableRow(
+                          children: [
+                            TableCellHeader(text: '学籍番号'), // 学籍番号
+                            TableCellHeader(text: '学生名'), // 学生名
+                            TableCellHeader(text: 'クラス'), // クラス
+                            TableCellHeader(text: 'チェック'), // チェック
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Scrollable Table Container
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal, // 横スクロール
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: MediaQuery.of(context).size.width, // 最小幅
+                        ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical, // 縦スクロール
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(20.0),
+                                bottomRight: Radius.circular(20.0),
+                              ),
+                              border:
+                                  Border.all(color: Colors.black, width: 0.1),
+                            ),
+                            child: Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(2),
+                                1: FlexColumnWidth(1),
+                                2: FlexColumnWidth(1),
+                                3: FlexColumnWidth(1),
+                              },
+                              border: TableBorder.all(
+                                  color: Colors.black12, width: 0.5),
+                              children: [
+                                // Dynamic Rows
+                                ...filteredStudentList.map((studentData) {
+                                  return TableRow(
+                                    children: [
+                                      buildTableCell(
+                                          studentData['id']?.toString() ?? ''),
+                                      buildTableCell(studentData['name'] ?? ''),
+                                      buildTableCell(
+                                          studentData['class'] ?? ''),
+                                      TableCell(
+                                        child: Checkbox(
+                                          value: selectedStudentIds
+                                              .contains(studentData['uid']),
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              if (value == true) {
+                                                selectedStudentIds
+                                                    .add(studentData['uid']);
+                                              } else {
+                                                selectedStudentIds
+                                                    .remove(studentData['uid']);
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(
