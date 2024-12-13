@@ -9,6 +9,7 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/modal/confirmation_modal.dart';
+import 'package:sams/utils/log.dart'; // Utils 클래스에서 로그 기능을 사용
 
 class UserAdd extends StatelessWidget {
   final TextEditingController loginEmailInputController =
@@ -25,7 +26,6 @@ class UserAdd extends StatelessWidget {
   String selectedCourse = 'IT';
 
   Future<void> _registerUser(BuildContext context) async {
-    // 필드 검증
     if (loginEmailInputController.text.isEmpty ||
         dataIdInputController.text.isEmpty ||
         passwordInputController.text.isEmpty ||
@@ -41,7 +41,6 @@ class UserAdd extends StatelessWidget {
       return;
     }
 
-    // 비밀번호 일치 여부 확인
     if (passwordInputController.text != passwordConfirmInputController.text) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Passwords do not match!"),
@@ -52,14 +51,28 @@ class UserAdd extends StatelessWidget {
     }
 
     try {
-      // Firebase Authentication 계정 생성
+      // 현재 관리자의 정보를 가져옵니다.
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      String adminName = "Unknown Admin";
+
+      if (currentUser != null) {
+        // Firestore에서 관리자 이름 가져오기
+        DocumentSnapshot adminDoc = await FirebaseFirestore.instance
+            .collection('Users/Managers/IT') // 관리자 경로를 프로젝트에 맞게 수정
+            .doc(currentUser.uid)
+            .get();
+
+        if (adminDoc.exists) {
+          adminName = adminDoc.get('NAME') ?? "Unknown Admin";
+        }
+      }
+
       final UserCredential authResult =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: loginEmailInputController.text.trim(),
         password: passwordInputController.text.trim(),
       );
 
-      // Firestore에 사용자 데이터 저장
       Map<String, dynamic> userData = {
         'CLASS': classInputController.text,
         'COURSE': selectedCourse,
@@ -73,7 +86,7 @@ class UserAdd extends StatelessWidget {
         'NAME': userNameInputController.text,
         'PHOTO': null,
         'TEL': phoneNumberController.text,
-        'UID': authResult.user!.uid, // Authentication UID
+        'UID': authResult.user!.uid,
       };
 
       String collectionPath;
@@ -85,11 +98,14 @@ class UserAdd extends StatelessWidget {
         collectionPath = 'Users/Managers';
       }
 
-      // Authentication UID를 Firestore 문서 ID로 설정
       await FirebaseFirestore.instance
           .collection(collectionPath)
-          .doc(authResult.user!.uid) // UID 사용
-          .set(userData); // 데이터 저장
+          .doc(authResult.user!.uid)
+          .set(userData);
+
+      // Firestore에 로그 추가
+      await Utils.logMessage(
+          "$adminNameが${userData['NAME']}を${selectedCourse}の${userData['JOB']}として登録しました。");
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("User registered successfully!"),
@@ -110,7 +126,7 @@ class UserAdd extends StatelessWidget {
 
   bool _isValidEmail(String value) {
     final RegExp emailRegExp =
-        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$');
     return emailRegExp.hasMatch(value);
   }
 
