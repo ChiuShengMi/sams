@@ -324,12 +324,12 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
     }
 
     try {
-      // 取得當前登入的使用者
+      // get login user
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('ユーザーがログインしていません');
       final uid = user.uid;
 
-      // 使用者資訊取得 (假設 Firestore 中的管理者資訊包含 NAME 和 ID)
+      // get user data
       DocumentSnapshot? managerSnapshot;
       managerSnapshot = await FirebaseFirestore.instance
           .collection('Users')

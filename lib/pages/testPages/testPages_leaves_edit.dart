@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -186,12 +187,10 @@ class LeaveEditPage extends StatelessWidget {
 
   Future<void> _updateLeaveStatus(BuildContext context, int status) async {
     try {
-      // ログインユーザーのUIDを取得
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('ユーザーがログインしていません');
       final uid = user.uid;
 
-      // FirestoreでUIDを使用して管理者情報を取得（ITとGAME両方を検索）
       DocumentSnapshot? managerSnapshot;
       managerSnapshot = await FirebaseFirestore.instance
           .collection('Users')
@@ -224,7 +223,6 @@ class LeaveEditPage extends StatelessWidget {
         '${managerData['NAME']}が${leaveDetails['USER_NAME']}の休暇を変動しました。',
       );
 
-      // 申請データを更新
       String leaveId = leaveDetails['LEAVE_ID'];
       await FirebaseFirestore.instance.collection('Leaves').doc(leaveId).update(
         {
@@ -233,11 +231,42 @@ class LeaveEditPage extends StatelessWidget {
         },
       );
 
+      if (status == 1) {
+        final leaveDate = leaveDetails['LEAVE_DATE'];
+        final userUid = leaveDetails['USER_UID'];
+        final classType =
+            leaveDetails['CLASS_NAME'].contains('GAME') ? 'GAME' : 'IT';
+        final classID = leaveDetails['CLASS_ID'];
+
+        final ref = FirebaseDatabase.instance.ref(
+          'ATTENDANCE/$classType/$classID/$leaveDate/$userUid/',
+        );
+
+        await ref.update({
+          'APPROVE': 1,
+        });
+      }
+
+      if (status == 2) {
+        final leaveDate = leaveDetails['LEAVE_DATE'];
+        final userUid = leaveDetails['USER_UID'];
+        final classType =
+            leaveDetails['CLASS_NAME'].contains('GAME') ? 'GAME' : 'IT';
+        final classID = leaveDetails['CLASS_ID'];
+
+        final ref = FirebaseDatabase.instance.ref(
+          'ATTENDANCE/$classType/$classID/$leaveDate/$userUid/',
+        );
+
+        await ref.update({
+          'APPROVE': 2,
+        });
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(status == 1 ? '承認しました' : '不承認にしました')),
       );
 
-      // 前のページに戻る際にリフレッシュを指示
       Navigator.of(context).pop('refresh');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

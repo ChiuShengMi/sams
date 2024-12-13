@@ -1,18 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sams/widget/appbar.dart';
-import 'package:sams/widget/bottombar.dart';
 import 'package:sams/widget/button/custom_button.dart';
-import 'package:sams/widget/custom_input_container.dart';
+import 'package:sams/utils/log.dart';
+
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 class SubjecttableEdit extends StatefulWidget {
   final Map<String, dynamic> lessonData;
   final String id;
   final String course;
 
-  SubjecttableEdit(
-      {required this.lessonData, required this.id, required this.course});
+  SubjecttableEdit({
+    required this.lessonData,
+    required this.id,
+    required this.course,
+  });
 
   @override
   _SubjecttableEditState createState() => _SubjecttableEditState();
@@ -21,16 +27,17 @@ class SubjecttableEdit extends StatefulWidget {
 class _SubjecttableEditState extends State<SubjecttableEdit> {
   late TextEditingController _classController;
   late TextEditingController _courseController;
-  late TextEditingController _teacherController;
-
   late TextEditingController _qrCodeController;
   late TextEditingController _classroomController;
+  bool isSnackbarActive = false;
 
   String? _selectedDay;
-
   String? _selectedTime;
-
   String? _selectedPlace;
+
+  // 教師データ
+  List<Map<String, dynamic>> _teacherDropdownData = [];
+  List<String> _selectedTeachers = [];
 
   final List<String> _days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
   final List<String> _times = ['1', '2', '3', '4', '5', '6'];
@@ -44,7 +51,6 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     '4号館'
   ];
 
-  // List<Map<String, String>> teacherList = [];
   @override
   void initState() {
     super.initState();
@@ -52,20 +58,6 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
         text: widget.lessonData['CLASS']?.toString() ?? '');
     _courseController =
         TextEditingController(text: widget.course.toString() ?? '');
-
-    String teacherDisplay = 'N/A';
-
-    if (widget.lessonData['TEACHER_ID'] is Map) {
-      Map<dynamic, dynamic> teacherMap =
-          widget.lessonData['TEACHER_ID'] as Map<dynamic, dynamic>;
-
-      teacherDisplay = teacherMap.values
-          .map((teacher) => teacher['NAME'].toString())
-          .join('\n'); // 用逗号分隔名字
-    }
-
-    _teacherController = TextEditingController(text: teacherDisplay);
-
     _qrCodeController = TextEditingController(
         text: widget.lessonData['QR_CODE']?.toString() ?? '');
     _classroomController = TextEditingController(
@@ -73,31 +65,170 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     _selectedDay = widget.lessonData['DAY']?.toString();
     _selectedTime = widget.lessonData['TIME']?.toString();
     _selectedPlace = widget.lessonData['PLACE']?.toString();
+
+    _initializeSelectedTeachers();
+    _fetchTeachersData();
   }
 
   @override
   void dispose() {
     _classController.dispose();
-    _teacherController.dispose();
     _qrCodeController.dispose();
     _classroomController.dispose();
     super.dispose();
   }
 
-  Future<void> _updateLesson(BuildContext context) async {
-    // classTypeとlessonIdはwidgetのプロパティから取得
+  void _showSnackBar(String message) {
+    if (isSnackbarActive) return;
+    isSnackbarActive = true;
+
+    scaffoldMessengerKey.currentState
+        ?.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: Duration(seconds: 3),
+          ),
+        )
+        .closed
+        .then((_) {
+      isSnackbarActive = false;
+    });
+  }
+
+  void _initializeSelectedTeachers() {
+    if (widget.lessonData['TEACHER_ID'] is Map) {
+      Map<dynamic, dynamic> teacherMap =
+          widget.lessonData['TEACHER_ID'] as Map<dynamic, dynamic>;
+
+      _selectedTeachers = teacherMap.values
+          .map((e) {
+            String teacherName = e['NAME']?.toString() ?? '';
+            var matchedTeacher = _teacherDropdownData.firstWhere(
+                (teacher) => teacher['name'] == teacherName,
+                orElse: () => {});
+            if (matchedTeacher.isNotEmpty) {
+              return matchedTeacher['id'] as String;
+            } else {
+              return '';
+            }
+          })
+          .where((id) => id.isNotEmpty)
+          .toList();
+    }
+  }
+
+  Future<void> _fetchTeachersData() async {
+    List<Map<String, dynamic>> teacherList = [];
+    try {
+      final itTeachers = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Teachers')
+          .collection('IT')
+          .get();
+      final gameTeachers = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Teachers')
+          .collection('GAME')
+          .get();
+
+      teacherList.addAll(itTeachers.docs.map((doc) => {
+            'id': doc.id,
+            'name': doc['NAME'] ?? '',
+            'course': 'IT',
+          }));
+      teacherList.addAll(gameTeachers.docs.map((doc) => {
+            'id': doc.id,
+            'name': doc['NAME'] ?? '',
+            'course': 'GAME',
+          }));
+
+      setState(() {
+        _teacherDropdownData = teacherList;
+        _initializeSelectedTeachers();
+      });
+    } catch (e) {
+      print('Error fetching teachers data: $e');
+    }
+  }
+
+  Future<void> _updateLesson() async {
+    if (_classController.text.isEmpty) {
+      _showSnackBar('授業名を入力してください');
+      return;
+    }
+    if (_qrCodeController.text.isEmpty) {
+      _showSnackBar('QRコードを入力してください');
+      return;
+    }
+    if (_classroomController.text.isEmpty) {
+      _showSnackBar('教室名を入力してください');
+      return;
+    }
+    if (_selectedDay == null || _selectedDay!.isEmpty) {
+      _showSnackBar('曜日を選択してください');
+      return;
+    }
+    if (_selectedTime == null || _selectedTime!.isEmpty) {
+      _showSnackBar('時間を選択してください');
+      return;
+    }
+    if (_selectedPlace == null || _selectedPlace!.isEmpty) {
+      _showSnackBar('号館を選択してください');
+      return;
+    }
+    if (_selectedTeachers.isEmpty ||
+        _selectedTeachers.any((teacher) => teacher.isEmpty)) {
+      _showSnackBar('教師を選択してください');
+      return;
+    }
+
     String classType = widget.course;
     String lessonId = widget.id;
 
-    // 更新用のデータをMap形式で保持
-    Map<dynamic, dynamic> teacherMap =
-        widget.lessonData['TEACHER_ID'] as Map<dynamic, dynamic>? ?? {};
+    // get login account data
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+    final uid = user.uid;
 
-    // updatedDataに`TEACHER_ID`フィールドをもとのMap形式で追加
+    // user data here
+    DocumentSnapshot? managerSnapshot;
+    managerSnapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc('Managers')
+        .collection('IT')
+        .doc(uid)
+        .get();
+
+    if (!managerSnapshot.exists) {
+      managerSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Managers')
+          .collection('GAME')
+          .doc(uid)
+          .get();
+    }
+
+    if (!managerSnapshot.exists) {
+      throw Exception('管理者情報が見つかりません');
+    }
+
+    final managerData = managerSnapshot.data() as Map<String, dynamic>;
+    final userId = managerData['ID'];
+    final userName = managerData['NAME'];
+
+    // update data
     Map<String, dynamic> updatedData = {
       'CLASS': _classController.text,
       'COURSE': _courseController.text,
-      'TEACHER_ID': teacherMap,
+      'TEACHER_ID': {
+        for (var teacherId in _selectedTeachers)
+          teacherId: {
+            'NAME': _teacherDropdownData.firstWhere(
+              (teacher) => teacher['id'] == teacherId,
+              orElse: () => {'name': 'Unknown'},
+            )['name'],
+          }
+      },
       'DAY': _selectedDay,
       'TIME': _selectedTime,
       'QR_CODE': _qrCodeController.text,
@@ -105,61 +236,83 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
       'PLACE': _selectedPlace,
     };
 
-    // Firestore用のデータ（ここでは例として`CLASS`フィールドのみ更新）
-    Map<String, dynamic> firestoreUpdatedData = {
-      'CLASS': _classController.text,
-    };
-
     try {
-      // Firestoreでドキュメントが存在するかを確認してから更新する
-      DocumentReference docRef = FirebaseFirestore.instance
+      final docRef = FirebaseFirestore.instance
           .collection('Class')
           .doc(classType)
           .collection('Subjects')
           .doc(lessonId);
 
-      // ドキュメントが存在するか確認
-      DocumentSnapshot docSnapshot = await docRef.get();
+      final docSnapshot = await docRef.get();
       if (docSnapshot.exists) {
-        // ドキュメントが存在する場合は更新
-        await docRef.update(firestoreUpdatedData);
+        await docRef.update(updatedData);
       } else {
-        // ドキュメントが存在しない場合は新規作成
-        await docRef.set(firestoreUpdatedData);
+        print('Firestore 文檔不存在：$lessonId');
       }
-      // Firestoreの更新
-      await FirebaseFirestore.instance
-          .collection('Class')
-          .doc(classType)
-          .collection('Subjects')
-          .doc(lessonId)
-          .update(firestoreUpdatedData);
 
-      // Firebase Realtime Databaseの更新
-      await FirebaseDatabase.instance
-          .ref('CLASS/$classType/$lessonId')
-          .update(updatedData);
+      final dbRef = FirebaseDatabase.instance.ref('CLASS/$classType/$lessonId');
+      final dbSnapshot = await dbRef.get();
+      if (dbSnapshot.exists) {
+        await dbRef.update(updatedData);
+      } else {
+        print('Realtime Database 文檔不存在：$lessonId');
+      }
 
-      // 更新成功メッセージ
-      ScaffoldMessenger.of(context).showSnackBar(
+      await Utils.logMessage(
+        '$userName-$userId が授業 (${_classController.text}) を編集しました。',
+      );
+
+      scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(content: Text('授業情報が更新されました')),
       );
-      Navigator.of(context).pop(true);
+
+      Future.delayed(Duration(milliseconds: 300), () {
+        Navigator.of(context).pop(true);
+      });
     } catch (e) {
-      // エラー処理
       print('Error updating lesson: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('更新中にエラーが発生しました: $e')),
-      );
+      if (scaffoldMessengerKey.currentState != null) {
+        scaffoldMessengerKey.currentState!.showSnackBar(
+          SnackBar(content: Text('更新中にエラーが発生しました: $e')),
+        );
+      }
     }
   }
 
-  Future<void> _deleteLesson(BuildContext context) async {
+  Future<void> _deleteLesson() async {
     String classType = widget.course;
     String lessonId = widget.id;
 
     try {
-      // Firestoreから授業データを削除
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('ユーザーがログインしていません');
+      final uid = user.uid;
+
+      DocumentSnapshot? managerSnapshot;
+      managerSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Managers')
+          .collection('IT')
+          .doc(uid)
+          .get();
+
+      if (!managerSnapshot.exists) {
+        managerSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Managers')
+            .collection('GAME')
+            .doc(uid)
+            .get();
+      }
+
+      if (!managerSnapshot.exists) {
+        throw Exception('管理者情報が見つかりません');
+      }
+
+      final managerData = managerSnapshot.data() as Map<String, dynamic>;
+      final userId = managerData['ID'];
+      final userName = managerData['NAME'];
+
       await FirebaseFirestore.instance
           .collection('Class')
           .doc(classType)
@@ -167,196 +320,208 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
           .doc(lessonId)
           .delete();
 
-      // Realtime Databaseから授業データを削除
       await FirebaseDatabase.instance
           .ref('CLASS/$classType/$lessonId')
           .remove();
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      await Utils.logMessage(
+        '$userName-$userId が授業 (${_classController.text}) を削除しました。',
+      );
+
+      scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(content: Text('授業が削除されました')),
       );
-      Navigator.of(context).pop();
+
+      Future.delayed(Duration(milliseconds: 300), () {
+        Navigator.of(context).pop();
+      });
     } catch (e) {
       print('Error deleting lesson: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(content: Text('削除中にエラーが発生しました: $e')),
       );
     }
   }
 
+  List<Widget> _buildTeacherSelection() {
+    return _selectedTeachers.asMap().entries.map((entry) {
+      int index = entry.key;
+      String teacherId = entry.value;
+
+      return Row(
+        children: [
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              value: teacherId.isNotEmpty ? teacherId : null,
+              items: [
+                DropdownMenuItem(
+                  value: null,
+                  enabled: false,
+                  child: Text(
+                    '教師を選択してください',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ..._teacherDropdownData
+                    .map<DropdownMenuItem<String>>((teacher) {
+                  return DropdownMenuItem<String>(
+                    value: teacher['id'] as String,
+                    child: Text('${teacher['name']} (${teacher['course']})'),
+                  );
+                }).toList(),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  if (value != null) {
+                    _selectedTeachers[index] = value;
+                  }
+                });
+              },
+              decoration: InputDecoration(labelText: '教師'),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                _selectedTeachers.removeAt(index);
+              });
+            },
+          ),
+        ],
+      );
+    }).toList();
+  }
+
+  Widget _buildFormFields() {
+    return Column(
+      children: [
+        TextField(
+          controller: _classController,
+          decoration: InputDecoration(labelText: '授業名'),
+        ),
+        ..._buildTeacherSelection(),
+        ElevatedButton(
+          onPressed: () => setState(() => _selectedTeachers.add('')),
+          child: Text('教師を追加'),
+        ),
+        DropdownButtonFormField<String>(
+          value: _selectedDay,
+          items: _days
+              .map((day) => DropdownMenuItem(value: day, child: Text(day)))
+              .toList(),
+          onChanged: (value) => setState(() => _selectedDay = value),
+          decoration: InputDecoration(labelText: '授業曜日'),
+        ),
+        DropdownButtonFormField<String>(
+          value: _selectedTime,
+          items: _times
+              .map((time) => DropdownMenuItem(value: time, child: Text(time)))
+              .toList(),
+          onChanged: (value) => setState(() => _selectedTime = value),
+          decoration: InputDecoration(labelText: '時間割'),
+        ),
+        TextField(
+          controller: _qrCodeController,
+          decoration: InputDecoration(labelText: 'QRコード'),
+        ),
+        TextField(
+          controller: _classroomController,
+          decoration: InputDecoration(labelText: '教室'),
+        ),
+        DropdownButtonFormField<String>(
+          value: _selectedPlace,
+          items: _place
+              .map(
+                  (place) => DropdownMenuItem(value: place, child: Text(place)))
+              .toList(),
+          onChanged: (value) => setState(() => _selectedPlace = value),
+          decoration: InputDecoration(labelText: '号館'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          CustomButton(
+            text: '戻る',
+            onPressed: () => Navigator.pop(context),
+          ),
+          CustomButton(
+            text: '更新',
+            onPressed: () => _showConfirmationDialog(
+              title: "変更の確認",
+              content: "授業リストを更新しますか?",
+              onConfirm: _updateLesson,
+            ),
+          ),
+          CustomButton(
+            text: '削除',
+            onPressed: () => _showConfirmationDialog(
+              title: "削除の確認",
+              content: "授業リストから削除しますか?",
+              onConfirm: _deleteLesson,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmationDialog({
+    required String title,
+    required String content,
+    required Future<void> Function() onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("キャンセル"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await onConfirm();
+            },
+            child: Text("確認"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
+    return ScaffoldMessenger(
+      key: scaffoldMessengerKey,
+      child: Scaffold(
+        appBar: CustomAppBar(),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        '授業編集',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    // SizedBox(height: 5),
-                  ],
-                ),
+              Text(
+                '授業編集',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
-              // SizedBox(height: 20),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: CustomInputContainer(
-                      padding: EdgeInsets.all(10),
-                      margin: EdgeInsets.all(16),
-                      borderRadius: 15.0,
-                      borderColor: Colors.black,
-                      borderWidth: 0.1,
-                      inputWidgets: [
-                        TextField(
-                          controller: _classController,
-                          decoration: InputDecoration(labelText: '授業名'),
-                        ),
-                        TextField(
-                          controller: _teacherController,
-                          decoration: InputDecoration(labelText: '教師'),
-                        ),
-                        DropdownButtonFormField<String>(
-                          value: _selectedDay,
-                          items: _days
-                              .map((day) => DropdownMenuItem(
-                                  value: day, child: Text(day)))
-                              .toList(),
-                          onChanged: (value) =>
-                              setState(() => _selectedDay = value),
-                          decoration: InputDecoration(labelText: '授業曜日'),
-                        ),
-                        DropdownButtonFormField<String>(
-                          value: _selectedTime,
-                          items: _times
-                              .map((time) => DropdownMenuItem(
-                                  value: time, child: Text(time)))
-                              .toList(),
-                          onChanged: (value) =>
-                              setState(() => _selectedTime = value),
-                          decoration: InputDecoration(labelText: '時間割'),
-                        ),
-                        TextField(
-                          controller: _qrCodeController,
-                          decoration: InputDecoration(labelText: 'QRコード'),
-                        ),
-                        TextField(
-                          controller: _classroomController,
-                          decoration: InputDecoration(labelText: '教室'),
-                        ),
-                        DropdownButtonFormField<String>(
-                          value: _selectedPlace,
-                          items: _place
-                              .map((place) => DropdownMenuItem(
-                                  value: place, child: Text(place)))
-                              .toList(),
-                          onChanged: (value) =>
-                              setState(() => _selectedPlace = value),
-                          decoration: InputDecoration(labelText: '号館'),
-                        ),
-                        SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(height: 16),
+              _buildFormFields(),
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                CustomButton(
-                  text: '戻る',
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                CustomButton(
-                  text: '更新',
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text("変更の確認"),
-                        content: Text("授業リストを編集しますか?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text("キャンセル"),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              await _updateLesson(context);
-                            },
-                            child: Text("確認"),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                CustomButton(
-                  text: '削除',
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text("削除の確認"),
-                        content: Text("授業リストから削除しますか?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text("キャンセル"),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              await _deleteLesson(context);
-                            },
-                            child: Text("削除"),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          BottomBar(),
-        ],
+        bottomNavigationBar: _buildBottomNavigationBar(),
       ),
     );
   }
