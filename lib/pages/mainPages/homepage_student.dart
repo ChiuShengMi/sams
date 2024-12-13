@@ -6,7 +6,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/student/attendance_std.dart';
-import 'package:sams/pages/testPages/testPages.dart';
 import 'package:sams/widget/appbarlogout_mobile.dart';
 import 'package:sams/pages/student/student_leaves.dart';
 
@@ -190,7 +189,7 @@ class _HomePageStudentState extends State<HomePageStudent> {
         DatabaseReference attendanceRef =
             _realtimeDatabase.ref('ATTENDANCE/$classType/$classID/$date/$uid');
 
-        await attendanceRef.set({
+        await attendanceRef.update({
           'UPDATE_TIME': DateTime.now().toIso8601String(),
           'METHOD': 'QRCODE',
           'NAME': userData['NAME'] ?? 'Unknown',

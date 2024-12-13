@@ -105,6 +105,24 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
     return weekdays[weekday - 1];
   }
 
+  DateTime _getClassStartTime(String time) {
+    DateTime now = DateTime.now();
+    switch (time) {
+      case '1':
+        return DateTime(now.year, now.month, now.day, 9, 15);
+      case '2':
+        return DateTime(now.year, now.month, now.day, 11, 0);
+      case '3':
+        return DateTime(now.year, now.month, now.day, 13, 30);
+      case '4':
+        return DateTime(now.year, now.month, now.day, 15, 15);
+      case '5':
+        return DateTime(now.year, now.month, now.day, 17, 0);
+      default:
+        throw Exception("無効なコース時間: $time");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,6 +224,23 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
                                         if (classData["day"] != todayDay) {
                                           _showMessage(
                                               context, "授業の曜日ではありません。");
+                                          return;
+                                        }
+
+                                        DateTime classStartTime =
+                                            _getClassStartTime(
+                                                classData["time"]);
+                                        DateTime qrGenerationStartTime =
+                                            classStartTime.subtract(
+                                                Duration(minutes: 30));
+                                        DateTime classEndTime = classStartTime
+                                            .add(Duration(minutes: 90)); //
+
+                                        if (now.isBefore(
+                                                qrGenerationStartTime) ||
+                                            now.isAfter(classEndTime)) {
+                                          _showMessage(
+                                              context, "授業の時間ではありません。");
                                           return;
                                         }
 
