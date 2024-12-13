@@ -162,8 +162,23 @@ class HomePageAdmin extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) =>
-                                              adminPageLink()),
+                                        builder: (context) => adminPageLink(
+                                          onClassSelected:
+                                              (String selectedClass,
+                                                  String classType,
+                                                  String classID) {
+                                            print(
+                                                'Selected Class: $selectedClass, Type: $classType, ID: $classID');
+
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                  content: Text(
+                                                      'Class Selected: $selectedClass')),
+                                            );
+                                          },
+                                        ),
+                                      ),
                                     );
                                   },
                                 ),

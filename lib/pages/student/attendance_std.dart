@@ -119,7 +119,7 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
     }
   }
 
-  // 出席率を計算
+// 出席率を計算
   Future<void> _calculateAttendanceRate() async {
     try {
       for (var course in _courses) {
@@ -155,6 +155,7 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
 
                 bool isAbsent = true;
                 bool isLate = false;
+                bool isPresent = false;
 
                 if (attendanceSnapshot.exists) {
                   Map<dynamic, dynamic> studentData =
@@ -164,13 +165,25 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
                     Map<dynamic, dynamic> studentRecord =
                         studentData[_currentUID] as Map<dynamic, dynamic>;
 
-                    String updateTime = studentRecord['UPDATE_TIME'];
-                    DateTime updateDateTime = DateTime.parse(updateTime);
+                    if (studentRecord.containsKey('APPROVE') &&
+                        (studentRecord['APPROVE'] == 1 ||
+                            studentRecord['APPROVE'] == '1')) {
+                      isPresent = true;
+                      isAbsent = false;
+                    }
 
-                    DateTime classStartTime = _getClassStartTime(classTime);
+                    if (!isPresent &&
+                        studentRecord.containsKey('UPDATE_TIME')) {
+                      String updateTime = studentRecord['UPDATE_TIME'];
+                      DateTime updateDateTime = DateTime.parse(updateTime);
+                      DateTime classStartTime = _getClassStartTime(classTime);
 
-                    isLate = updateDateTime.isAfter(classStartTime);
-                    isAbsent = false;
+                      print(
+                          'UPDATE_TIME: $updateTime (classID: $classID, dateKey: $dateKey, UID: $_currentUID)');
+
+                      isLate = updateDateTime.isAfter(classStartTime);
+                      isAbsent = false;
+                    }
                   }
                 }
 
@@ -190,13 +203,11 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
               }
             }
           } else {
-            // 出席データがない場合
             _attendanceResults[classID] = {
               'status': '授業データありません',
             };
           }
         } else {
-          // コースデータが存在しない場合
           _attendanceResults[classID] = {
             'status': '授業データありません',
           };
@@ -207,7 +218,7 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
       _attendanceResults.forEach((classID, stats) {
         if (stats.containsKey('total')) {
           int lateCount = stats['late'];
-          int lateToAbsent = lateCount ~/ 3;
+          int lateToAbsent = lateCount ~/ 3; // 3 次遲到當作 1 次缺席
           stats['absent'] += lateToAbsent;
           stats['attendanceRate'] =
               ((stats['total'] - stats['absent']) / stats['total']) * 100;
