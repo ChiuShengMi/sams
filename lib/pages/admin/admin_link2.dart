@@ -62,6 +62,8 @@ class _adminLink2State extends State<AdminLink2> {
       studentList = results;
       filterStudentList();
     });
+    // ログメッセージを追加
+    await Utils.logMessage('学生データを取得しました: ${results.length}件');
   }
 
   Future<List<Map<String, dynamic>>> _fetchStudentData(
@@ -136,6 +138,19 @@ class _adminLink2State extends State<AdminLink2> {
         .collection('Subjects')
         .doc(classID)
         .set(data, SetOptions(merge: true));
+    // ログメッセージを追加
+    await Utils.logMessage(
+        '選択した学生を保存しました: クラス=${widget.selectedClass}, 学生数=${studentData.length}');
+
+// Update the state to refresh the UI
+    setState(() {
+      filteredStudentList.clear(); //
+    });
+
+    // Show success message after saving
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('学生が正常に保存されました。')),
+    );
 
     Navigator.of(context).pop();
   }

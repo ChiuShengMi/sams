@@ -303,7 +303,7 @@ Widget buildEditCell(BuildContext context, String text,
         ),
       );
       if (result == true) {
-        // setState(() {});
+        setState(() {});
       }
     },
     child: Padding(
