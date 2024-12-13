@@ -88,18 +88,9 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
   // 計算 IT 和 GAME 的全體出席率
   Future<void> _calculateTotalAttendanceRate() async {
     try {
-      Map<String, int> totalClasses = {
-        'IT': 0,
-        'GAME': 0,
-      };
-      Map<String, int> totalAttendance = {
-        'IT': 0,
-        'GAME': 0,
-      };
-
       for (var course in _courses) {
-        String classType = course['classType']!;
         String classID = course['classID']!;
+        String classType = course['classType']!;
 
         DocumentReference classDoc = FirebaseFirestore.instance
             .collection('Class')
@@ -108,10 +99,18 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
             .doc(classID);
 
         DocumentSnapshot classSnapshot = await classDoc.get();
-
         if (classSnapshot.exists) {
           Map<String, dynamic> data =
               classSnapshot.data() as Map<String, dynamic>;
+          if (data.containsKey('STD')) {
+            Map<String, dynamic> stdData = data['STD'] as Map<String, dynamic>;
+            for (var key in stdData.keys) {
+              var studentData = stdData[key] as Map<String, dynamic>;
+              var studentUID = studentData['UID'];
+              // 確保統計所有學生
+            }
+          }
+
           if (data.containsKey('ATTENDANCE')) {
             Map<String, dynamic> attendanceData =
                 data['ATTENDANCE'] as Map<String, dynamic>;
@@ -120,27 +119,36 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
             int totalAttendance = 0;
 
             for (var dateKey in attendanceData.keys) {
-              Map<String, dynamic> dateData =
-                  attendanceData[dateKey] as Map<String, dynamic>;
-
-              if (dateData['STATUS'] == 'active') {
+              if (attendanceData[dateKey]['STATUS'] == 'active') {
                 totalClasses++;
 
+                // 只檢查該授業類型的分支，不再檢查 IT 和 GAME 兩個分支
                 DatabaseReference attendanceRef = FirebaseDatabase.instance
                     .ref('ATTENDANCE/$classType/$classID/$dateKey');
+
                 DataSnapshot attendanceSnapshot = await attendanceRef.get();
 
+                Map<dynamic, dynamic> studentData = {};
                 if (attendanceSnapshot.exists) {
-                  Map<dynamic, dynamic> studentData =
-                      attendanceSnapshot.value as Map<dynamic, dynamic>;
-                  totalAttendance += studentData.length;
+                  studentData.addAll(
+                      attendanceSnapshot.value as Map<dynamic, dynamic>);
                 }
+
+                totalAttendance += studentData.length;
+
+                // 檢查APPROVE狀態，確認是否需要計入出席率
+                studentData.forEach((uid, studentRecord) {
+                  if (studentRecord.containsKey('APPROVE') &&
+                      (studentRecord['APPROVE'] == 1 ||
+                          studentRecord['APPROVE'] == '1')) {
+                    totalAttendance++;
+                  }
+                });
               }
             }
 
             double attendanceRate =
                 totalClasses > 0 ? (totalAttendance / totalClasses) * 100 : 0.0;
-
             setState(() {
               _attendanceResults[classID] = {'attendanceRate': attendanceRate};
             });
