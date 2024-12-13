@@ -172,7 +172,7 @@ class _adminLink2State extends State<AdminLink2> {
                       Text(
                         '選択中の授業: ${widget.selectedClass}',
                         style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
                       ),
@@ -263,8 +263,6 @@ class _adminLink2State extends State<AdminLink2> {
                         2: FlexColumnWidth(1),
                         3: FlexColumnWidth(1),
                       },
-                      border:
-                          TableBorder.all(color: Colors.black12, width: 0.5),
                       children: [
                         // Header Row
                         TableRow(
@@ -282,13 +280,11 @@ class _adminLink2State extends State<AdminLink2> {
                   // Scrollable Table Container
                   Expanded(
                     child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal, // 横スクロール
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           minWidth: MediaQuery.of(context).size.width, // 最小幅
                         ),
                         child: SingleChildScrollView(
-                          //scrollDirection: Axis.vertical, // 縦スクロール
                           child: Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -296,8 +292,6 @@ class _adminLink2State extends State<AdminLink2> {
                                 bottomLeft: Radius.circular(20.0),
                                 bottomRight: Radius.circular(20.0),
                               ),
-                              border:
-                                  Border.all(color: Colors.black, width: 0.1),
                             ),
                             child: Table(
                               columnWidths: const {
@@ -306,18 +300,32 @@ class _adminLink2State extends State<AdminLink2> {
                                 2: FlexColumnWidth(1),
                                 3: FlexColumnWidth(1),
                               },
-                              border: TableBorder.all(
-                                  color: Colors.black12, width: 0.5),
                               children: [
-                                // Dynamic Rows
-                                ...filteredStudentList.map((studentData) {
+                                // Dynamic Rows with alternating colors
+                                ...filteredStudentList
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                  final index = entry.key;
+                                  final studentData = entry.value;
+                                  final isEvenRow = index % 2 == 0;
+
                                   return TableRow(
+                                    decoration: BoxDecoration(
+                                      color: isEvenRow
+                                          ? Colors.grey[200]
+                                          : Colors.grey[100],
+                                    ),
                                     children: [
                                       buildTableCell(
-                                          studentData['id']?.toString() ?? ''),
-                                      buildTableCell(studentData['name'] ?? ''),
+                                        studentData['id']?.toString() ?? '',
+                                      ),
                                       buildTableCell(
-                                          studentData['class'] ?? ''),
+                                        studentData['name'] ?? '',
+                                      ),
+                                      buildTableCell(
+                                        studentData['class'] ?? '',
+                                      ),
                                       TableCell(
                                         child: Checkbox(
                                           value: selectedStudentIds

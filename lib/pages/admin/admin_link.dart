@@ -230,28 +230,42 @@ class _adminPageLinkState extends State<adminPageLink> {
                                 3: FlexColumnWidth(1),
                               },
                               children: [
-                                for (var classData in filteredClassList)
+                                for (var i = 0;
+                                    i < filteredClassList.length;
+                                    i++)
                                   TableRow(
+                                    decoration: BoxDecoration(
+                                      color: i % 2 == 0
+                                          ? Colors.grey[200] // 偶数行: グレー
+                                          : Colors.grey[100], // 奇数行: 薄いグレー
+                                    ),
                                     children: [
                                       GestureDetector(
                                         onTap: () {
                                           widget.onClassSelected(
-                                            classData['className'] ?? '',
-                                            classData['classType'] ?? '',
-                                            classData['classID'] ?? '',
+                                            filteredClassList[i]['className'] ??
+                                                '',
+                                            filteredClassList[i]['classType'] ??
+                                                '',
+                                            filteredClassList[i]['classID'] ??
+                                                '',
                                           );
                                         },
                                         child: buildTableCell(
-                                            classData['className'] ?? ''),
+                                            filteredClassList[i]['className'] ??
+                                                ''),
                                       ),
-                                      buildTableCell(classData['day'] ?? ''),
-                                      buildTableCell(classData['time'] ?? ''),
+                                      buildTableCell(
+                                          filteredClassList[i]['day'] ?? ''),
+                                      buildTableCell(
+                                          filteredClassList[i]['time'] ?? ''),
                                       buildEditCell(
-                                          context,
-                                          '学生追加',
-                                          classData,
-                                          classData['classType'] ?? '',
-                                          classData['classID'] ?? '')
+                                        context,
+                                        '学生追加',
+                                        filteredClassList[i],
+                                        filteredClassList[i]['classType'] ?? '',
+                                        filteredClassList[i]['classID'] ?? '',
+                                      ),
                                     ],
                                   ),
                               ],
