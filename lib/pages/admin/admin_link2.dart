@@ -288,7 +288,7 @@ class _adminLink2State extends State<AdminLink2> {
                           minWidth: MediaQuery.of(context).size.width, // 最小幅
                         ),
                         child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical, // 縦スクロール
+                          //scrollDirection: Axis.vertical, // 縦スクロール
                           child: Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -348,18 +348,37 @@ class _adminLink2State extends State<AdminLink2> {
                 ],
               ),
             ),
-
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: saveSelectedStudents,
-                child: Text('確定'),
-              ),
-            ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomBar(),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CustomButton(
+                  text: '戻る',
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(
+                  width: 30,
+                ),
+                CustomButton(
+                    onPressed: saveSelectedStudents, // 保存ロジック
+                    text: '確定'), // ボタンのテキスト
+              ],
+            ),
+          ),
+          BottomBar(),
+        ],
+      ),
+      //bottomNavigationBar: BottomBar(),
     );
   }
 }
@@ -389,161 +408,8 @@ class TableCellHeader extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
 }
-
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Dialog(
-  //     child: Column(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         Padding(
-  //           padding: const EdgeInsets.all(8.0),
-  //           child: Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               IconButton(
-  //                 icon: Icon(Icons.arrow_back),
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                   showDialog(
-  //                     context: context,
-  //                     builder: (BuildContext context) {
-  //                       return adminPageLink(
-  //                         onClassSelected: (selectedClass, classType, classID) {
-  //                           Navigator.of(context).pop();
-  //                           showDialog(
-  //                             context: context,
-  //                             builder: (BuildContext context) {
-  //                               return adminPageLink(
-  //                                 selectedClass: selectedClass,
-  //                                 classType: classType,
-  //                                 classID: classID,
-  //                               );
-  //                             },
-  //                           );
-  //                         },
-  //                       );
-  //                     },
-  //                   );
-  //                 },
-  //               ),
-  //               Text(
-  //                 '選択中の授業: ${widget.selectedClass}',
-  //                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  //               ),
-  //               Row(
-  //                 children: [
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       setState(() {
-  //                         selectedStudentIds.clear();
-  //                       });
-  //                     },
-  //                     child: Text('全体取消'),
-  //                   ),
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       setState(() {
-  //                         for (var student in filteredStudentList) {
-  //                           selectedStudentIds.add(student['uid'].toString());
-  //                         }
-  //                       });
-  //                     },
-  //                     child: Text('全体追加'),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.all(8.0),
-  //           child: TextField(
-  //             controller: studentSearchController,
-  //             decoration: InputDecoration(
-  //               labelText: '学生検索',
-  //               prefixIcon: Icon(Icons.search),
-  //             ),
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  //           child: ToggleButtons(
-  //             isSelected: [isITSelected, isGameSelected],
-  //             children: [
-  //               Padding(
-  //                 padding: EdgeInsets.symmetric(horizontal: 12),
-  //                 child: Text('IT'),
-  //               ),
-  //               Padding(
-  //                 padding: EdgeInsets.symmetric(horizontal: 12),
-  //                 child: Text('GAME'),
-  //               ),
-  //             ],
-  //             onPressed: (int index) {
-  //               setState(() {
-  //                 if (index == 0) {
-  //                   isITSelected = !isITSelected;
-  //                 } else if (index == 1) {
-  //                   isGameSelected = !isGameSelected;
-  //                 }
-  //                 fetchStudents();
-  //               });
-  //             },
-  //           ),
-  //         ),
-  //         Expanded(
-  //           child: ListView.builder(
-  //             shrinkWrap: true,
-  //             itemCount: filteredStudentList.length,
-  //             itemBuilder: (context, index) {
-  //               final studentData = filteredStudentList[index];
-  //               final studentUID = studentData['uid'].toString();
-  //               return ListTile(
-  //                 title: Row(
-  //                   children: [
-  //                     Expanded(
-  //                       child: Text(
-  //                         '${studentData['id']} - ${studentData['name']} - ${studentData['class']}',
-  //                         overflow: TextOverflow.ellipsis,
-  //                       ),
-  //                     ),
-  //                     Checkbox(
-  //                       value: selectedStudentIds.contains(studentUID),
-  //                       onChanged: (bool? value) {
-  //                         setState(() {
-  //                           if (value == true) {
-  //                             selectedStudentIds.add(studentUID);
-  //                           } else {
-  //                             selectedStudentIds.remove(studentUID);
-  //                           }
-  //                         });
-  //                       },
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             },
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.all(8.0),
-  //           child: ElevatedButton(
-  //             onPressed: saveSelectedStudents,
-  //             child: Text('確定'),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
