@@ -13,6 +13,10 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
   List<Map<String, String>> _courses = [];
   List<Map<String, String>> _filteredCourses = [];
   Map<String, Map<String, dynamic>> _attendanceResults = {};
+  Map<String, double> _totalAttendanceRates = {
+    'IT': 0.0,
+    'GAME': 0.0,
+  };
   String _selectedCategory = "All"; // 選擇的類別
   final TextEditingController _searchController = TextEditingController();
 
@@ -59,6 +63,9 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
         _courses = coursesList;
         _filteredCourses = _courses;
       });
+
+      // 取得全部類別的全體出席率
+      await _calculateTotalAttendanceRate();
     } catch (e) {
       print("課程數據獲取失敗: $e");
     }
@@ -78,9 +85,71 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
     });
   }
 
-  // 計算出席率（如需使用，請啟用這段代碼）
-  Future<void> _calculateAttendanceRate() async {
-    // 此處可以加入計算出席率的邏輯
+  // 計算 IT 和 GAME 的全體出席率
+  Future<void> _calculateTotalAttendanceRate() async {
+    try {
+      Map<String, int> totalClasses = {
+        'IT': 0,
+        'GAME': 0,
+      };
+      Map<String, int> totalAttendance = {
+        'IT': 0,
+        'GAME': 0,
+      };
+
+      for (var course in _courses) {
+        String classType = course['classType']!;
+        String classID = course['classID']!;
+
+        DocumentReference classDoc = FirebaseFirestore.instance
+            .collection('Class')
+            .doc(classType)
+            .collection('Subjects')
+            .doc(classID);
+
+        DocumentSnapshot classSnapshot = await classDoc.get();
+
+        if (classSnapshot.exists) {
+          Map<String, dynamic> data =
+              classSnapshot.data() as Map<String, dynamic>;
+          if (data.containsKey('ATTENDANCE')) {
+            Map<String, dynamic> attendanceData =
+                data['ATTENDANCE'] as Map<String, dynamic>;
+
+            int totalClasses = 0;
+            int totalAttendance = 0;
+
+            for (var dateKey in attendanceData.keys) {
+              Map<String, dynamic> dateData =
+                  attendanceData[dateKey] as Map<String, dynamic>;
+
+              if (dateData['STATUS'] == 'active') {
+                totalClasses++;
+
+                DatabaseReference attendanceRef = FirebaseDatabase.instance
+                    .ref('ATTENDANCE/$classType/$classID/$dateKey');
+                DataSnapshot attendanceSnapshot = await attendanceRef.get();
+
+                if (attendanceSnapshot.exists) {
+                  Map<dynamic, dynamic> studentData =
+                      attendanceSnapshot.value as Map<dynamic, dynamic>;
+                  totalAttendance += studentData.length;
+                }
+              }
+            }
+
+            double attendanceRate =
+                totalClasses > 0 ? (totalAttendance / totalClasses) * 100 : 0.0;
+
+            setState(() {
+              _attendanceResults[classID] = {'attendanceRate': attendanceRate};
+            });
+          }
+        }
+      }
+    } catch (e) {
+      print("授業出席率計算失敗: $e");
+    }
   }
 
   @override
@@ -126,7 +195,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
             // 課程列表
             Expanded(
               child: _courses.isEmpty
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(child: Text("関連する授業が見つかりませんでした"))
                   : ListView.builder(
                       itemCount: _filteredCourses.length,
                       itemBuilder: (context, index) {
@@ -143,7 +212,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
                               stats != null &&
                                       stats.containsKey('attendanceRate')
                                   ? '${stats['attendanceRate']?.toStringAsFixed(1)}%'
-                                  : '計算中...',
+                                  : '授業データはありません。',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blue,

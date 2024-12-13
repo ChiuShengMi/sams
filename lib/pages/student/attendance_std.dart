@@ -218,7 +218,7 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
       _attendanceResults.forEach((classID, stats) {
         if (stats.containsKey('total')) {
           int lateCount = stats['late'];
-          int lateToAbsent = lateCount ~/ 3; // 3 次遲到當作 1 次缺席
+          int lateToAbsent = lateCount ~/ 3;
           stats['absent'] += lateToAbsent;
           stats['attendanceRate'] =
               ((stats['total'] - stats['absent']) / stats['total']) * 100;
