@@ -62,6 +62,8 @@ class _adminLink2State extends State<AdminLink2> {
       studentList = results;
       filterStudentList();
     });
+    // ログメッセージを追加
+    await Utils.logMessage('学生データを取得しました: ${results.length}件');
   }
 
   Future<List<Map<String, dynamic>>> _fetchStudentData(
@@ -136,6 +138,19 @@ class _adminLink2State extends State<AdminLink2> {
         .collection('Subjects')
         .doc(classID)
         .set(data, SetOptions(merge: true));
+    // ログメッセージを追加
+    await Utils.logMessage(
+        '選択した学生を保存しました: クラス=${widget.selectedClass}, 学生数=${studentData.length}');
+
+// Update the state to refresh the UI
+    setState(() {
+      filteredStudentList.clear(); //
+    });
+
+    // Show success message after saving
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('学生が正常に保存されました。')),
+    );
 
     Navigator.of(context).pop();
   }
@@ -172,7 +187,7 @@ class _adminLink2State extends State<AdminLink2> {
                       Text(
                         '選択中の授業: ${widget.selectedClass}',
                         style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
                       ),
@@ -245,44 +260,148 @@ class _adminLink2State extends State<AdminLink2> {
             ),
             // Use a ListView for displaying students
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredStudentList.length,
-                itemBuilder: (context, index) {
-                  final studentData = filteredStudentList[index];
-                  return Table(
-                    columnWidths: {
-                      0: FlexColumnWidth(2),
-                      1: FlexColumnWidth(1),
-                      2: FlexColumnWidth(1),
-                      3: FlexColumnWidth(1),
-                    },
-                    children: [
-                      TableRow(
-                        children: [
-                          //buildTableCell(studentData['id'] ?? ''),
-                          buildTableCell(studentData['id'].toString() ?? ''),
-
-                          buildTableCell(studentData['name'] ?? ''),
-                          buildTableCell(studentData['class'] ?? ''),
-                          buildTableCell('checkbox'),
-                        ],
+              child: Column(
+                children: [
+                  // Header Container
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        topRight: Radius.circular(20.0),
                       ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: saveSelectedStudents,
-                child: Text('確定'),
+                    ),
+                    child: Table(
+                      columnWidths: const {
+                        0: FlexColumnWidth(2),
+                        1: FlexColumnWidth(1),
+                        2: FlexColumnWidth(1),
+                        3: FlexColumnWidth(1),
+                      },
+                      children: [
+                        // Header Row
+                        TableRow(
+                          children: [
+                            TableCellHeader(text: '学籍番号'), // 学籍番号
+                            TableCellHeader(text: '学生名'), // 学生名
+                            TableCellHeader(text: 'クラス'), // クラス
+                            TableCellHeader(text: 'チェック'), // チェック
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Scrollable Table Container
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: MediaQuery.of(context).size.width, // 最小幅
+                        ),
+                        child: SingleChildScrollView(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(20.0),
+                                bottomRight: Radius.circular(20.0),
+                              ),
+                            ),
+                            child: Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(2),
+                                1: FlexColumnWidth(1),
+                                2: FlexColumnWidth(1),
+                                3: FlexColumnWidth(1),
+                              },
+                              children: [
+                                // Dynamic Rows with alternating colors
+                                ...filteredStudentList
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                  final index = entry.key;
+                                  final studentData = entry.value;
+                                  final isEvenRow = index % 2 == 0;
+
+                                  return TableRow(
+                                    decoration: BoxDecoration(
+                                      color: isEvenRow
+                                          ? Colors.grey[200]
+                                          : Colors.grey[100],
+                                    ),
+                                    children: [
+                                      buildTableCell(
+                                        studentData['id']?.toString() ?? '',
+                                      ),
+                                      buildTableCell(
+                                        studentData['name'] ?? '',
+                                      ),
+                                      buildTableCell(
+                                        studentData['class'] ?? '',
+                                      ),
+                                      TableCell(
+                                        child: Checkbox(
+                                          value: selectedStudentIds
+                                              .contains(studentData['uid']),
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              if (value == true) {
+                                                selectedStudentIds
+                                                    .add(studentData['uid']);
+                                              } else {
+                                                selectedStudentIds
+                                                    .remove(studentData['uid']);
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomBar(),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CustomButton(
+                  text: '戻る',
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(
+                  width: 30,
+                ),
+                CustomButton(
+                    onPressed: saveSelectedStudents, // 保存ロジック
+                    text: '確定'), // ボタンのテキスト
+              ],
+            ),
+          ),
+          BottomBar(),
+        ],
+      ),
+      //bottomNavigationBar: BottomBar(),
     );
   }
 }
@@ -312,161 +431,8 @@ class TableCellHeader extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
 }
-
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Dialog(
-  //     child: Column(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         Padding(
-  //           padding: const EdgeInsets.all(8.0),
-  //           child: Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               IconButton(
-  //                 icon: Icon(Icons.arrow_back),
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                   showDialog(
-  //                     context: context,
-  //                     builder: (BuildContext context) {
-  //                       return adminPageLink(
-  //                         onClassSelected: (selectedClass, classType, classID) {
-  //                           Navigator.of(context).pop();
-  //                           showDialog(
-  //                             context: context,
-  //                             builder: (BuildContext context) {
-  //                               return adminPageLink(
-  //                                 selectedClass: selectedClass,
-  //                                 classType: classType,
-  //                                 classID: classID,
-  //                               );
-  //                             },
-  //                           );
-  //                         },
-  //                       );
-  //                     },
-  //                   );
-  //                 },
-  //               ),
-  //               Text(
-  //                 '選択中の授業: ${widget.selectedClass}',
-  //                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  //               ),
-  //               Row(
-  //                 children: [
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       setState(() {
-  //                         selectedStudentIds.clear();
-  //                       });
-  //                     },
-  //                     child: Text('全体取消'),
-  //                   ),
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       setState(() {
-  //                         for (var student in filteredStudentList) {
-  //                           selectedStudentIds.add(student['uid'].toString());
-  //                         }
-  //                       });
-  //                     },
-  //                     child: Text('全体追加'),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.all(8.0),
-  //           child: TextField(
-  //             controller: studentSearchController,
-  //             decoration: InputDecoration(
-  //               labelText: '学生検索',
-  //               prefixIcon: Icon(Icons.search),
-  //             ),
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  //           child: ToggleButtons(
-  //             isSelected: [isITSelected, isGameSelected],
-  //             children: [
-  //               Padding(
-  //                 padding: EdgeInsets.symmetric(horizontal: 12),
-  //                 child: Text('IT'),
-  //               ),
-  //               Padding(
-  //                 padding: EdgeInsets.symmetric(horizontal: 12),
-  //                 child: Text('GAME'),
-  //               ),
-  //             ],
-  //             onPressed: (int index) {
-  //               setState(() {
-  //                 if (index == 0) {
-  //                   isITSelected = !isITSelected;
-  //                 } else if (index == 1) {
-  //                   isGameSelected = !isGameSelected;
-  //                 }
-  //                 fetchStudents();
-  //               });
-  //             },
-  //           ),
-  //         ),
-  //         Expanded(
-  //           child: ListView.builder(
-  //             shrinkWrap: true,
-  //             itemCount: filteredStudentList.length,
-  //             itemBuilder: (context, index) {
-  //               final studentData = filteredStudentList[index];
-  //               final studentUID = studentData['uid'].toString();
-  //               return ListTile(
-  //                 title: Row(
-  //                   children: [
-  //                     Expanded(
-  //                       child: Text(
-  //                         '${studentData['id']} - ${studentData['name']} - ${studentData['class']}',
-  //                         overflow: TextOverflow.ellipsis,
-  //                       ),
-  //                     ),
-  //                     Checkbox(
-  //                       value: selectedStudentIds.contains(studentUID),
-  //                       onChanged: (bool? value) {
-  //                         setState(() {
-  //                           if (value == true) {
-  //                             selectedStudentIds.add(studentUID);
-  //                           } else {
-  //                             selectedStudentIds.remove(studentUID);
-  //                           }
-  //                         });
-  //                       },
-  //                     ),
-  //                   ],
-  //                 ),
-  //               );
-  //             },
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.all(8.0),
-  //           child: ElevatedButton(
-  //             onPressed: saveSelectedStudents,
-  //             child: Text('確定'),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-

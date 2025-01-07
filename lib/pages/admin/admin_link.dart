@@ -230,28 +230,42 @@ class _adminPageLinkState extends State<adminPageLink> {
                                 3: FlexColumnWidth(1),
                               },
                               children: [
-                                for (var classData in filteredClassList)
+                                for (var i = 0;
+                                    i < filteredClassList.length;
+                                    i++)
                                   TableRow(
+                                    decoration: BoxDecoration(
+                                      color: i % 2 == 0
+                                          ? Colors.grey[200] // 偶数行: グレー
+                                          : Colors.grey[100], // 奇数行: 薄いグレー
+                                    ),
                                     children: [
                                       GestureDetector(
                                         onTap: () {
                                           widget.onClassSelected(
-                                            classData['className'] ?? '',
-                                            classData['classType'] ?? '',
-                                            classData['classID'] ?? '',
+                                            filteredClassList[i]['className'] ??
+                                                '',
+                                            filteredClassList[i]['classType'] ??
+                                                '',
+                                            filteredClassList[i]['classID'] ??
+                                                '',
                                           );
                                         },
                                         child: buildTableCell(
-                                            classData['className'] ?? ''),
+                                            filteredClassList[i]['className'] ??
+                                                ''),
                                       ),
-                                      buildTableCell(classData['day'] ?? ''),
-                                      buildTableCell(classData['time'] ?? ''),
+                                      buildTableCell(
+                                          filteredClassList[i]['day'] ?? ''),
+                                      buildTableCell(
+                                          filteredClassList[i]['time'] ?? ''),
                                       buildEditCell(
-                                          context,
-                                          '学生追加',
-                                          classData,
-                                          classData['classType'] ?? '',
-                                          classData['classID'] ?? '')
+                                        context,
+                                        '学生追加',
+                                        filteredClassList[i],
+                                        filteredClassList[i]['classType'] ?? '',
+                                        filteredClassList[i]['classID'] ?? '',
+                                      ),
                                     ],
                                   ),
                               ],
@@ -289,7 +303,7 @@ Widget buildEditCell(BuildContext context, String text,
         ),
       );
       if (result == true) {
-        // setState(() {});
+        setState(() {});
       }
     },
     child: Padding(
@@ -337,296 +351,3 @@ class TableCellHeader extends StatelessWidget {
     );
   }
 }
-
-
-// // 学生検索のダイアログ
-// class StudentSelectionDialog extends StatefulWidget {
-//   final String selectedClass;
-//   final String classType;
-//   final String classID;
-
-//   StudentSelectionDialog({
-//     required this.selectedClass,
-//     required this.classType,
-//     required this.classID,
-//   });
-
-//   @override
-//   _StudentSelectionDialogState createState() => _StudentSelectionDialogState();
-// }
-
-// class _StudentSelectionDialogState extends State<StudentSelectionDialog> {
-//   TextEditingController studentSearchController = TextEditingController();
-//   bool isITSelected = false;
-//   bool isGameSelected = false;
-//   List<Map<String, dynamic>> studentList = [];
-//   List<Map<String, dynamic>> filteredStudentList = [];
-//   Set<String> selectedStudentIds = {};
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     fetchStudents();
-//     studentSearchController.addListener(() => filterStudentList());
-//   }
-
-//   Future<void> fetchStudents() async {
-//     List<Map<String, dynamic>> results = [];
-
-//     CollectionReference studentsITRef =
-//         FirebaseFirestore.instance.collection('Users/Students/IT');
-//     CollectionReference studentsGameRef =
-//         FirebaseFirestore.instance.collection('Users/Students/GAME');
-
-//     if (isITSelected || isGameSelected) {
-//       if (isITSelected) results.addAll(await _fetchStudentData(studentsITRef));
-//       if (isGameSelected)
-//         results.addAll(await _fetchStudentData(studentsGameRef));
-//     } else {
-//       results.addAll(await _fetchStudentData(studentsITRef));
-//       results.addAll(await _fetchStudentData(studentsGameRef));
-//     }
-
-//     setState(() {
-//       studentList = results;
-//       filterStudentList();
-//     });
-//   }
-
-//   Future<List<Map<String, dynamic>>> _fetchStudentData(
-//       CollectionReference path) async {
-//     QuerySnapshot snapshot = await path.get();
-//     List<Map<String, dynamic>> result = [];
-
-//     if (snapshot.docs.isNotEmpty) {
-//       for (var doc in snapshot.docs) {
-//         var data = doc.data() as Map<String, dynamic>;
-//         result.add({
-//           'id': data['ID'],
-//           'name': data['NAME'],
-//           'class': data['CLASS'],
-//           'uid': doc.id,
-//         });
-//       }
-//     }
-
-//     return result;
-//   }
-
-//   void filterStudentList() {
-//     String searchText = studentSearchController.text.toLowerCase();
-//     setState(() {
-//       filteredStudentList = studentList.where((studentData) {
-//         final studentName =
-//             (studentData['name'] ?? '').toString().toLowerCase();
-//         final studentClass =
-//             (studentData['class'] ?? '').toString().toLowerCase();
-//         final studentID = (studentData['id'] ?? '').toString();
-//         return selectedStudentIds.contains(studentData['uid']) ||
-//             studentName.contains(searchText) ||
-//             studentClass.contains(searchText) ||
-//             studentID.contains(searchText);
-//       }).toList();
-
-//       for (var student in studentList) {
-//         if (selectedStudentIds.contains(student['uid']) &&
-//             !filteredStudentList.contains(student)) {
-//           filteredStudentList.add(student);
-//         }
-//       }
-//     });
-//   }
-
-//   Future<void> saveSelectedStudents() async {
-//     String classType = widget.classType;
-//     String classID = widget.classID;
-
-//     Map<String, dynamic> studentData = {
-//       for (var i = 0; i < filteredStudentList.length; i++)
-//         if (selectedStudentIds.contains(filteredStudentList[i]['uid']))
-//           i.toString(): {
-//             'UID': filteredStudentList[i]['uid'],
-//             'NAME': filteredStudentList[i]['name'],
-//             'ID': filteredStudentList[i]['id'],
-//             'CLASS': filteredStudentList[i]['class'],
-//           },
-//     };
-
-//     Map<String, dynamic> data = {
-//       'CLASS': widget.selectedClass,
-//       'STD': studentData,
-//     };
-
-//     await FirebaseFirestore.instance
-//         .collection('Class')
-//         .doc(classType)
-//         .collection('Subjects')
-//         .doc(classID)
-//         .set(data, SetOptions(merge: true));
-
-
-
-// log のメッセージ
-// await Utils.logMessage(
-//         'ここにLOGメッセージを入れる',
-//       );
-
-
-
-//     Navigator.of(context).pop();
-//   }
-
-//   @override
-//   void dispose() {
-//     studentSearchController.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Dialog(
-//       child: Column(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           Padding(
-//             padding: const EdgeInsets.all(8.0),
-//             child: Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 IconButton(
-//                   icon: Icon(Icons.arrow_back),
-//                   onPressed: () {
-//                     Navigator.of(context).pop();
-//                     showDialog(
-//                       context: context,
-//                       builder: (BuildContext context) {
-//                         return ClassSelectionDialog(
-//                           onClassSelected: (selectedClass, classType, classID) {
-//                             Navigator.of(context).pop();
-//                             showDialog(
-//                               context: context,
-//                               builder: (BuildContext context) {
-//                                 return StudentSelectionDialog(
-//                                   selectedClass: selectedClass,
-//                                   classType: classType,
-//                                   classID: classID,
-//                                 );
-//                               },
-//                             );
-//                           },
-//                         );
-//                       },
-//                     );
-//                   },
-//                 ),
-//                 Text(
-//                   '選択中の授業: ${widget.selectedClass}',
-//                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-//                 ),
-//                 Row(
-//                   children: [
-//                     TextButton(
-//                       onPressed: () {
-//                         setState(() {
-//                           selectedStudentIds.clear();
-//                         });
-//                       },
-//                       child: Text('全体取消'),
-//                     ),
-//                     TextButton(
-//                       onPressed: () {
-//                         setState(() {
-//                           for (var student in filteredStudentList) {
-//                             selectedStudentIds.add(student['uid'].toString());
-//                           }
-//                         });
-//                       },
-//                       child: Text('全体追加'),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.all(8.0),
-//             child: TextField(
-//               controller: studentSearchController,
-//               decoration: InputDecoration(
-//                 labelText: '学生検索',
-//                 prefixIcon: Icon(Icons.search),
-//               ),
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//             child: ToggleButtons(
-//               isSelected: [isITSelected, isGameSelected],
-//               children: [
-//                 Padding(
-//                   padding: EdgeInsets.symmetric(horizontal: 12),
-//                   child: Text('IT'),
-//                 ),
-//                 Padding(
-//                   padding: EdgeInsets.symmetric(horizontal: 12),
-//                   child: Text('GAME'),
-//                 ),
-//               ],
-//               onPressed: (int index) {
-//                 setState(() {
-//                   if (index == 0) {
-//                     isITSelected = !isITSelected;
-//                   } else if (index == 1) {
-//                     isGameSelected = !isGameSelected;
-//                   }
-//                   fetchStudents();
-//                 });
-//               },
-//             ),
-//           ),
-//           Expanded(
-//             child: ListView.builder(
-//               shrinkWrap: true,
-//               itemCount: filteredStudentList.length,
-//               itemBuilder: (context, index) {
-//                 final studentData = filteredStudentList[index];
-//                 final studentUID = studentData['uid'].toString();
-//                 return ListTile(
-//                   title: Row(
-//                     children: [
-//                       Expanded(
-//                         child: Text(
-//                           '${studentData['id']} - ${studentData['name']} - ${studentData['class']}',
-//                           overflow: TextOverflow.ellipsis,
-//                         ),
-//                       ),
-//                       Checkbox(
-//                         value: selectedStudentIds.contains(studentUID),
-//                         onChanged: (bool? value) {
-//                           setState(() {
-//                             if (value == true) {
-//                               selectedStudentIds.add(studentUID);
-//                             } else {
-//                               selectedStudentIds.remove(studentUID);
-//                             }
-//                           });
-//                         },
-//                       ),
-//                     ],
-//                   ),
-//                 );
-//               },
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.all(8.0),
-//             child: ElevatedButton(
-//               onPressed: saveSelectedStudents,
-//               child: Text('確定'),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
