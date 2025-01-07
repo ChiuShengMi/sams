@@ -1,28 +1,33 @@
 import 'package:flutter/material.dart';
-import 'table_styles.dart';
 
 class CustomTable extends StatelessWidget {
   final List<String> headers;
   final List<List<String>> data;
-  final void Function(int index)? onRowTap; // onRowTap 추가
+  final void Function(int rowIndex)? onDetailTap;
 
   CustomTable({
     required this.headers,
     required this.data,
-    this.onRowTap,
+    this.onDetailTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: TableStyles.cellDecoration,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey, width: 1),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Table(
+        border: TableBorder.symmetric(
+          inside: BorderSide(color: Colors.grey.shade300, width: 0.5),
+        ),
         columnWidths: {
           for (int i = 0; i < headers.length; i++) i: FlexColumnWidth(1),
         },
         children: [
           _buildHeaderRow(),
-          ..._buildDataRows(context),
+          ..._buildDataRows(),
         ],
       ),
     );
@@ -30,50 +35,65 @@ class CustomTable extends StatelessWidget {
 
   TableRow _buildHeaderRow() {
     return TableRow(
-      decoration: TableStyles.headerDecoration,
+      decoration: BoxDecoration(
+        color: Colors.purple.shade100,
+      ),
       children: headers
           .map((header) => Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Text(
                   header,
                   textAlign: TextAlign.center,
-                  style: TableStyles.headerTextStyle,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ))
           .toList(),
     );
   }
 
-  List<TableRow> _buildDataRows(BuildContext context) {
+  List<TableRow> _buildDataRows() {
     return data.asMap().entries.map((entry) {
       int rowIndex = entry.key;
       List<String> rowData = entry.value;
 
       return TableRow(
         decoration: BoxDecoration(
-          color: rowIndex % 2 == 0 ? Colors.white : Colors.grey[100],
+          color: rowIndex % 2 == 0 ? Colors.white : Colors.grey.shade100,
         ),
-        children: rowData.map((cellData) {
-          return GestureDetector(
-            onTap: () {
-              if (onRowTap != null) onRowTap!(rowIndex);
-            },
-            child: _buildTableCell(cellData),
+        children: rowData.asMap().entries.map((cellEntry) {
+          int cellIndex = cellEntry.key;
+          String cellData = cellEntry.value;
+
+          // Check if it's the "詳細" column
+          if (cellIndex == headers.length - 1 && onDetailTap != null) {
+            return GestureDetector(
+              onTap: () => onDetailTap!(rowIndex),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  cellData,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              cellData,
+              textAlign: TextAlign.center,
+            ),
           );
         }).toList(),
       );
     }).toList();
-  }
-
-  Widget _buildTableCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TableStyles.cellTextStyle,
-      ),
-    );
   }
 }
