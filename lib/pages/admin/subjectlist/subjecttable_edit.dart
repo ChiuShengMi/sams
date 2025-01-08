@@ -512,89 +512,16 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          '授業編集',
-                          style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                ),
+              Text(
+                '授業編集',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
-              Expanded(
-                  child: Column(
-                children: [
-                  Container(
-                      decoration: BoxDecoration(
-                        color: Colors.purple,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20.0),
-                          topRight: Radius.circular(20.0),
-                        ),
-                      ),
-                      child: Table(
-                        columnWidths: const {
-                          0: FlexColumnWidth(2),
-                          1: FlexColumnWidth(1),
-                          2: FlexColumnWidth(1),
-                          3: FlexColumnWidth(1),
-                        },
-                        children: [
-                          // Header Row
-                          TableRow(
-                            children: [
-                              TableCellHeader(text: '学籍番号'), // 学籍番号
-                              TableCellHeader(text: '学生名'), // 学生名
-                              TableCellHeader(text: 'クラス'), // クラス
-                              TableCellHeader(text: 'チェック'), // チェック
-                            ],
-                          ),
-                        ],
-                      ))
-                ],
-              )),
               const SizedBox(height: 16),
               _buildFormFields(),
             ],
           ),
         ),
         bottomNavigationBar: _buildBottomNavigationBar(),
-      ),
-    );
-  }
-}
-
-class TableCellHeader extends StatelessWidget {
-  final String text;
-
-  const TableCellHeader({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }

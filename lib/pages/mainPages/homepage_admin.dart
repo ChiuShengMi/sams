@@ -42,7 +42,8 @@ class HomePageAdmin extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: HoverButton(
+                              child: _buildBoxedButton(
+                                context: context,
                                 label: '出席総計管理',
                                 onPressed: () {
                                   // 첫 번째 버튼 동작
@@ -51,7 +52,8 @@ class HomePageAdmin extends StatelessWidget {
                             ),
                             SizedBox(width: 20), // 버튼 사이 간격
                             Expanded(
-                              child: HoverButton(
+                              child: _buildBoxedButton(
+                                context: context,
                                 label: '全体出席データ管理',
                                 onPressed: () {
                                   Navigator.push(
@@ -71,7 +73,8 @@ class HomePageAdmin extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: HoverButton(
+                              child: _buildBoxedButton(
+                                context: context,
                                 label: '授業リスト',
                                 onPressed: () {
                                   Navigator.push(
@@ -84,7 +87,8 @@ class HomePageAdmin extends StatelessWidget {
                             ),
                             SizedBox(width: 20), // 버튼 사이 간격
                             Expanded(
-                              child: HoverButton(
+                              child: _buildBoxedButton(
+                                context: context,
                                 label: 'ユーザ管理',
                                 onPressed: () {
                                   Navigator.push(
@@ -103,7 +107,8 @@ class HomePageAdmin extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
-                                child: HoverButton(
+                                child: _buildBoxedButton(
+                                  context: context,
                                   label: 'Test Page',
                                   onPressed: () {
                                     Navigator.push(
@@ -116,7 +121,8 @@ class HomePageAdmin extends StatelessWidget {
                               ),
                               SizedBox(width: 20),
                               Expanded(
-                                child: HoverButton(
+                                child: _buildBoxedButton(
+                                  context: context,
                                   label: 'ログ',
                                   onPressed: () {
                                     Navigator.push(
@@ -134,7 +140,8 @@ class HomePageAdmin extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
-                                child: HoverButton(
+                                child: _buildBoxedButton(
+                                  context: context,
                                   label: '休暇管理',
                                   onPressed: () {
                                     Navigator.push(
@@ -148,7 +155,8 @@ class HomePageAdmin extends StatelessWidget {
                               ),
                               SizedBox(width: 20),
                               Expanded(
-                                child: HoverButton(
+                                child: _buildBoxedButton(
+                                  context: context,
                                   label: '授業と学生紐付け',
                                   onPressed: () {
                                     Navigator.push(
@@ -186,95 +194,34 @@ class HomePageAdmin extends StatelessWidget {
     );
   }
 
-//   Widget HoverButton({
-//     required BuildContext context,
-//     required String label,
-//     required VoidCallback onPressed,
-//   }) {
-//     return Container(
-//       height: 60,
-//       decoration: BoxDecoration(
-//         color: Color(0xFF7B1FA2),
-//         borderRadius: BorderRadius.circular(10),
-//         boxShadow: [
-//           BoxShadow(
-//             color: Colors.grey.withOpacity(0.5),
-//             spreadRadius: 3,
-//             blurRadius: 5,
-//             offset: Offset(0, 3),
-//           ),
-//         ],
-//       ),
-//       child: TextButton(
-//         onPressed: onPressed,
-//         child: Text(
-//           label,
-//           style: TextStyle(
-//             color: Colors.white,
-//             fontSize: 16,
-//             fontWeight: FontWeight.bold,
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-}
-
-class HoverButton extends StatefulWidget {
-  final String label;
-  final VoidCallback onPressed;
-
-  const HoverButton({
-    Key? key,
-    required this.label,
-    required this.onPressed,
-  }) : super(key: key);
-
-  @override
-  _HoverButtonState createState() => _HoverButtonState();
-}
-
-class _HoverButtonState extends State<HoverButton> {
-  bool isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() {
-          isHovered = true;
-        });
-      },
-      onExit: (_) {
-        setState(() {
-          isHovered = false;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
-        height: 60,
-        decoration: BoxDecoration(
-          color: isHovered ? Colors.deepPurple[400] : Color(0xFF7B1FA2),
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 3,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: TextButton(
-          onPressed: widget.onPressed,
-          child: Text(
-            widget.label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+  // 버튼 스타일을 위한 헬퍼 메서드
+  Widget _buildBoxedButton({
+    required BuildContext context,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: Color(0xFF7B1FA2), // 버튼 색상
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 3,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: TextButton(
+        onPressed: onPressed,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

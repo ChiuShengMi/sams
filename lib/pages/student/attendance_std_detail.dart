@@ -27,7 +27,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     _fetchAttendanceDetails();
   }
 
-// 出席詳細データを取得する
+  // 出席詳細データを取得する
   Future<void> _fetchAttendanceDetails() async {
     try {
       List<Map<String, String>> detailsList = [];
@@ -69,15 +69,32 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                           as Map<dynamic, dynamic>;
 
                   // 🔍 檢查APPROVE狀態
+                  if (studentRecord.containsKey('APPROVE')) {
+                    print(
+                        'APPROVE 值: ${studentRecord['APPROVE']} (classID: ${widget.classID}, dateKey: $dateKey)');
+                  } else {
+                    print(
+                        'APPROVE 欄位未找到 (classID: ${widget.classID}, dateKey: $dateKey)');
+                  }
+
+                  // 1️⃣ 如果 APPROVE 為 1，則顯示為 "休暇届承認されたにより出席"
                   if (studentRecord.containsKey('APPROVE') &&
                       (studentRecord['APPROVE'] == 1 ||
                           studentRecord['APPROVE'] == '1')) {
+                    print(
+                        'APPROVE 為 1，已確認出席 (classID: ${widget.classID}, dateKey: $dateKey)');
                     status = "休暇届承認されたにより出席　〇";
-                  } else if (studentRecord.containsKey('UPDATE_TIME')) {
+                  }
+                  // 2️⃣ 如果 APPROVE 不是 1，則執行 UPDATE_TIME 的出席/遲到檢查
+                  else if (studentRecord.containsKey('UPDATE_TIME')) {
                     String updateTime = studentRecord['UPDATE_TIME'];
                     DateTime updateDateTime = DateTime.parse(updateTime);
                     DateTime classStartTime =
                         _getClassStartTime(dateData['TIME'] ?? '1');
+
+                    print(
+                        'UPDATE_TIME: $updateTime (classID: ${widget.classID}, dateKey: $dateKey)');
+
                     status = updateDateTime.isAfter(classStartTime)
                         ? "遅刻　△"
                         : "出席　〇";
@@ -89,9 +106,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
           }
         }
       }
-
-      // 🔥 對 detailsList 進行日期排序（最舊的在上，最新的在下）
-      detailsList.sort((a, b) => a['date']!.compareTo(b['date']!));
 
       setState(() {
         _attendanceDetails = detailsList;
