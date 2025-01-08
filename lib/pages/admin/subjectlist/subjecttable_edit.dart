@@ -2,9 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:sams/pages/admin/subjectlist/subjecttable_new.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/utils/log.dart';
+import 'package:sams/widget/custom_input_container.dart';
+import 'package:sams/widget/searchbar/custom_input.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -393,55 +396,6 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
     }).toList();
   }
 
-  Widget _buildFormFields() {
-    return Column(
-      children: [
-        TextField(
-          controller: _classController,
-          decoration: InputDecoration(labelText: '授業名'),
-        ),
-        ..._buildTeacherSelection(),
-        ElevatedButton(
-          onPressed: () => setState(() => _selectedTeachers.add('')),
-          child: Text('教師を追加'),
-        ),
-        DropdownButtonFormField<String>(
-          value: _selectedDay,
-          items: _days
-              .map((day) => DropdownMenuItem(value: day, child: Text(day)))
-              .toList(),
-          onChanged: (value) => setState(() => _selectedDay = value),
-          decoration: InputDecoration(labelText: '授業曜日'),
-        ),
-        DropdownButtonFormField<String>(
-          value: _selectedTime,
-          items: _times
-              .map((time) => DropdownMenuItem(value: time, child: Text(time)))
-              .toList(),
-          onChanged: (value) => setState(() => _selectedTime = value),
-          decoration: InputDecoration(labelText: '時間割'),
-        ),
-        TextField(
-          controller: _qrCodeController,
-          decoration: InputDecoration(labelText: 'QRコード'),
-        ),
-        TextField(
-          controller: _classroomController,
-          decoration: InputDecoration(labelText: '教室'),
-        ),
-        DropdownButtonFormField<String>(
-          value: _selectedPlace,
-          items: _place
-              .map(
-                  (place) => DropdownMenuItem(value: place, child: Text(place)))
-              .toList(),
-          onChanged: (value) => setState(() => _selectedPlace = value),
-          decoration: InputDecoration(labelText: '号館'),
-        ),
-      ],
-    );
-  }
-
   Widget _buildBottomNavigationBar() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
@@ -508,16 +462,98 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
       child: Scaffold(
         appBar: CustomAppBar(),
         body: SingleChildScrollView(
+          // Keep only one scroll view
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '授業編集',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        '授業編集',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
-              _buildFormFields(),
+              CustomInputContainer(
+                inputWidgets: [
+                  CustomInput(controller: _classController, hintText: '授業名'),
+                  ..._buildTeacherSelection(),
+                  SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () => setState(() => _selectedTeachers.add('')),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          Color(0xFF7B1FA2)), // Apply the custom color
+                      padding: MaterialStateProperty.all(EdgeInsets.symmetric(
+                          vertical: 15.0,
+                          horizontal:
+                              30.0)), // Add padding to make the button larger
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(30.0), // Rounded corners
+                      )),
+                      elevation: MaterialStateProperty.all(
+                          5), // Add shadow for a 3D effect
+                      side: MaterialStateProperty.all(BorderSide(
+                          color: Colors.white,
+                          width: 2)), // Add a white border for contrast
+                    ),
+                    child: Text(
+                      '+ 教師を追加',
+                      style: TextStyle(
+                        fontSize: 18.0, // Increase the text size
+                        fontWeight: FontWeight.bold, // Make the text bold
+                        color: Colors
+                            .white, // Change text color to white for better contrast
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  Customdropdown(
+                    value: _selectedDay,
+                    items: _days,
+                    onChanged: (value) => setState(() => _selectedDay = value),
+                    hintText: '授業曜日',
+                  ),
+                  SizedBox(height: 8),
+                  Customdropdown(
+                    value: _selectedTime,
+                    items: _times,
+                    onChanged: (value) => setState(() => _selectedTime = value),
+                    hintText: '時間割',
+                  ),
+                  SizedBox(height: 8),
+                  CustomInput(controller: _qrCodeController, hintText: 'QRコード'),
+                  SizedBox(height: 8),
+                  CustomInput(controller: _classroomController, hintText: '教室'),
+                  SizedBox(height: 8),
+                  Customdropdown(
+                    value: _selectedPlace,
+                    items: _place,
+                    onChanged: (value) =>
+                        setState(() => _selectedPlace = value),
+                    hintText: '号館',
+                  ),
+                ],
+              ),
             ],
           ),
         ),
