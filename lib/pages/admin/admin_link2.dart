@@ -197,7 +197,7 @@ class _adminLink2State extends State<AdminLink2> {
         .set(data, SetOptions(merge: true));
     // ログメッセージを追加
     await Utils.logMessage(
-        '${userName.isNotEmpty ? userName : 'Unknown'}: 選択した学生を保存しました: クラス=${widget.selectedClass}, 学生数=${studentData.length}');
+        '${userName.isNotEmpty ? userName : 'Unknown'}: 選択した学生を保存しました: クラス:${widget.selectedClass} 学生数:${studentData.length}');
 
 // Update the state to refresh the UI
     setState(() {
