@@ -40,7 +40,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
   List<String> _selectedTeachers = [];
 
   final List<String> _days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
-  final List<String> _times = ['1', '2', '3', '4', '5', '6'];
+  final List<String> _times = ['1', '2', '3', '4', '5'];
   final List<String> _place = [
     '国際1号館',
     '国際2号館',
