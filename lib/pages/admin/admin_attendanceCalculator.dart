@@ -13,6 +13,10 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
   List<Map<String, String>> _courses = [];
   List<Map<String, String>> _filteredCourses = [];
   Map<String, Map<String, dynamic>> _attendanceResults = {};
+  Map<String, double> _totalAttendanceRates = {
+    'IT': 0.0,
+    'GAME': 0.0,
+  };
   String _selectedCategory = "All"; // 選擇的類別
   final TextEditingController _searchController = TextEditingController();
 
@@ -59,6 +63,9 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
         _courses = coursesList;
         _filteredCourses = _courses;
       });
+
+      // 取得全部類別的全體出席率
+      await _calculateTotalAttendanceRate();
     } catch (e) {
       print("課程數據獲取失敗: $e");
     }
@@ -78,9 +85,79 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
     });
   }
 
-  // 計算出席率（如需使用，請啟用這段代碼）
-  Future<void> _calculateAttendanceRate() async {
-    // 此處可以加入計算出席率的邏輯
+  // 計算 IT 和 GAME 的全體出席率
+  Future<void> _calculateTotalAttendanceRate() async {
+    try {
+      for (var course in _courses) {
+        String classID = course['classID']!;
+        String classType = course['classType']!;
+
+        DocumentReference classDoc = FirebaseFirestore.instance
+            .collection('Class')
+            .doc(classType)
+            .collection('Subjects')
+            .doc(classID);
+
+        DocumentSnapshot classSnapshot = await classDoc.get();
+        if (classSnapshot.exists) {
+          Map<String, dynamic> data =
+              classSnapshot.data() as Map<String, dynamic>;
+          if (data.containsKey('STD')) {
+            Map<String, dynamic> stdData = data['STD'] as Map<String, dynamic>;
+            for (var key in stdData.keys) {
+              var studentData = stdData[key] as Map<String, dynamic>;
+              var studentUID = studentData['UID'];
+              // 確保統計所有學生
+            }
+          }
+
+          if (data.containsKey('ATTENDANCE')) {
+            Map<String, dynamic> attendanceData =
+                data['ATTENDANCE'] as Map<String, dynamic>;
+
+            int totalClasses = 0;
+            int totalAttendance = 0;
+
+            for (var dateKey in attendanceData.keys) {
+              if (attendanceData[dateKey]['STATUS'] == 'active') {
+                totalClasses++;
+
+                // 只檢查該授業類型的分支，不再檢查 IT 和 GAME 兩個分支
+                DatabaseReference attendanceRef = FirebaseDatabase.instance
+                    .ref('ATTENDANCE/$classType/$classID/$dateKey');
+
+                DataSnapshot attendanceSnapshot = await attendanceRef.get();
+
+                Map<dynamic, dynamic> studentData = {};
+                if (attendanceSnapshot.exists) {
+                  studentData.addAll(
+                      attendanceSnapshot.value as Map<dynamic, dynamic>);
+                }
+
+                totalAttendance += studentData.length;
+
+                // 檢查APPROVE狀態，確認是否需要計入出席率
+                studentData.forEach((uid, studentRecord) {
+                  if (studentRecord.containsKey('APPROVE') &&
+                      (studentRecord['APPROVE'] == 1 ||
+                          studentRecord['APPROVE'] == '1')) {
+                    totalAttendance++;
+                  }
+                });
+              }
+            }
+
+            double attendanceRate =
+                totalClasses > 0 ? (totalAttendance / totalClasses) * 100 : 0.0;
+            setState(() {
+              _attendanceResults[classID] = {'attendanceRate': attendanceRate};
+            });
+          }
+        }
+      }
+    } catch (e) {
+      print("授業出席率計算失敗: $e");
+    }
   }
 
   @override
@@ -126,7 +203,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
             // 課程列表
             Expanded(
               child: _courses.isEmpty
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(child: Text("関連する授業が見つかりませんでした"))
                   : ListView.builder(
                       itemCount: _filteredCourses.length,
                       itemBuilder: (context, index) {
@@ -143,7 +220,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
                               stats != null &&
                                       stats.containsKey('attendanceRate')
                                   ? '${stats['attendanceRate']?.toStringAsFixed(1)}%'
-                                  : '計算中...',
+                                  : '授業データはありません。',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blue,

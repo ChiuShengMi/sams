@@ -8,6 +8,7 @@ import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/table/custom_table.dart';
 import 'package:sams/pages/user/add.dart';
+import 'package:sams/pages/user/detail.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -30,13 +31,12 @@ class _UserListState extends State<UserList> {
         data['MAIL']?.toString() ?? 'N/A',
         data['NAME']?.toString() ?? 'N/A',
         data['TEL']?.toString() ?? 'N/A',
-        'Edit'
+        '詳細', // Replace with 詳細 for detail button
       ];
     }).toList();
   }
 
   Stream<QuerySnapshot> _getUserStream() {
-    // Update Firestore query based on selected user type
     return firestore
         .collection('Users')
         .doc(selectedUserType)
@@ -83,8 +83,8 @@ class _UserListState extends State<UserList> {
                       child: Customdropdown(
                         hintText: 'コース',
                         items: [
-                          DropdownMenuItem(child: Text('IT'), value: 'It'),
-                          DropdownMenuItem(child: Text('GAME'), value: 'Game'),
+                          DropdownMenuItem(child: Text('IT'), value: 'IT'),
+                          DropdownMenuItem(child: Text('GAME'), value: 'GAME'),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -140,9 +140,22 @@ class _UserListState extends State<UserList> {
                           'E-Mail',
                           '名前',
                           '電話番号',
-                          '修正',
+                          '詳細',
                         ],
                         data: data,
+                        onDetailTap: (rowIndex) {
+                          final documentId = snapshot
+                              .data!.docs[rowIndex].id; // Get the document ID
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserDetail(
+                                documentPath:
+                                    'Users/$selectedUserType/IT/$documentId',
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
