@@ -302,9 +302,9 @@ Widget buildEditCell(BuildContext context, String text,
           ),
         ),
       );
-      if (result == true) {
-        setState(() {});
-      }
+      // if (result == true) {
+      //   setState(() {});
+      // }
     },
     child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
