@@ -98,59 +98,33 @@ class _LessonTableScreenState extends State<Lessontable> {
       return Center(child: Text('データが見つかりませんでした。'));
     }
 
-    List<TableRow> tableRows = [];
+    List<Widget> tableRows = [];
 
-    // 基於 widget.lessonData 生成資料行
+    // 행 생성
     for (final data in widget.lessonData) {
       tableRows.add(
-        TableRow(
-          children: [
-            buildTableCell(data['CLASS'] ?? 'N/A'),
-            buildTableCell(data['classType'] ?? 'N/A'), // 現在のコース (ITまたはGAME)
-            buildTableCell(
-              (data['TEACHER_ID'] as Map<dynamic, dynamic>?)
-                      ?.values
-                      .map((teacher) => teacher['NAME'] ?? 'N/A')
-                      .join('\n') ??
-                  'N/A', // 教師情報
-            ),
-            buildTableCell(data['DAY'] ?? 'N/A'), // 授業曜日
-            buildTableCell(data['TIME'] ?? 'N/A'), // 時間割
-            buildTableCell(data['QR_CODE'] ?? 'N/A'), // QRコード
-            buildTableCell(data['CLASSROOM'] ?? 'N/A'), // 教室
-            buildTableCell(data['PLACE'] ?? 'N/A'), // 号館
-            buildEditCell(
-                context, '編集', data, data['classID'], data['classType']),
+        _HoverableRow(
+          rowData: [
+            data['CLASS'] ?? 'N/A',
+            data['classType'] ?? 'N/A',
+            (data['TEACHER_ID'] as Map<dynamic, dynamic>?)
+                    ?.values
+                    .map((teacher) => teacher['NAME'] ?? 'N/A')
+                    .join('\n') ??
+                'N/A', // 教師情報
+            data['DAY'] ?? 'N/A',
+            data['TIME'] ?? 'N/A',
+            data['QR_CODE'] ?? 'N/A',
+            data['CLASSROOM'] ?? 'N/A',
+            data['PLACE'] ?? 'N/A',
           ],
+          editCell: buildEditCell(
+              context, '編集', data, data['classID'], data['classType']),
         ),
       );
     }
 
-    return Table(
-      columnWidths: const {
-        0: FlexColumnWidth(2),
-        1: FlexColumnWidth(1),
-        2: FlexColumnWidth(2),
-        3: FlexColumnWidth(1),
-        4: FlexColumnWidth(1),
-        5: FlexColumnWidth(2),
-        6: FlexColumnWidth(1),
-        7: FlexColumnWidth(1),
-      },
-      children: tableRows,
-    );
-  }
-
-  // テーブルのセルを構築するメソッド
-  Widget buildTableCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-    );
+    return Column(children: tableRows);
   }
 
   // 編集セルを構築するメソッド
@@ -203,6 +177,69 @@ class TableCellHeader extends StatelessWidget {
         text,
         textAlign: TextAlign.center,
         style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    );
+  }
+}
+
+// 행에 애니메이션 효과 추가
+class _HoverableRow extends StatefulWidget {
+  final List<String> rowData;
+  final Widget editCell;
+
+  const _HoverableRow({
+    required this.rowData,
+    required this.editCell,
+  });
+
+  @override
+  State<_HoverableRow> createState() => _HoverableRowState();
+}
+
+class _HoverableRowState extends State<_HoverableRow> {
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => isHovered = true),
+      onExit: (_) => setState(() => isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 10),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: isHovered ? Colors.deepPurple[50] : Colors.transparent,
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: isHovered
+              ? [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    blurRadius: 4,
+                    spreadRadius: 2,
+                    offset: Offset(0, 2),
+                  )
+                ]
+              : [],
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 4.0),
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            ...widget.rowData.map((cellData) {
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    cellData,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              );
+            }).toList(),
+            Expanded(child: widget.editCell),
+          ],
+        ),
       ),
     );
   }
