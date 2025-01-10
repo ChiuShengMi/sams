@@ -180,17 +180,9 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // 検索バー
-                      Container(
-                        width: 500,
-                      ),
-                      SizedBox(width: 30),
-                      // ITとGAMEを切り替えるトグルボタン（複数選択可能）
-
                       SizedBox(
                         width: 90,
                       ),
-
                       CustomButton(
                         text: "戻る",
                         onPressed: () {
