@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:sams/pages/mainPages/homepage_student.dart';
 import 'package:sams/pages/student/attendance_std_detail.dart';
+import 'package:sams/widget/bottombar.dart';
+import 'package:sams/widget/searchbar/custom_input.dart';
+import 'package:sams/widget/button/custom_button.dart';
+import 'package:sams/widget/appbar.dart';
 
 class AttendanceRatePage extends StatefulWidget {
   @override
@@ -263,26 +268,77 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('出席率'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {},
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _searchController,
-              onChanged: _filterCourses,
-              decoration: InputDecoration(
-                labelText: '検索コース',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // タイトル行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "出席率",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // フィルタリングと検索バー
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 検索バー
+                      Container(
+                        width: 500,
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (value) {
+                            _filterCourses; // 檢索條件改變時重新篩選
+                          },
+                          decoration: InputDecoration(
+                            hintText: '検索する内容を入力',
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 10),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 30),
+                      // ITとGAMEを切り替えるトグルボタン（複数選択可能）
+
+                      SizedBox(
+                        width: 90,
+                      ),
+
+                      CustomButton(
+                        text: "戻る",
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => HomePageStudent()),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 16.0),
@@ -339,6 +395,7 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
           ],
         ),
       ),
+      bottomNavigationBar: BottomAppBar(),
     );
   }
 }

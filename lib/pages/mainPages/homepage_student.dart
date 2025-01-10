@@ -15,6 +15,7 @@ class HomePageStudent extends StatefulWidget {
 }
 
 class _HomePageStudentState extends State<HomePageStudent> {
+  String userName = '';
   final String currentUID = FirebaseAuth.instance.currentUser!.uid; // 現在のユーザーID
   final FirebaseFirestore _firestore =
       FirebaseFirestore.instance; // Firestoreのインスタンス
@@ -235,6 +236,70 @@ class _HomePageStudentState extends State<HomePageStudent> {
     );
   }
 
+  //loginしているユーザー名表示
+  @override
+  void initState() {
+    super.initState();
+    _initializePage(); // 初期化処理を呼び出す
+  }
+
+  Future<void> _initializePage() async {
+    await _loadUserInfo(); // Ensure user info is loaded
+    //await fetchStudents(); // Then fetch students
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('ユーザーがログインしていません');
+      final uid = user.uid;
+
+      DocumentSnapshot? studentSnapshot;
+
+      // ITコレクションの検索
+      studentSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Students')
+          .collection('IT')
+          .doc(uid)
+          .get();
+
+      // ITに存在しない場合、GAMEコレクションの検索
+      if (!studentSnapshot.exists) {
+        studentSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Students')
+            .collection('GAME')
+            .doc(uid)
+            .get();
+      }
+
+      // 学生情報が見つからない場合
+      if (!studentSnapshot.exists) {
+        throw Exception('学生情報が見つかりません');
+      }
+
+      // データの取得と型の確認
+      final studentData = studentSnapshot.data();
+      if (studentData == null || !(studentData is Map<String, dynamic>)) {
+        throw Exception('データ形式が無効です');
+      }
+
+      final fetchedUserId = studentData['ID'];
+      final fetchedUserName = studentData['NAME'];
+
+      setState(() {
+        // userId = fetchedUserId?.toString() ?? 'Unknown';
+        userName = fetchedUserName?.toString() ?? 'Unknown';
+      });
+    } catch (e) {
+      print('エラーが発生しました: $e');
+      setState(() {
+        userName = 'エラー: ユーザー情報の取得に失敗しました';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -254,7 +319,7 @@ class _HomePageStudentState extends State<HomePageStudent> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      '学生出席ページへようこそ！',
+                      '${userName.isNotEmpty ? userName : 'Loading...'}さん\n学生出席ページへようこそ！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
