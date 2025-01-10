@@ -93,10 +93,9 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Color(0xFF7B1FA2),
                       ),
                     ),
-                    Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
                     SizedBox(height: 100),
                     CustomInputContainer(
                       inputWidgets: [
