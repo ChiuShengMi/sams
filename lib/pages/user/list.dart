@@ -8,7 +8,7 @@ import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/table/custom_table.dart';
 import 'package:sams/pages/user/add.dart';
-import 'package:sams/pages/user/detail.dart'; // Detail 페이지 추가
+import 'package:sams/pages/user/detail.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -19,6 +19,8 @@ class _UserListState extends State<UserList> {
   final TextEditingController searchInputController = TextEditingController();
   final firestore = FirebaseFirestore.instance;
   String selectedUserType = 'Students'; // Default user type
+  int currentPage = 0; // 현재 페이지
+  int itemsPerPage = 10; // 한 페이지에 표시되는 아이템 수
 
   List<List<String>> _mapSnapshotToData(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
@@ -81,7 +83,7 @@ class _UserListState extends State<UserList> {
                     Expanded(
                       flex: 4,
                       child: CustomInput(
-                      controller: searchInputController,
+                        controller: searchInputController,
                         hintText: 'Search',
                       ),
                     ),
@@ -110,34 +112,48 @@ class _UserListState extends State<UserList> {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       }
 
-                      final List<List<String>> data = snapshot.hasData
+                      final List<List<String>> allData = snapshot.hasData
                           ? _mapSnapshotToData(snapshot.data!)
                           : [];
 
-                      return CustomTable(
-                        headers: [
-                          '学籍番号',
-                          'コース',
-                          'クラス名',
-                          '属性',
-                          'E-Mail',
-                          '名前',
-                          '電話番号',
-                          '修正',
+                      // 페이지네이션 데이터 계산
+                      final totalItems = allData.length;
+                      final totalPages = (totalItems / itemsPerPage).ceil();
+                      final pageData = allData
+                          .skip(currentPage * itemsPerPage)
+                          .take(itemsPerPage)
+                          .toList();
+
+                      return Column(
+                        children: [
+                          CustomTable(
+                            headers: [
+                              '学籍番号',
+                              'コース',
+                              'クラス名',
+                              '属性',
+                              'E-Mail',
+                              '名前',
+                              '電話番号',
+                              '修正',
+                            ],
+                            data: pageData,
+                            onRowTap: (rowIndex) {
+                              final List<String> rowData = pageData[rowIndex];
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UserDetail(
+                                    documentPath:
+                                        'Users/$selectedUserType/IT/${rowData.last}',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          SizedBox(height: 10),
+                          _buildPaginationControls(totalPages),
                         ],
-                        data: data,
-                        onRowTap: (rowIndex) {
-                          final List<String> rowData = data[rowIndex];
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => UserDetail(
-                                documentPath:
-                                    'Users/$selectedUserType/IT/${rowData.last}',
-                              ),
-                            ),
-                          );
-                        },
                       );
                     },
                   ),
@@ -166,6 +182,50 @@ class _UserListState extends State<UserList> {
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaginationControls(int totalPages) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        totalPages,
+        (index) => MouseRegion(
+          cursor: SystemMouseCursors.click, // 포인터 효과 추가
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                currentPage = index; // 페이지 변경
+              });
+            },
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 4.0),
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: currentPage == index
+                    ? Color(0xFF7B1FA2)
+                    : Colors.white, // 선택 여부에 따른 색상
+                borderRadius: BorderRadius.circular(4.0),
+                border: Border.all(
+                  color: currentPage == index
+                      ? Color(0xFF7B1FA2)
+                      : Colors.white, // 선택 여부에 따른 색상
+                  width: 1.0,
+                ),
+              ),
+              child: Text(
+                '${index + 1}',
+                style: TextStyle(
+                  color: currentPage == index
+                      ? Colors.white
+                      : Colors.black, // 텍스트 색상
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ),
       ),

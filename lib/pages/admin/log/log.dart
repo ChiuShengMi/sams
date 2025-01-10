@@ -14,35 +14,85 @@ class _logPageState extends State<logPage> {
   DocumentSnapshot? firstDocument;
   bool hasMoreLogs = true;
   bool isLoading = false;
+  String searchText = '';
+  final TextEditingController _searchController = TextEditingController();
 
   List<QueryDocumentSnapshot> logs = [];
-  int currentPage = 1;
+  List<DocumentSnapshot> pageMarkers = [];
+  int currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _fetchLogs();
+    _fetchLogs(isNextPage: true, isInitial: true);
   }
 
-  Future<void> _fetchLogs({bool isNextPage = true}) async {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    if (value.isEmpty) {
+      setState(() {
+        searchText = '';
+        currentPage = 0;
+        pageMarkers.clear();
+        lastDocument = null;
+        firstDocument = null;
+        hasMoreLogs = true;
+      });
+      _fetchLogs(isNextPage: true, isInitial: true);
+    }
+  }
+
+  void _performSearch() {
+    setState(() {
+      currentPage = 0;
+      pageMarkers.clear();
+      lastDocument = null;
+      firstDocument = null;
+      hasMoreLogs = true;
+      searchText = _searchController.text;
+    });
+    _fetchLogs(isNextPage: true, isInitial: true);
+  }
+
+  Future<void> _fetchLogs({
+    required bool isNextPage,
+    bool isInitial = false,
+  }) async {
     if (isLoading) return;
 
     setState(() {
       isLoading = true;
+      if (!isNextPage) {
+        hasMoreLogs = true;
+      }
     });
 
     try {
-      Query query = FirebaseFirestore.instance
-          .collection('Log')
-          .orderBy(FieldPath.documentId, descending: true)
-          .limit(logsPerPage);
+      Query query = FirebaseFirestore.instance.collection('Log');
 
-      if (isNextPage && lastDocument != null) {
-        query = query.startAfterDocument(lastDocument!);
+      // 如果有搜索文字，則添加搜索條件
+      if (searchText.isNotEmpty) {
+        query = query
+            .orderBy('MSG')
+            .startAt([searchText]).endAt([searchText + '\uf8ff']);
+      } else {
+        query = query.orderBy(FieldPath.documentId, descending: true);
       }
 
-      if (!isNextPage && firstDocument != null) {
-        query = query.endBeforeDocument(firstDocument!);
+      query = query.limit(logsPerPage);
+
+      if (!isInitial) {
+        if (isNextPage && lastDocument != null) {
+          query = query.startAfterDocument(lastDocument!);
+        } else if (!isNextPage && currentPage > 1) {
+          DocumentSnapshot startDoc = pageMarkers[currentPage - 2];
+          query = query.startAfterDocument(startDoc);
+        }
       }
 
       final querySnapshot = await query.get();
@@ -51,23 +101,27 @@ class _logPageState extends State<logPage> {
       if (fetchedLogs.isEmpty) {
         setState(() {
           hasMoreLogs = false;
+          logs = [];
         });
         return;
       }
 
-      setState(() {
-        if (isNextPage) {
-          logs.addAll(fetchedLogs);
-          lastDocument = fetchedLogs.last;
-          firstDocument ??= fetchedLogs.first;
+      // 檢查是否還有下一頁
+      if (fetchedLogs.length < logsPerPage) {
+        hasMoreLogs = false;
+      }
 
-          if (currentPage == 1 && lastDocument != null) {
-          } else {
-            currentPage += 1;
+      setState(() {
+        logs = fetchedLogs;
+        lastDocument = fetchedLogs.last;
+        firstDocument = fetchedLogs.first;
+
+        if (isNextPage) {
+          if (pageMarkers.length <= currentPage) {
+            pageMarkers.add(firstDocument!);
           }
+          currentPage += 1;
         } else {
-          logs.insertAll(0, fetchedLogs);
-          firstDocument = fetchedLogs.first;
           currentPage -= 1;
         }
       });
@@ -88,18 +142,56 @@ class _logPageState extends State<logPage> {
       ),
       body: Column(
         children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: logs.length,
-              itemBuilder: (context, index) {
-                final log = logs[index];
-                final msg = log['MSG'] ?? 'No message';
-                return ListTile(
-                  title: Text(msg),
-                  subtitle: Text(log.id),
-                );
-              },
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'ログを検索...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onSearchChanged('');
+                              },
+                            )
+                          : null,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _performSearch(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _performSearch,
+                  child: const Text('検索'),
+                ),
+              ],
             ),
+          ),
+          Expanded(
+            child: logs.isEmpty && !isLoading
+                ? Center(
+                    child: Text(
+                      searchText.isEmpty ? 'ログがありません' : '検索結果が見つかりません',
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: logs.length,
+                    itemBuilder: (context, index) {
+                      final log = logs[index];
+                      final msg = log['MSG'] ?? 'No message';
+                      return ListTile(
+                        title: Text(msg),
+                        subtitle: Text(log.id),
+                      );
+                    },
+                  ),
           ),
           if (isLoading) const Center(child: CircularProgressIndicator()),
           Row(
