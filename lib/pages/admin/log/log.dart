@@ -75,7 +75,6 @@ class _logPageState extends State<logPage> {
     try {
       Query query = FirebaseFirestore.instance.collection('Log');
 
-      // 如果有搜索文字，則添加搜索條件
       if (searchText.isNotEmpty) {
         query = query
             .orderBy('MSG')
@@ -106,7 +105,6 @@ class _logPageState extends State<logPage> {
         return;
       }
 
-      // 檢查是否還有下一頁
       if (fetchedLogs.length < logsPerPage) {
         hasMoreLogs = false;
       }
