@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sams/widget/attendencetable.dart';
+import 'package:sams/widget/button/custom_button.dart';
+import 'package:sams/widget/appbar.dart';
+import 'package:sams/widget/button/custom_button.dart';
+import 'package:sams/pages/student/attendance_std.dart';
 
 class AttendanceDetailPage extends StatefulWidget {
   final String classID;
@@ -137,37 +142,102 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.courseName} 詳細状況'),
-      ),
+      appBar: CustomAppBar(),
+      // appBar: AppBar(
+      //   title: Text('${widget.courseName} 詳細状況'),
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: _attendanceDetails.length,
-          itemBuilder: (context, index) {
-            final detail = _attendanceDetails[index];
-            return Card(
-              elevation: 4,
-              margin: EdgeInsets.symmetric(vertical: 8.0),
-              child: ListTile(
-                title: Text('日付: ${detail['date']}'),
-                trailing: Text(
-                  detail['status']!,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: detail['status'] == "出席　〇" ||
-                            detail['status'] == "休暇届承認されたにより出席　〇"
-                        ? Colors.green
-                        : detail['status'] == "遅刻　△"
-                            ? Colors.orange
-                            : Colors.red,
-                  ),
-                ),
+        child: Column(
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
               ),
-            );
-          },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // タイトル行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "'${widget.courseName} 詳細状況'",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // フィルタリングと検索バー
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 検索バー
+                      Container(
+                        width: 500,
+                      ),
+                      SizedBox(width: 30),
+                      // ITとGAMEを切り替えるトグルボタン（複数選択可能）
+
+                      SizedBox(
+                        width: 90,
+                      ),
+
+                      CustomButton(
+                        text: "戻る",
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AttendanceRatePage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _attendanceDetails.length,
+                itemBuilder: (context, index) {
+                  final detail = _attendanceDetails[index];
+                  return Card(
+                    elevation: 4,
+                    margin: EdgeInsets.symmetric(vertical: 8.0),
+                    child: ListTile(
+                      title: Text('日付: ${detail['date']}'),
+                      trailing: Text(
+                        detail['status']!,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: detail['status'] == "出席　〇" ||
+                                  detail['status'] == "休暇届承認されたにより出席　〇"
+                              ? Colors.green
+                              : detail['status'] == "遅刻　△"
+                                  ? Colors.orange
+                                  : Colors.red,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            )
+          ],
         ),
       ),
+      bottomNavigationBar: BottomAppBar(),
     );
   }
 }

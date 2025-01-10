@@ -403,6 +403,7 @@ class AttendanceDetailsPage extends StatelessWidget {
           );
         },
       ),
+      bottomNavigationBar: BottomAppBar(),
     );
   }
 }
