@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -17,7 +16,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
     'IT': 0.0,
     'GAME': 0.0,
   };
-  String _selectedCategory = "All"; // 選擇的類別
+  String _selectedCategory = "All"; // 選択されたカテゴリー
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -26,7 +25,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
     _fetchCourses();
   }
 
-  // 從 Firebase 獲取課程數據
+  // Firebaseからコースデータを取得
   Future<void> _fetchCourses() async {
     List<Map<String, String>> coursesList = [];
     try {
@@ -64,14 +63,14 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
         _filteredCourses = _courses;
       });
 
-      // 取得全部類別的全體出席率
+      // 全カテゴリーの全体出席率を取得
       await _calculateTotalAttendanceRate();
     } catch (e) {
-      print("課程數據獲取失敗: $e");
+      print("コースデータの取得に失敗しました: $e");
     }
   }
 
-  // 根據課程名稱和類別篩選課程
+  // コース名とカテゴリーでコースをフィルタリング
   void _filterCourses() {
     String query = _searchController.text.toLowerCase();
     setState(() {
@@ -85,14 +84,14 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
     });
   }
 
-  // 計算 IT 和 GAME 的全體出席率
+  // ITとGAMEの全体出席率を計算
   Future<void> _calculateTotalAttendanceRate() async {
     try {
       for (var course in _courses) {
         String classID = course['classID']!;
         String classType = course['classType']!;
 
-        print("正在處理授業: 類型: $classType, ID: $classID");
+        print("処理中の授業: タイプ: $classType, ID: $classID");
 
         DocumentReference classDoc = FirebaseFirestore.instance
             .collection('Class')
@@ -109,23 +108,23 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
           if (data.containsKey('STD')) {
             Map<String, dynamic> stdData = data['STD'] as Map<String, dynamic>;
             totalStudents = stdData.length;
-            print("找到 $totalStudents 名學生的數據");
+            print("$totalStudents 名の学生データを見つけました");
           }
 
           if (data.containsKey('ATTENDANCE')) {
             Map<String, dynamic> attendanceData =
                 data['ATTENDANCE'] as Map<String, dynamic>;
 
-            List<String> activeDates = []; // 保存有效的上課日期
+            List<String> activeDates = []; // 有効な授業日を保存
 
-            int totalClasses = 0; // 課堂總數
-            int totalAttendance = 0; // 總出席數
+            int totalClasses = 0; // 総授業数
+            int totalAttendance = 0; // 総出席数
 
             for (var dateKey in attendanceData.keys) {
               if (attendanceData[dateKey]['STATUS'] == 'active') {
                 totalClasses++;
-                activeDates.add(dateKey); // 添加有效日期
-                print("找到有效的課程日期: $dateKey");
+                activeDates.add(dateKey); // 有効な日付を追加
+                print("有効な授業日を見つけました: $dateKey");
 
                 DatabaseReference attendanceRef = FirebaseDatabase.instance
                     .ref('ATTENDANCE/$classType/$classID/$dateKey');
@@ -133,13 +132,14 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
                 DataSnapshot attendanceSnapshot = await attendanceRef.get();
 
                 if (attendanceSnapshot.exists) {
-                  print("找到日期 $dateKey 的出席數據: ${attendanceSnapshot.value}");
+                  print(
+                      "日付 $dateKey の出席データを見つけました: ${attendanceSnapshot.value}");
                   Map<dynamic, dynamic> studentData =
                       attendanceSnapshot.value as Map<dynamic, dynamic>;
 
-                  totalAttendance += studentData.length; // 簡單累加出席人數
+                  totalAttendance += studentData.length; // 出席人数を単純に加算
                 } else {
-                  print("日期 $dateKey 沒有找到任何出席數據");
+                  print("日付 $dateKey の出席データが見つかりません");
                 }
               }
             }
@@ -148,22 +148,22 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
                 ? (totalAttendance / (totalStudents * totalClasses)) * 100
                 : 0.0;
 
-            print("授業 $classID 的出席率: $attendanceRate%");
+            print("授業 $classID の出席率: $attendanceRate%");
             setState(() {
               _attendanceResults[classID] = {
                 'attendanceRate': attendanceRate,
-                'activeDates': activeDates, // 保存上課日期
+                'activeDates': activeDates, // 授業日を保存
               };
             });
           } else {
-            print("授業 $classID 沒有出席數據");
+            print("授業 $classID の出席データがありません");
           }
         } else {
-          print("授業 $classID 不存在");
+          print("授業 $classID が存在しません");
         }
       }
     } catch (e) {
-      print("授業出席率計算失敗: $e");
+      print("授業出席率の計算に失敗しました: $e");
     }
   }
 
@@ -177,7 +177,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // 搜索欄位
+            // 検索フィールド
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -189,11 +189,11 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
             ),
             SizedBox(height: 16.0),
 
-            // 下拉選單
+            // ドロップダウンメニュー
             DropdownButton<String>(
               value: _selectedCategory,
               items: [
-                DropdownMenuItem(value: "All", child: Text("全て")),
+                DropdownMenuItem(value: "All", child: Text("すべて")),
                 DropdownMenuItem(value: "IT", child: Text("IT")),
                 DropdownMenuItem(value: "GAME", child: Text("GAME")),
               ],
@@ -230,7 +230,7 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
                               stats != null &&
                                       stats.containsKey('attendanceRate')
                                   ? '${stats['attendanceRate']?.toStringAsFixed(1)}%'
-                                  : '授業データはありません。',
+                                  : '授業データがありません',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blue,
@@ -274,7 +274,7 @@ class CourseDetailsPage extends StatelessWidget {
     required this.courseName,
     required this.classID,
     required this.classType,
-    required this.activeDates, // 傳入上課日期
+    required this.activeDates, // 授業日を渡す
   });
 
   @override
@@ -295,13 +295,13 @@ class CourseDetailsPage extends StatelessWidget {
               '授業日：',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            // 顯示上課日期，並且為每個日期添加點擊事件
+            // 授業日を表示し、各日付にクリックイベントを追加
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: activeDates.map<Widget>((date) {
                 return GestureDetector(
                   onTap: () {
-                    // 點擊日期後跳轉到出席詳情頁面
+                    // 日付をクリックすると出席詳細ページに遷移
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -343,7 +343,7 @@ class AttendanceDetailsPage extends StatelessWidget {
 
   Future<Map<String, String>> _fetchAttendanceDetails() async {
     try {
-      // 根據選定的日期從 Firebase Realtime Database 獲取出席狀況
+      // 選択された日付のFirebase Realtime Databaseから出席状況を取得
       DatabaseReference attendanceRef = FirebaseDatabase.instance
           .ref('ATTENDANCE/$classType/$classID/$selectedDate');
       DataSnapshot snapshot = await attendanceRef.get();
@@ -353,15 +353,15 @@ class AttendanceDetailsPage extends StatelessWidget {
         Map<String, String> attendanceDetails = {};
 
         for (var entry in data.entries) {
-          String studentID = entry.key.toString(); // 學生 ID
+          String studentID = entry.key.toString(); // 学生ID
           Map<dynamic, dynamic>? studentData =
               entry.value as Map<dynamic, dynamic>?;
 
           if (studentData != null && studentData.containsKey("NAME")) {
-            // 如果 "NAME" 欄位存在，直接使用
+            // NAMEフィールドが存在する場合は直接使用
             attendanceDetails[studentID] = studentData["NAME"];
           } else {
-            // 如果 "NAME" 不存在，從 Firestore 查找學生名字
+            // NAMEが存在しない場合、Firestoreから学生名を検索
             String studentName =
                 await _fetchStudentNameFromFirestore(studentID);
             attendanceDetails[studentID] = studentName;
@@ -369,18 +369,18 @@ class AttendanceDetailsPage extends StatelessWidget {
         }
         return attendanceDetails;
       } else {
-        return {}; // 如果沒有數據，返回空 Map
+        return {}; // データがない場合は空のMapを返す
       }
     } catch (e) {
-      print("出席數據獲取失敗: $e");
-      return {}; // 如果發生錯誤，返回空 Map
+      print("出席データの取得に失敗しました: $e");
+      return {}; // エラーが発生した場合は空のMapを返す
     }
   }
 
   Future<String> _fetchStudentNameFromFirestore(String studentID) async {
     try {
       DocumentSnapshot? studentSnapshot;
-      // 首先查詢 IT 學生
+      // まずはIT学生を検索
       studentSnapshot = await FirebaseFirestore.instance
           .collection('Users')
           .doc('Students')
@@ -388,7 +388,7 @@ class AttendanceDetailsPage extends StatelessWidget {
           .doc(studentID)
           .get();
 
-      // 如果 IT 集合中找不到，再查詢 GAME 學生
+      // IT集合で見つからない場合、GAME学生を検索
       if (!studentSnapshot.exists) {
         studentSnapshot = await FirebaseFirestore.instance
             .collection('Users')
@@ -398,16 +398,16 @@ class AttendanceDetailsPage extends StatelessWidget {
             .get();
       }
 
-      // 如果在 Firestore 中找到了學生資料
+      // Firestoreで学生データが見つかった場合
       if (studentSnapshot.exists) {
         final studentData = studentSnapshot.data() as Map<String, dynamic>;
-        return studentData['NAME'] ?? "未知學生";
+        return studentData['NAME'] ?? "不明な学生";
       } else {
-        return "未知學生"; // 如果找不到資料，返回 "未知學生"
+        return "不明な学生"; // データが見つからない場合は "不明な学生" を返す
       }
     } catch (e) {
-      print("學生名字獲取失敗: $e");
-      return "未知學生"; // 如果發生錯誤，返回 "未知學生"
+      print("学生名の取得に失敗しました: $e");
+      return "不明な学生"; // エラーが発生した場合は "不明な学生" を返す
     }
   }
 
@@ -415,25 +415,26 @@ class AttendanceDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('出席狀態 - $selectedDate'),
+        title: Text('出席状態 - $selectedDate'),
       ),
       body: FutureBuilder<Map<String, String>>(
         future: _fetchAttendanceDetails(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator()); // 載入中顯示圈圈
+            return Center(
+                child: CircularProgressIndicator()); // ローディング中はサークルを表示
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text("數據加載失敗: ${snapshot.error}"));
+            return Center(child: Text("データの読み込みに失敗しました: ${snapshot.error}"));
           }
 
           final attendanceData = snapshot.data!;
           if (attendanceData.isEmpty) {
-            return Center(child: Text("沒有找到出席數據。"));
+            return Center(child: Text("出席データがなかった"));
           }
 
-          // 顯示出席情況
+          // 出席情況
           return ListView.builder(
             itemCount: attendanceData.length,
             itemBuilder: (context, index) {
@@ -444,7 +445,7 @@ class AttendanceDetailsPage extends StatelessWidget {
                   Icons.check_circle,
                   color: Colors.green,
                 ),
-                title: Text('學生名: $studentName'),
+                title: Text('学生名: $studentName'),
               );
             },
           );
