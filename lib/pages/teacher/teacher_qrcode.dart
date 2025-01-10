@@ -127,155 +127,169 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "教員用授業QRコード",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // タイトルと戻るボタン
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
               ),
-              CustomButton(
-                text: "戻る", // 戻るボタン
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePageTeacher()),
-                  );
-                },
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 30,
-          ),
-          Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
-          SizedBox(
-            height: 30,
-          ),
-          isTeacher
-              ? Container(
-                  decoration: BoxDecoration(
-                    color: Colors.purple,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.0),
-                      topRight: Radius.circular(20.0),
-                    ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "教員用授業QRコード",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: classList.isEmpty
-                      ? Center(child: Text("関連する授業が見つかりませんでした"))
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            columns: const [
-                              DataColumn(label: TableCellHeader(text: "授業名")),
-                              DataColumn(label: TableCellHeader(text: "授業ID")),
-                              DataColumn(label: TableCellHeader(text: "曜日")),
-                              DataColumn(label: TableCellHeader(text: "時間割")),
-                              DataColumn(label: TableCellHeader(text: "QRコード")),
-                            ],
-                            rows: classList.map((classData) {
-                              final className = classData["className"] ?? "未指定";
-                              final classID = classData["classID"] ?? "不明";
-                              final day = classData["day"] ?? "不明";
-                              final time = classData["time"] ?? "不明";
-                              final qrData = jsonEncode({
-                                "classID": classID,
-                                "className": className,
-                                "day": day,
-                                "time": time,
-                                "classroom": classData["classroom"],
-                                "place": classData["place"],
-                                "create_at": DateTime.now().toString()
-                              });
-
-                              return DataRow(
-                                color:
-                                    MaterialStateProperty.resolveWith<Color?>(
-                                        (Set<MaterialState> states) {
-                                  if (states.contains(MaterialState.hovered)) {
-                                    return Colors.grey[
-                                        200]; // Highlight color when hovered
-                                  }
-                                  return Colors.white; // Default row color
-                                }),
-                                cells: [
-                                  DataCell(
-                                      Text(classData["className"] ?? "未指定")),
-                                  DataCell(Text(classData["classID"] ?? "不明")),
-                                  DataCell(Text(classData["day"] ?? "不明")),
-                                  DataCell(Text(classData["time"] ?? "不明")),
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        DateTime now = DateTime.now();
-                                        String todayDay =
-                                            _getJapaneseWeekday(now.weekday);
-
-                                        if (classData["day"] != todayDay) {
-                                          _showMessage(
-                                              context, "授業の曜日ではありません。");
-                                          return;
-                                        }
-
-                                        DateTime classStartTime =
-                                            _getClassStartTime(
-                                                classData["time"]);
-                                        DateTime qrGenerationStartTime =
-                                            classStartTime.subtract(
-                                                Duration(minutes: 30));
-                                        DateTime classEndTime = classStartTime
-                                            .add(Duration(minutes: 90)); //
-
-                                        if (now.isBefore(
-                                                qrGenerationStartTime) ||
-                                            now.isAfter(classEndTime)) {
-                                          _showMessage(
-                                              context, "授業の時間ではありません。");
-                                          return;
-                                        }
-
-                                        String currentDate =
-                                            "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-                                        await addAttendanceToSubject(
-                                          classData["classType"],
-                                          classData["classID"],
-                                          currentDate,
-                                        );
-
-                                        await Utils.logMessage(
-                                          '${className}の授業QRCODEが生成されました。',
-                                        );
-
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                QrCodeDisplayScreen(
-                                                    data: qrData),
-                                          ),
-                                        );
-                                      },
-                                      child: Text("QRコード表示"),
-                                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SizedBox(width: 90),
+                      CustomButton(
+                        text: "戻る",
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HomePageTeacher(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 30),
+            // 授業データ表示部分
+            isTeacher
+                ? classList.isEmpty
+                    ? Center(
+                        child: Text("関連する授業が見つかりませんでした"),
+                      )
+                    : Expanded(
+                        child: SingleChildScrollView(
+                          child: Table(
+                            columnWidths: const {
+                              0: FlexColumnWidth(2),
+                              1: FlexColumnWidth(1),
+                              2: FlexColumnWidth(1),
+                              3: FlexColumnWidth(1),
+                            },
+                            children: [
+                              // ヘッダー行
+                              TableRow(
+                                decoration: BoxDecoration(
+                                  color: Colors.purple,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0),
                                   ),
+                                ),
+                                children: [
+                                  TableCellHeader(text: "授業名"),
+                                  TableCellHeader(text: "授業ID"),
+                                  TableCellHeader(text: "曜日"),
+                                  TableCellHeader(text: "時間割"),
+                                  TableCellHeader(text: "QRコード"),
                                 ],
-                              );
-                            }).toList(),
+                              ),
+                              // データ行
+                              ...classList.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                var classData = entry.value;
+                                final className =
+                                    classData["className"] ?? "未指定";
+                                final classID = classData["classID"] ?? "不明";
+                                final day = classData["day"] ?? "不明";
+                                final time = classData["time"] ?? "不明";
+                                final qrData = jsonEncode({
+                                  "classID": classID,
+                                  "className": className,
+                                  "day": day,
+                                  "time": time,
+                                  "classroom": classData["classroom"],
+                                  "place": classData["place"],
+                                  "create_at": DateTime.now().toString()
+                                });
+
+                                // Alternate row colors
+                                bool isEvenRow = index % 2 == 0;
+
+                                return TableRow(
+                                  decoration: BoxDecoration(
+                                    color: isEvenRow
+                                        ? Colors.grey[200]
+                                        : Colors.grey[100],
+                                  ),
+                                  children: [
+                                    TableCell(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Text(className),
+                                      ),
+                                    ),
+                                    TableCell(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Text(classID),
+                                      ),
+                                    ),
+                                    TableCell(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Text(day),
+                                      ),
+                                    ),
+                                    TableCell(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Text(time),
+                                      ),
+                                    ),
+                                    TableCell(
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  QrCodeDisplayScreen(
+                                                      data: qrData),
+                                            ),
+                                          );
+                                        },
+                                        child: Text("QRコード表示"),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ],
                           ),
                         ),
-                )
-              : Center(child: Text("教員ではないため、授業情報を表示できません")),
-        ],
+                      )
+                : Center(
+                    child: Text("教員ではないため、授業情報を表示できません"),
+                  ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomBar(),
     );
@@ -312,42 +326,56 @@ class QrCodeDisplayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 20,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "出席用QRコード生成",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+            // Title and Return Button
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "出席用QRコード生成",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                CustomButton(
-                  text: "戻る", // 戻るボタン
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => TeacherQrcode()),
-                    );
-                  },
-                ),
-              ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SizedBox(width: 90),
+                      CustomButton(
+                        text: "戻る", // 戻るボタン
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => TeacherQrcode()),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            SizedBox(
-              height: 20,
-            ),
-            Divider(color: Colors.grey, thickness: 1.5, height: 15.0),
-            SizedBox(
-              height: 80,
-            ),
+            SizedBox(height: 20),
+            SizedBox(height: 80), // Empty space for layout
             QrImageView(
               data: data,
               version: QrVersions.auto,
@@ -373,7 +401,7 @@ class TableCellHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
       child: Text(
         text,
-        textAlign: TextAlign.center,
+        textAlign: TextAlign.start,
         style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
