@@ -343,25 +343,71 @@ class AttendanceDetailsPage extends StatelessWidget {
 
   Future<Map<String, String>> _fetchAttendanceDetails() async {
     try {
-      // 根據選定的日期從 Firebase 獲取出席狀況
+      // 根據選定的日期從 Firebase Realtime Database 獲取出席狀況
       DatabaseReference attendanceRef = FirebaseDatabase.instance
           .ref('ATTENDANCE/$classType/$classID/$selectedDate');
       DataSnapshot snapshot = await attendanceRef.get();
 
       if (snapshot.exists) {
         Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
-        // 返回學生ID和學生名字的映射
-        return data.map((studentID, studentData) {
-          // 提取學生名字 (假設名字在 "NAME" 欄位)
-          String studentName = studentData["NAME"] ?? "未知學生";
-          return MapEntry(studentID.toString(), studentName);
-        });
+        Map<String, String> attendanceDetails = {};
+
+        for (var entry in data.entries) {
+          String studentID = entry.key.toString(); // 學生 ID
+          Map<dynamic, dynamic>? studentData =
+              entry.value as Map<dynamic, dynamic>?;
+
+          if (studentData != null && studentData.containsKey("NAME")) {
+            // 如果 "NAME" 欄位存在，直接使用
+            attendanceDetails[studentID] = studentData["NAME"];
+          } else {
+            // 如果 "NAME" 不存在，從 Firestore 查找學生名字
+            String studentName =
+                await _fetchStudentNameFromFirestore(studentID);
+            attendanceDetails[studentID] = studentName;
+          }
+        }
+        return attendanceDetails;
       } else {
         return {}; // 如果沒有數據，返回空 Map
       }
     } catch (e) {
       print("出席數據獲取失敗: $e");
       return {}; // 如果發生錯誤，返回空 Map
+    }
+  }
+
+  Future<String> _fetchStudentNameFromFirestore(String studentID) async {
+    try {
+      DocumentSnapshot? studentSnapshot;
+      // 首先查詢 IT 學生
+      studentSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Students')
+          .collection('IT')
+          .doc(studentID)
+          .get();
+
+      // 如果 IT 集合中找不到，再查詢 GAME 學生
+      if (!studentSnapshot.exists) {
+        studentSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Students')
+            .collection('GAME')
+            .doc(studentID)
+            .get();
+      }
+
+      // 如果在 Firestore 中找到了學生資料
+      if (studentSnapshot.exists) {
+        final studentData = studentSnapshot.data() as Map<String, dynamic>;
+        return studentData['NAME'] ?? "未知學生";
+      } else {
+        return "未知學生"; // 如果找不到資料，返回 "未知學生"
+      }
+    } catch (e) {
+      print("學生名字獲取失敗: $e");
+      return "未知學生"; // 如果發生錯誤，返回 "未知學生"
     }
   }
 
@@ -391,7 +437,6 @@ class AttendanceDetailsPage extends StatelessWidget {
           return ListView.builder(
             itemCount: attendanceData.length,
             itemBuilder: (context, index) {
-              final studentID = attendanceData.keys.elementAt(index);
               final studentName = attendanceData.values.elementAt(index);
 
               return ListTile(
@@ -399,8 +444,7 @@ class AttendanceDetailsPage extends StatelessWidget {
                   Icons.check_circle,
                   color: Colors.green,
                 ),
-                title: Text('學生姓名: $studentName'),
-                subtitle: Text('學生ID: $studentID'),
+                title: Text('學生名: $studentName'),
               );
             },
           );
