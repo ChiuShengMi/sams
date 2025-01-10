@@ -96,7 +96,7 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                         color: Color(0xFF7B1FA2),
                       ),
                     ),
-                    SizedBox(height: 100),
+                    SizedBox(height: 80),
                     CustomInputContainer(
                       inputWidgets: [
                         SizedBox(height: 20),
