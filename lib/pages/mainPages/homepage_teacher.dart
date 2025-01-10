@@ -7,9 +7,87 @@ import 'package:sams/widget/appbarlogout.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/pages/teacher/teacher_qrcode.dart';
 import 'package:sams/widget/custom_input_container.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-class HomePageTeacher extends StatelessWidget {
+class HomePageTeacher extends StatefulWidget {
   @override
+  _HomePageTeacherState createState() => _HomePageTeacherState();
+}
+
+class _HomePageTeacherState extends State<HomePageTeacher> {
+  String userName = '';
+  final String currentUID = FirebaseAuth.instance.currentUser!.uid; // 現在のユーザーID
+  final FirebaseFirestore _firestore =
+      FirebaseFirestore.instance; // Firestoreのインスタンス
+  final FirebaseDatabase _realtimeDatabase =
+      FirebaseDatabase.instance; // Realtime Databaseのインスタンス
+
+  //loginしているユーザー名表示
+  @override
+  void initState() {
+    super.initState();
+    _initializePage(); // 初期化処理を呼び出す
+  }
+
+  Future<void> _initializePage() async {
+    await _loadUserInfo(); // Ensure user info is loaded
+    //await fetchStudents(); // Then fetch students
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('ユーザーがログインしていません');
+      final uid = user.uid;
+
+      DocumentSnapshot? teacherSnapshot;
+
+      // ITコレクションの検索
+      teacherSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Teachers')
+          .collection('IT')
+          .doc(uid)
+          .get();
+
+      // ITに存在しない場合、GAMEコレクションの検索
+      if (!teacherSnapshot.exists) {
+        teacherSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Teachers')
+            .collection('GAME')
+            .doc(uid)
+            .get();
+      }
+
+      // 学生情報が見つからない場合
+      if (!teacherSnapshot.exists) {
+        throw Exception('学生情報が見つかりません');
+      }
+
+      // データの取得と型の確認
+      final studentData = teacherSnapshot.data();
+      if (studentData == null || !(studentData is Map<String, dynamic>)) {
+        throw Exception('データ形式が無効です');
+      }
+
+      final fetchedUserId = studentData['ID'];
+      final fetchedUserName = studentData['NAME'];
+
+      setState(() {
+        // userId = fetchedUserId?.toString() ?? 'Unknown';
+        userName = fetchedUserName?.toString() ?? 'Unknown';
+      });
+    } catch (e) {
+      print('エラーが発生しました: $e');
+      setState(() {
+        userName = 'エラー: ユーザー情報の取得に失敗しました';
+      });
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(),
@@ -21,7 +99,7 @@ class HomePageTeacher extends StatelessWidget {
             children: [
               // SizedBox(height: 20),
               Text(
-                "教員トップ画面",
+                '${userName.isNotEmpty ? userName : 'Loading...'}さん\n教員トップ画面へようこそ！',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
