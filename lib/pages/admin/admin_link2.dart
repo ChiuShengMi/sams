@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -32,13 +33,68 @@ class _adminLink2State extends State<AdminLink2> {
   bool isGameSelected = false;
   List<Map<String, dynamic>> studentList = [];
   List<Map<String, dynamic>> filteredStudentList = [];
+
   Set<String> selectedStudentIds = {};
+  String userName = "";
+  String userId = "";
 
   @override
   void initState() {
     super.initState();
-    fetchStudents();
+    _initializePage();
     studentSearchController.addListener(() => filterStudentList());
+  }
+
+  Future<void> _initializePage() async {
+    await _loadUserInfo(); // Ensure user info is loaded
+    await fetchStudents(); // Then fetch students
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('ユーザーがログインしていません');
+      final uid = user.uid;
+
+      DocumentSnapshot? managerSnapshot;
+      managerSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Managers')
+          .collection('IT')
+          .doc(uid)
+          .get();
+
+      if (!managerSnapshot.exists) {
+        managerSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Managers')
+            .collection('GAME')
+            .doc(uid)
+            .get();
+      }
+
+      if (!managerSnapshot.exists) {
+        throw Exception('管理者情報が見つかりません');
+      }
+
+      final managerData = managerSnapshot.data() as Map<String, dynamic>;
+      final fetchedUserId = managerData['ID'];
+      final fetchedUserName = managerData['NAME'];
+
+      setState(() {
+        userId = fetchedUserId?.toString() ?? 'Unknown';
+        userName = fetchedUserName ?? 'Unknown';
+      });
+
+      // Log the loaded user info
+      print('Loaded user: $userName, $userId');
+    } catch (e) {
+      print('Error loading user info: $e');
+      setState(() {
+        userName = 'Unknown'; // Fallback for userName
+        userId = 'Unknown'; // Fallback for userId
+      });
+    }
   }
 
   Future<void> fetchStudents() async {
@@ -63,7 +119,8 @@ class _adminLink2State extends State<AdminLink2> {
       filterStudentList();
     });
     // ログメッセージを追加
-    await Utils.logMessage('学生データを取得しました: ${results.length}件');
+    await Utils.logMessage(
+        '${userName.isNotEmpty ? userName : 'Unknown'}: 学生データを取得しました: ${results.length}件');
   }
 
   Future<List<Map<String, dynamic>>> _fetchStudentData(
@@ -140,7 +197,7 @@ class _adminLink2State extends State<AdminLink2> {
         .set(data, SetOptions(merge: true));
     // ログメッセージを追加
     await Utils.logMessage(
-        '選択した学生を保存しました: クラス=${widget.selectedClass}, 学生数=${studentData.length}');
+        '${userName.isNotEmpty ? userName : 'Unknown'}: 選択した学生を保存しました: クラス:${widget.selectedClass} 学生数:${studentData.length}');
 
 // Update the state to refresh the UI
     setState(() {

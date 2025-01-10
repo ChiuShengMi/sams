@@ -8,6 +8,7 @@ import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/table/custom_table.dart';
 import 'package:sams/pages/user/add.dart';
+import 'package:sams/pages/user/detail.dart'; // Detail 페이지 추가
 
 class UserList extends StatefulWidget {
   @override
@@ -30,13 +31,12 @@ class _UserListState extends State<UserList> {
         data['MAIL']?.toString() ?? 'N/A',
         data['NAME']?.toString() ?? 'N/A',
         data['TEL']?.toString() ?? 'N/A',
-        'Edit'
+        doc.id, // Firestore document ID 추가 (클릭 시 사용)
       ];
     }).toList();
   }
 
   Stream<QuerySnapshot> _getUserStream() {
-    // Update Firestore query based on selected user type
     return firestore
         .collection('Users')
         .doc(selectedUserType)
@@ -79,26 +79,9 @@ class _UserListState extends State<UserList> {
                     ),
                     SizedBox(width: 20),
                     Expanded(
-                      flex: 1,
-                      child: Customdropdown(
-                        hintText: 'コース',
-                        items: [
-                          DropdownMenuItem(child: Text('IT'), value: 'It'),
-                          DropdownMenuItem(child: Text('GAME'), value: 'Game'),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            // selectedUserType = value!;
-                          });
-                        },
-                        size: DropboxSize.small,
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    Expanded(
                       flex: 4,
                       child: CustomInput(
-                        controller: searchInputController,
+                      controller: searchInputController,
                         hintText: 'Search',
                       ),
                     ),
@@ -143,6 +126,18 @@ class _UserListState extends State<UserList> {
                           '修正',
                         ],
                         data: data,
+                        onRowTap: (rowIndex) {
+                          final List<String> rowData = data[rowIndex];
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserDetail(
+                                documentPath:
+                                    'Users/$selectedUserType/IT/${rowData.last}',
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
