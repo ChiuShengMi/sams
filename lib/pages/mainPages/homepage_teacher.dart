@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth パッケージをインポート
 import 'package:sams/pages/admin/log/log.dart';
 import 'package:sams/pages/loginPages/login.dart';
+import 'package:sams/pages/teacher/teacher_attendance_management.dart';
 import 'package:sams/pages/testPages/testPages.dart';
 import 'package:sams/widget/appbarlogout.dart';
 import 'package:sams/widget/bottombar.dart';
@@ -149,8 +150,15 @@ class _HomePageTeacherState extends State<HomePageTeacher> {
                       Expanded(
                         child: _buildBoxedButton(
                           context: context,
-                          label: '',
-                          onPressed: () {},
+                          label: '出席管理',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      teacherAttendanceManagementPage()),
+                            );
+                          },
                         ),
                       ),
                       SizedBox(width: 20),
