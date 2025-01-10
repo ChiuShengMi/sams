@@ -319,8 +319,7 @@ class _HomePageStudentState extends State<HomePageStudent> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      // '$Userさん,学生出席ページへようこそ！',
-                      '${userName.isNotEmpty ? userName : 'Loading...'}さん, 学生出席ページへようこそ！',
+                      '${userName.isNotEmpty ? userName : 'Loading...'}さん\n学生出席ページへようこそ！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
