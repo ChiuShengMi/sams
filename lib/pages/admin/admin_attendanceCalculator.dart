@@ -341,7 +341,7 @@ class AttendanceDetailsPage extends StatelessWidget {
     required this.selectedDate,
   });
 
-  Future<Map<String, bool>> _fetchAttendanceDetails() async {
+  Future<Map<String, String>> _fetchAttendanceDetails() async {
     try {
       // 根據選定的日期從 Firebase 獲取出席狀況
       DatabaseReference attendanceRef = FirebaseDatabase.instance
@@ -350,9 +350,12 @@ class AttendanceDetailsPage extends StatelessWidget {
 
       if (snapshot.exists) {
         Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
-        // 返回學生ID和出席狀況的映射
-        return data
-            .map((key, value) => MapEntry(key.toString(), value == true));
+        // 返回學生ID和學生名字的映射
+        return data.map((studentID, studentData) {
+          // 提取學生名字 (假設名字在 "NAME" 欄位)
+          String studentName = studentData["NAME"] ?? "未知學生";
+          return MapEntry(studentID.toString(), studentName);
+        });
       } else {
         return {}; // 如果沒有數據，返回空 Map
       }
@@ -368,7 +371,7 @@ class AttendanceDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('出席狀態 - $selectedDate'),
       ),
-      body: FutureBuilder<Map<String, bool>>(
+      body: FutureBuilder<Map<String, String>>(
         future: _fetchAttendanceDetails(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -389,15 +392,15 @@ class AttendanceDetailsPage extends StatelessWidget {
             itemCount: attendanceData.length,
             itemBuilder: (context, index) {
               final studentID = attendanceData.keys.elementAt(index);
-              final isPresent = attendanceData.values.elementAt(index);
+              final studentName = attendanceData.values.elementAt(index);
 
               return ListTile(
                 leading: Icon(
-                  isPresent ? Icons.check_circle : Icons.cancel,
-                  color: isPresent ? Colors.green : Colors.red,
+                  Icons.check_circle,
+                  color: Colors.green,
                 ),
-                title: Text('學生 ID: $studentID'),
-                subtitle: Text(isPresent ? '出席' : '缺席'),
+                title: Text('學生姓名: $studentName'),
+                subtitle: Text('學生ID: $studentID'),
               );
             },
           );
