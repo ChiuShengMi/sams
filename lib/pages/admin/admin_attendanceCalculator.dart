@@ -437,7 +437,6 @@ class AttendanceDetailsPage extends StatelessWidget {
           return ListView.builder(
             itemCount: attendanceData.length,
             itemBuilder: (context, index) {
-              final studentID = attendanceData.keys.elementAt(index);
               final studentName = attendanceData.values.elementAt(index);
 
               return ListTile(
@@ -445,8 +444,7 @@ class AttendanceDetailsPage extends StatelessWidget {
                   Icons.check_circle,
                   color: Colors.green,
                 ),
-                title: Text('學生姓名: $studentName'),
-                subtitle: Text('學生ID: $studentID'),
+                title: Text('學生名: $studentName'),
               );
             },
           );
