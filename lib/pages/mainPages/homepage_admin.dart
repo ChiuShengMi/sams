@@ -200,26 +200,21 @@ class HomePageAdmin extends StatelessWidget {
     required String label,
     required VoidCallback onPressed,
   }) {
-    return Container(
+    return SizedBox(
       height: 60,
-      decoration: BoxDecoration(
-        color: Color(0xFF7B1FA2), // 버튼 색상
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 3,
-            blurRadius: 5,
-            offset: Offset(0, 3),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Color(0xFF7B1FA2), // 버튼 배경색
+          foregroundColor: Colors.white, // 텍스트 색상
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10), // 모서리 둥글기
           ),
-        ],
-      ),
-      child: TextButton(
+          elevation: 5, // 그림자 효과
+        ),
         onPressed: onPressed,
         child: Text(
           label,
           style: TextStyle(
-            color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
