@@ -289,58 +289,179 @@ class _AdminAttendanceCalculatorState extends State<AdminAttendanceCalculator> {
             Expanded(
               child: _filteredCourses.isEmpty
                   ? Center(
-                      child: Text("関連する授業が見つかりませんでした"),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 64,
+                            color: Colors.grey.shade400,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            "関連する授業が見つかりませんでした",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     )
                   : ListView.builder(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       itemCount: _filteredCourses.length,
                       itemBuilder: (context, index) {
                         final course = _filteredCourses[index];
                         final stats = _attendanceResults[course['classID']];
+                        final attendanceRate = stats?['attendanceRate'];
 
-                        return Card(
-                          elevation: 4,
-                          margin: EdgeInsets.symmetric(vertical: 8.0),
-                          child: ListTile(
-                            title: Text(course['courseName'] ?? "不明な授業"),
-                            subtitle: Text(
-                              '教室: ${course['classroom'] ?? "不明"}, 時間: ${course['day'] ?? "不明"} - ${course['time'] ?? "不明"}限',
-                            ),
-                            trailing: Text(
-                              stats != null &&
-                                      stats.containsKey('attendanceRate')
-                                  ? '${stats['attendanceRate']?.toStringAsFixed(1)}%'
-                                  : '授業データがありません',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CourseDetailsPage(
-                                    courseName: course['courseName'] ?? "",
-                                    classID: course['classID'] ?? "",
-                                    classType: course['classType'] ?? "",
-                                    activeDates:
-                                        _attendanceResults[course['classID']]
-                                                ?['activeDates'] ??
-                                            [],
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 12),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CourseDetailsPage(
+                                      courseName: course['courseName'] ?? "",
+                                      classID: course['classID'] ?? "",
+                                      classType: course['classType'] ?? "",
+                                      activeDates:
+                                          _attendanceResults[course['classID']]
+                                                  ?['activeDates'] ??
+                                              [],
+                                    ),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      spreadRadius: 1,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              course['courseName'] ?? "不明な授業",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                          attendanceRate != null
+                                              ? Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: _getAttendanceColor(
+                                                        attendanceRate),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                  ),
+                                                  child: Text(
+                                                    '${attendanceRate.toStringAsFixed(1)}%',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  '授業データがありません',
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.location_on_outlined,
+                                            size: 16,
+                                            color: Colors.purple.shade600,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            course['classroom'] ?? "不明",
+                                            style: TextStyle(
+                                              color: Colors.purple.shade700,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          SizedBox(width: 16),
+                                          Icon(
+                                            Icons.access_time,
+                                            size: 16,
+                                            color: Colors.purple.shade600,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '${course['day'] ?? "不明"} - ${course['time'] ?? "不明"}限',
+                                            style: TextStyle(
+                                              color: Colors.purple.shade700,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                            ),
                           ),
                         );
                       },
                     ),
-            ),
+            )
           ],
         ),
       ),
       bottomNavigationBar: BottomBar(),
     );
+  }
+}
+
+Color _getAttendanceColor(double rate) {
+  if (rate >= 90) {
+    return Colors.green.shade500;
+  } else if (rate >= 80) {
+    return Colors.blue.shade500;
+  } else if (rate >= 70) {
+    return Colors.orange.shade500;
+  } else {
+    return Colors.red.shade500;
   }
 }
 
@@ -414,101 +535,158 @@ class CourseDetailsPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Display Course Information
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 1,
-                          blurRadius: 8,
-                          offset: Offset(0, 4), // Add slight shadow for depth
-                        ),
-                      ],
+                  // Course Information Card
+                  Card(
+                    elevation: 2,
+                    margin: EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.purple.shade50, Colors.white],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.school,
+                                  color: Colors.purple.shade700, size: 28),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Course ID: $classID',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Class Type: $classType',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Class Dates Section
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
                       children: [
+                        Icon(Icons.event_note,
+                            color: Colors.purple.shade700, size: 28),
+                        SizedBox(width: 12),
                         Text(
-                          'Course ID: $classID',
+                          '授業日',
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          'Class Type: $classType',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            color: Colors.black87,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20), // Increase space before next section
+                  SizedBox(height: 16),
 
-                  // Title for Dates Section
-                  Text(
-                    '授業日',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25,
-                        color: Colors.black87),
-                  ),
-                  SizedBox(height: 12),
-
-                  // Display Dates as ListTiles
+                  // Dates List
                   Expanded(
                     child: ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       itemCount: activeDates.length,
                       itemBuilder: (context, index) {
                         final date = activeDates[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AttendanceDetailsPage(
-                                  courseName: courseName,
-                                  classID: classID,
-                                  classType: classType,
-                                  selectedDate: date,
-                                  activeDates: activeDates,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Card(
-                            margin: EdgeInsets.symmetric(vertical: 8),
-                            elevation:
-                                4, // Slightly raised card for better separation
-                            shape: RoundedRectangleBorder(
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 12),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AttendanceDetailsPage(
+                                      courseName: courseName,
+                                      classID: classID,
+                                      classType: classType,
+                                      selectedDate: date,
+                                      activeDates: activeDates,
+                                    ),
+                                  ),
+                                );
+                              },
                               borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.calendar_today,
-                                color: Colors.blue.shade600,
-                              ),
-                              title: Text(
-                                date,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black87,
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      spreadRadius: 1,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              trailing: Icon(
-                                Icons.arrow_forward_ios,
-                                size: 18,
-                                color: Colors.grey,
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.purple.shade50,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(
+                                          Icons.calendar_today,
+                                          color: Colors.purple.shade700,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      SizedBox(width: 16),
+                                      Expanded(
+                                        child: Text(
+                                          date,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 18,
+                                        color: Colors.purple.shade300,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -668,8 +846,7 @@ class AttendanceDetailsPage extends StatelessWidget {
                                 courseName: courseName,
                                 classID: classID,
                                 classType: classType,
-                                activeDates:
-                                    activeDates, // Ensure this is a List<String>
+                                activeDates: activeDates,
                               ),
                             ),
                           );
