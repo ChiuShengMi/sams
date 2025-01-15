@@ -19,6 +19,8 @@ class _UserListState extends State<UserList> {
   final TextEditingController searchInputController = TextEditingController();
   final firestore = FirebaseFirestore.instance;
   String selectedUserType = 'Students'; // Default user type
+  String selectedCourse = 'IT'; // Default course
+  String selectedClass = 'SE2A'; // Default class
   int currentPage = 0; // 현재 페이지
   int itemsPerPage = 10; // 한 페이지에 표시되는 아이템 수
 
@@ -42,8 +44,9 @@ class _UserListState extends State<UserList> {
     return firestore
         .collection('Users')
         .doc(selectedUserType)
-        .collection(
-            'IT') // Modify if needed based on user type and specific course
+        .collection(selectedCourse)
+        .where('CLASS', isEqualTo: selectedClass)
+        .where('DELETE_FLG', isEqualTo: 0) // DELETE_FLG가 0인 데이터만 필터링
         .snapshots();
   }
 
@@ -79,7 +82,41 @@ class _UserListState extends State<UserList> {
                         size: DropboxSize.small,
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      flex: 1,
+                      child: Customdropdown(
+                        hintText: 'コース',
+                        items: [
+                          DropdownMenuItem(child: Text('IT'), value: 'IT'),
+                          DropdownMenuItem(child: Text('GAME'), value: 'GAME'),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCourse = value!;
+                          });
+                        },
+                        size: DropboxSize.small,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      flex: 1,
+                      child: Customdropdown(
+                        hintText: 'クラス',
+                        items: [
+                          DropdownMenuItem(child: Text('SE2A'), value: 'SE2A'),
+                          DropdownMenuItem(child: Text('SE2B'), value: 'SE2B'),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedClass = value!;
+                          });
+                        },
+                        size: DropboxSize.small,
+                      ),
+                    ),
+                    SizedBox(width: 10),
                     Expanded(
                       flex: 4,
                       child: CustomInput(
@@ -87,12 +124,14 @@ class _UserListState extends State<UserList> {
                         hintText: 'Search',
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: 10),
                     Expanded(
                       child: MediumButton(
                         text: '検索',
                         onPressed: () {
-                          // Add search functionality if needed
+                          setState(() {
+                            // 상태를 갱신하여 검색 조건 반영
+                          });
                         },
                       ),
                     ),
@@ -118,11 +157,13 @@ class _UserListState extends State<UserList> {
 
                       // 페이지네이션 데이터 계산
                       final totalItems = allData.length;
-                      final totalPages = (totalItems / itemsPerPage).ceil();
-                      final pageData = allData
-                          .skip(currentPage * itemsPerPage)
-                          .take(itemsPerPage)
-                          .toList();
+                      final totalPages = (totalItems / itemsPerPage)
+                          .ceil()
+                          .clamp(1, totalItems);
+                      final pageData = allData.sublist(
+                        currentPage * itemsPerPage,
+                        ((currentPage + 1) * itemsPerPage).clamp(0, totalItems),
+                      );
 
                       return Column(
                         children: [
@@ -145,7 +186,7 @@ class _UserListState extends State<UserList> {
                                 MaterialPageRoute(
                                   builder: (context) => UserDetail(
                                     documentPath:
-                                        'Users/$selectedUserType/IT/${rowData.last}',
+                                        'Users/$selectedUserType/$selectedCourse/${rowData.last}',
                                   ),
                                 ),
                               );

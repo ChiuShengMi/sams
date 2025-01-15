@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth 임포트
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sams/widget/actionbar.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
@@ -8,26 +8,34 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/pages/user/edit.dart';
 import 'package:sams/pages/user/list.dart';
 import 'package:sams/widget/modal/confirmation_modal.dart';
-import 'package:sams/utils/log.dart'; // log.dart 임포트
+import 'package:sams/utils/log.dart'; // log.dart 참조
 
 class UserDetail extends StatelessWidget {
   final String documentPath;
 
   UserDetail({required this.documentPath});
 
-  // 현재 로그인된 관리자의 이름을 가져오는 함수
-  Future<String?> _fetchCurrentAdminName() async {
+  Future<Map<String, dynamic>?> _fetchUserData() async {
     try {
-      // Firebase Authentication에서 현재 로그인된 유저 UID를 가져옴
+      DocumentSnapshot snapshot =
+          await FirebaseFirestore.instance.doc(documentPath).get();
+      return snapshot.data() as Map<String, dynamic>?;
+    } catch (e) {
+      print("Error fetching user data: $e");
+      return null;
+    }
+  }
+
+  Future<String?> _fetchCurrentUserName() async {
+    try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) throw Exception('ログインユーザーが見つかりません');
+      if (user == null) throw Exception('로그인된 사용자를 찾을 수 없습니다.');
 
       final uid = user.uid;
 
-      // Firestore에서 관리자의 이름을 UID로 검색
       DocumentSnapshot adminSnapshot = await FirebaseFirestore.instance
-          .collection('Users') // 'Users' 컬렉션에서
-          .doc('Managers') // 'Managers' 하위 컬렉션에서
+          .collection('Users')
+          .doc('Managers')
           .collection('IT')
           .doc(uid)
           .get();
@@ -42,28 +50,48 @@ class UserDetail extends StatelessWidget {
       }
 
       if (!adminSnapshot.exists) {
-        throw Exception('管理者情報が見つかりません');
+        throw Exception('관리자 정보를 찾을 수 없습니다.');
       }
 
-      return adminSnapshot['NAME']; // 관리자의 이름 반환
+      return adminSnapshot['NAME'];
     } catch (e) {
       print("Error fetching admin name: $e");
       return null;
     }
   }
 
-  // 유저 삭제 함수
-  Future<void> _deleteUser(BuildContext context, String adminName,
-      String userName, String userId) async {
+  Future<void> _softDeleteUser(BuildContext context, String adminName,
+      String userName, String userId, String userEmail) async {
     try {
-      await FirebaseFirestore.instance.doc(documentPath).delete();
+      // Firestore에서 DELETE_FLG를 1로 업데이트
+      await FirebaseFirestore.instance.doc(documentPath).update({
+        'DELETE_FLG': 1,
+      });
+
+      print("Firestore: DELETE_FLG updated to 1 for $userEmail");
+
+      // Firebase Authentication에서 사용자 무효화 처리
+      User? user = await FirebaseAuth.instance
+          .fetchSignInMethodsForEmail(userEmail)
+          .then((methods) {
+        if (methods.isNotEmpty) {
+          return FirebaseAuth.instance.currentUser;
+        }
+        return null;
+      });
+
+      if (user != null) {
+        await user.updatePassword(
+            "DISABLED_${DateTime.now().millisecondsSinceEpoch}");
+        print("Authentication: User disabled for $userEmail");
+      }
 
       // 로그 메시지 추가
-      await Utils.logMessage('$adminName が $userName-$userId を削除しました。');
+      await Utils.logMessage('$adminName が $userName-$userId を無効化しました。');
 
       // 성공 메시지
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("User deleted successfully!"),
+        content: Text("User has been deactivated."),
         backgroundColor: Colors.green,
       ));
 
@@ -73,9 +101,9 @@ class UserDetail extends StatelessWidget {
         (route) => false,
       );
     } catch (e) {
-      print("Error deleting user: $e");
+      print("Error soft deleting user: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Failed to delete user: $e"),
+        content: Text("Failed to deactivate user: $e"),
         backgroundColor: Colors.red,
       ));
     }
@@ -98,14 +126,15 @@ class UserDetail extends StatelessWidget {
           var userData = snapshot.data!;
           String userName = userData['NAME'] ?? 'N/A';
           String userId = userData['ID']?.toString() ?? 'N/A';
+          String userEmail = userData['MAIL'] ?? 'N/A';
 
           return FutureBuilder<String?>(
-            future: _fetchCurrentAdminName(),
+            future: _fetchCurrentUserName(),
             builder: (context, adminSnapshot) {
               if (adminSnapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
-              String adminName = adminSnapshot.data ?? '管理者';
+              String adminName = adminSnapshot.data ?? '관리자';
 
               return SingleChildScrollView(
                 child: Padding(
@@ -124,7 +153,7 @@ class UserDetail extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (context) => UserEdit(
                                       documentPath: documentPath,
-                                      loginEmail: userData['MAIL'] ?? 'N/A',
+                                      loginEmail: userEmail,
                                       dataId: userId,
                                       userName: userName,
                                       phoneNumber: userData['TEL'] ?? 'N/A',
@@ -150,8 +179,8 @@ class UserDetail extends StatelessWidget {
                                   builder: (context) => DeleteModalSubEdit(
                                     onConfirmDelete: () async {
                                       Navigator.of(context).pop();
-                                      await _deleteUser(
-                                          context, adminName, userName, userId);
+                                      await _softDeleteUser(context, adminName,
+                                          userName, userId, userEmail);
                                     },
                                   ),
                                 );
@@ -163,8 +192,7 @@ class UserDetail extends StatelessWidget {
                       CustomInputContainer(
                         title: 'User Detail',
                         inputWidgets: [
-                          _buildDetailRow(
-                              'Login E-mail', userData['MAIL'] ?? 'N/A'),
+                          _buildDetailRow('Login E-mail', userEmail),
                           _buildDetailRow('Data ID', userId),
                           _buildDetailRow('User Name', userName),
                           _buildDetailRow(
@@ -195,17 +223,6 @@ class UserDetail extends StatelessWidget {
         },
       ),
     );
-  }
-
-  Future<Map<String, dynamic>?> _fetchUserData() async {
-    try {
-      DocumentSnapshot snapshot =
-          await FirebaseFirestore.instance.doc(documentPath).get();
-      return snapshot.data() as Map<String, dynamic>?;
-    } catch (e) {
-      print("Error fetching user data: $e");
-      return null;
-    }
   }
 
   Widget _buildDetailRow(String label, String value) {
