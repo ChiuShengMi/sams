@@ -6,29 +6,60 @@ import 'package:sams/pages/admin/log/log.dart';
 import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
 // import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/list.dart';
-import 'package:sams/widget/appbarlogout.dart';
 import 'package:sams/widget/bottombar.dart';
 import 'package:sams/pages/testPages/testPages.dart';
 import 'package:sams/widget/custom_input_container.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sams/Animation/animation_Welcome.dart';
 
 class HomePageAdmin extends StatefulWidget {
   @override
   _HomePageAdminState createState() => _HomePageAdminState();
 }
 
-class _HomePageAdminState extends State<HomePageAdmin> {
+class _HomePageAdminState extends State<HomePageAdmin>
+    with SingleTickerProviderStateMixin {
   String userName = 'Loading...';
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    _initializePage(); // 初期化処理
+    _initializePage();
+
+    // 애니메이션 초기화
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _initializePage() async {
-    await _loadUserInfo(); // ユーザー情報の読み込み
+    await _loadUserInfo();
   }
 
   Future<void> _loadUserInfo() async {
@@ -39,7 +70,6 @@ class _HomePageAdminState extends State<HomePageAdmin> {
 
       DocumentSnapshot? managerSnapshot;
 
-      // ITコレクションの検索
       managerSnapshot = await FirebaseFirestore.instance
           .collection('Users')
           .doc('Managers')
@@ -47,7 +77,6 @@ class _HomePageAdminState extends State<HomePageAdmin> {
           .doc(uid)
           .get();
 
-      // ITに存在しない場合、GAMEコレクションの検索
       if (!managerSnapshot.exists) {
         managerSnapshot = await FirebaseFirestore.instance
             .collection('Users')
@@ -57,12 +86,10 @@ class _HomePageAdminState extends State<HomePageAdmin> {
             .get();
       }
 
-      // 学生情報が見つからない場合
       if (!managerSnapshot.exists) {
         throw Exception('学生情報が見つかりません');
       }
 
-      // データの取得と型の確認
       final managerData = managerSnapshot.data() as Map<String, dynamic>;
       final fetchedUserName = managerData['NAME'];
 
@@ -77,9 +104,13 @@ class _HomePageAdminState extends State<HomePageAdmin> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(), // Custom AppBar 적용
+      appBar: AppBar(
+        title: Text('管理者トップ画面'),
+        backgroundColor: Color(0xFF7B1FA2),
+      ),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -87,21 +118,20 @@ class _HomePageAdminState extends State<HomePageAdmin> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 20),
-                    Text(
-                      '${userName.isNotEmpty ? userName : 'Loading...'}さん\n管理者トップ画面へようこそ！',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF7B1FA2),
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: AnimatedWelcomeMessage(
+                          username:
+                              userName.isNotEmpty ? userName : 'Loading...',
+                        ),
                       ),
                     ),
                     SizedBox(height: 80),
                     CustomInputContainer(
                       inputWidgets: [
                         SizedBox(height: 20),
-
-                        // 첫 번째 줄 버튼
                         Row(
                           children: [
                             Expanded(
@@ -113,7 +143,7 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                                 },
                               ),
                             ),
-                            SizedBox(width: 20), // 버튼 사이 간격
+                            SizedBox(width: 20),
                             Expanded(
                               child: _buildBoxedButton(
                                 context: context,
@@ -131,8 +161,6 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                           ],
                         ),
                         SizedBox(height: 20),
-
-                        // 두 번째 줄 버튼
                         Row(
                           children: [
                             Expanded(
@@ -148,7 +176,7 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                                 },
                               ),
                             ),
-                            SizedBox(width: 20), // 버튼 사이 간격
+                            SizedBox(width: 20),
                             Expanded(
                               child: _buildBoxedButton(
                                 context: context,
@@ -165,7 +193,6 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                           ],
                         ),
                         SizedBox(height: 20),
-
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -198,7 +225,6 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                               ),
                             ]),
                         SizedBox(height: 20),
-
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -247,17 +273,15 @@ class _HomePageAdminState extends State<HomePageAdmin> {
                                 ),
                               ),
                             ]),
-                        // Test Page 버튼
                       ],
                     ),
                   ])),
         ),
       ),
-      bottomNavigationBar: BottomBar(), // Custom BottomBar 적용
+      bottomNavigationBar: BottomBar(),
     );
   }
 
-  // 버튼 스타일을 위한 헬퍼 메서드
   Widget _buildBoxedButton({
     required BuildContext context,
     required String label,
@@ -267,12 +291,12 @@ class _HomePageAdminState extends State<HomePageAdmin> {
       height: 60,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFF7B1FA2), // 버튼 배경색
-          foregroundColor: Colors.white, // 텍스트 색상
+          backgroundColor: Color(0xFF7B1FA2),
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10), // 모서리 둥글기
+            borderRadius: BorderRadius.circular(10),
           ),
-          elevation: 5, // 그림자 효과
+          elevation: 5,
         ),
         onPressed: onPressed,
         child: Text(
