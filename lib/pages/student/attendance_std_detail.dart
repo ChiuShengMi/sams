@@ -7,6 +7,7 @@ import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/pages/student/attendance_std.dart';
+import 'package:sams/widget/bottombar.dart';
 
 class AttendanceDetailPage extends StatefulWidget {
   final String classID;
@@ -178,11 +179,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
 
                   // フィルタリングと検索バー
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      SizedBox(
-                        width: 90,
-                      ),
+                      // SizedBox(
+                      //   width: 90,
+                      // ),
                       CustomButton(
                         text: "戻る",
                         onPressed: () {
@@ -229,7 +230,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(),
+      bottomNavigationBar: BottomBar(),
     );
   }
 }

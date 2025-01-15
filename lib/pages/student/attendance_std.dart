@@ -5,9 +5,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:sams/pages/mainPages/homepage_student.dart';
 import 'package:sams/pages/student/attendance_std_detail.dart';
 import 'package:sams/widget/bottombar.dart';
-import 'package:sams/widget/searchbar/custom_input.dart';
+
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/appbar.dart';
+import 'package:sams/widget/bottombar.dart';
 
 class AttendanceRatePage extends StatefulWidget {
   @override
@@ -395,7 +396,7 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(),
+      bottomNavigationBar: BottomBar(),
     );
   }
 }
