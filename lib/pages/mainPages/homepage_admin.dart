@@ -14,6 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sams/Animation/animation_Welcome.dart';
 import 'package:sams/pages/admin/admin_announce.dart';
+import 'package:sams/widget/appbarlogout.dart';
 
 class HomePageAdmin extends StatefulWidget {
   @override
@@ -109,23 +110,7 @@ class _HomePageAdminState extends State<HomePageAdmin>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('管理者トップ画面'),
-        backgroundColor: Color(0xFF7B1FA2),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
-            },
-            tooltip: 'ログアウト',
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
