@@ -9,6 +9,7 @@ import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/table/custom_table.dart';
 import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/detail.dart';
+import 'classLists.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -20,7 +21,7 @@ class _UserListState extends State<UserList> {
   final firestore = FirebaseFirestore.instance;
   String selectedUserType = 'Students'; // Default user type
   String selectedCourse = 'IT'; // Default course
-  String selectedClass = 'SE2A'; // Default class
+  String? selectedClass; // No default class
   int currentPage = 0; // 현재 페이지
   int itemsPerPage = 10; // 한 페이지에 표시되는 아이템 수
 
@@ -41,13 +42,17 @@ class _UserListState extends State<UserList> {
   }
 
   Stream<QuerySnapshot> _getUserStream() {
-    return firestore
+    var query = firestore
         .collection('Users')
         .doc(selectedUserType)
         .collection(selectedCourse)
-        .where('CLASS', isEqualTo: selectedClass)
-        .where('DELETE_FLG', isEqualTo: 0) // DELETE_FLG가 0인 데이터만 필터링
-        .snapshots();
+        .where('DELETE_FLG', isEqualTo: 0); // DELETE_FLG가 0인 데이터만 필터링
+
+    if (selectedClass != null && selectedClass!.isNotEmpty) {
+      query = query.where('CLASS', isEqualTo: selectedClass);
+    }
+
+    return query.snapshots();
   }
 
   @override
@@ -66,6 +71,7 @@ class _UserListState extends State<UserList> {
                       flex: 1,
                       child: Customdropdown(
                         hintText: 'ユーザ',
+                        value: selectedUserType,
                         items: [
                           DropdownMenuItem(
                               child: Text('学生'), value: 'Students'),
@@ -87,6 +93,7 @@ class _UserListState extends State<UserList> {
                       flex: 1,
                       child: Customdropdown(
                         hintText: 'コース',
+                        value: selectedCourse,
                         items: [
                           DropdownMenuItem(child: Text('IT'), value: 'IT'),
                           DropdownMenuItem(child: Text('GAME'), value: 'GAME'),
@@ -94,6 +101,7 @@ class _UserListState extends State<UserList> {
                         onChanged: (value) {
                           setState(() {
                             selectedCourse = value!;
+                            selectedClass = null;
                           });
                         },
                         size: DropboxSize.small,
@@ -104,13 +112,16 @@ class _UserListState extends State<UserList> {
                       flex: 1,
                       child: Customdropdown(
                         hintText: 'クラス',
-                        items: [
-                          DropdownMenuItem(child: Text('SE2A'), value: 'SE2A'),
-                          DropdownMenuItem(child: Text('SE2B'), value: 'SE2B'),
-                        ],
+                        value: selectedClass,
+                        items: ClassLists.getClassesByCourse(selectedCourse)
+                            .map((className) => DropdownMenuItem<String>(
+                                  value: className,
+                                  child: Text(className),
+                                ))
+                            .toList(),
                         onChanged: (value) {
                           setState(() {
-                            selectedClass = value!;
+                            selectedClass = value;
                           });
                         },
                         size: DropboxSize.small,
@@ -149,6 +160,15 @@ class _UserListState extends State<UserList> {
                       }
                       if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(
+                          child: Text(
+                            '該当するユーザが見つかりません。',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        );
                       }
 
                       final List<List<String>> allData = snapshot.hasData

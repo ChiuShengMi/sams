@@ -10,8 +10,14 @@ import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/modal/confirmation_modal.dart';
 import 'package:sams/utils/log.dart'; // Utils 클래스에서 로그 기능을 사용
+import 'classLists.dart';
 
-class UserAdd extends StatelessWidget {
+class UserAdd extends StatefulWidget {
+  @override
+  _UserAddState createState() => _UserAddState();
+}
+
+class _UserAddState extends State<UserAdd> {
   final TextEditingController loginEmailInputController =
       TextEditingController();
   final TextEditingController dataIdInputController = TextEditingController();
@@ -24,6 +30,7 @@ class UserAdd extends StatelessWidget {
 
   String selectedRole = 'student';
   String selectedCourse = 'IT';
+  String? seletedClass;
 
   Future<void> _registerUser(BuildContext context) async {
     if (loginEmailInputController.text.isEmpty ||
@@ -34,7 +41,7 @@ class UserAdd extends StatelessWidget {
         phoneNumberController.text.isEmpty ||
         classInputController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("모든 필드를 입력해주세요."),
+        content: Text("入力されてない欄があります。"),
         backgroundColor: Colors.red,
         duration: Duration(seconds: 2),
       ));
@@ -43,7 +50,7 @@ class UserAdd extends StatelessWidget {
 
     if (passwordInputController.text != passwordConfirmInputController.text) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Passwords do not match!"),
+        content: Text("パスワードが一致しません。"),
         backgroundColor: Colors.red,
         duration: Duration(seconds: 2),
       ));
@@ -141,7 +148,7 @@ class UserAdd extends StatelessWidget {
             children: [
               Actionbar(children: []),
               CustomInputContainer(
-                title: 'User Add',
+                title: 'ユーザ登録',
                 inputWidgets: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -164,7 +171,7 @@ class UserAdd extends StatelessWidget {
                           },
                           child: CustomInput(
                             controller: loginEmailInputController,
-                            hintText: 'Login E-mail',
+                            hintText: 'ログインE-mail',
                             keyboardType: TextInputType.emailAddress,
                             InputFormatter: [
                               FilteringTextInputFormatter.allow(
@@ -177,7 +184,7 @@ class UserAdd extends StatelessWidget {
                       Expanded(
                         flex: 1,
                         child: Customdropdown(
-                          hintText: 'Select property',
+                          hintText: '種類',
                           items: [
                             DropdownMenuItem(
                                 value: 'student', child: Text('学生')),
@@ -202,7 +209,7 @@ class UserAdd extends StatelessWidget {
                         flex: 2,
                         child: CustomInput(
                           controller: dataIdInputController,
-                          hintText: 'Data ID',
+                          hintText: 'ユーザ番号',
                           keyboardType: TextInputType.number,
                           InputFormatter: [
                             FilteringTextInputFormatter.allow(RegExp(r'\d'))
@@ -229,7 +236,7 @@ class UserAdd extends StatelessWidget {
                         flex: 2,
                         child: CustomInput(
                           controller: userNameInputController,
-                          hintText: 'User Name',
+                          hintText: '名前',
                         ),
                       ),
                     ],
@@ -242,7 +249,7 @@ class UserAdd extends StatelessWidget {
                         flex: 2,
                         child: CustomInput(
                           controller: passwordInputController,
-                          hintText: 'Password',
+                          hintText: 'パスワード',
                           keyboardType: TextInputType.visiblePassword,
                           obscureText: true,
                         ),
@@ -252,7 +259,7 @@ class UserAdd extends StatelessWidget {
                         flex: 2,
                         child: CustomInput(
                           controller: phoneNumberController,
-                          hintText: 'Phone Number',
+                          hintText: '携帯番号',
                           keyboardType: TextInputType.number,
                           InputFormatter: [
                             FilteringTextInputFormatter.allow(RegExp(r'\d'))
@@ -299,7 +306,7 @@ class UserAdd extends StatelessWidget {
                           },
                           child: CustomInput(
                             controller: passwordConfirmInputController,
-                            hintText: 'Confirm Password',
+                            hintText: 'パスワードをもう一度入力してください',
                             keyboardType: TextInputType.visiblePassword,
                             obscureText: true,
                           ),
@@ -309,25 +316,45 @@ class UserAdd extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: Customdropdown(
-                          hintText: 'Select Course',
+                          hintText: 'コースを選択してください。',
                           items: [
                             DropdownMenuItem(value: 'IT', child: Text('IT')),
                             DropdownMenuItem(
                                 value: 'GAME', child: Text('GAME')),
                           ],
                           onChanged: (value) {
-                            selectedCourse = value!;
-                            print("Selected course: $selectedCourse");
+                            setState(() {
+                              selectedCourse = value!;
+                              seletedClass = null;
+                              print("Selected course: $selectedCourse");
+                            });
                           },
                         ),
                       ),
                     ],
                   ),
                   SizedBox(height: 16),
-                  CustomInput(
-                    controller: classInputController,
-                    hintText: 'Class Name',
-                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                          flex: 2,
+                          child: Customdropdown(
+                              hintText: 'クラスを選択してください。',
+                              items: ClassLists.getClassesByCourse(
+                                      selectedCourse)
+                                  .map((className) => DropdownMenuItem<String>(
+                                        value: className,
+                                        child: Text(className),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  seletedClass = value!;
+                                  classInputController.text = value;
+                                });
+                              }))
+                    ],
+                  )
                 ],
               ),
               Row(
