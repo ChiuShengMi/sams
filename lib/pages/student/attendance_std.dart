@@ -8,7 +8,6 @@ import 'package:sams/widget/bottombar.dart';
 
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/appbar.dart';
-import 'package:sams/widget/bottombar.dart';
 
 class AttendanceRatePage extends StatefulWidget {
   @override

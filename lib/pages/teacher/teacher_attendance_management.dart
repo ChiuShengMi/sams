@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:sams/widget/bottombar.dart';
+import 'package:sams/pages/mainPages/homepage_teacher.dart';
+import 'package:sams/widget/button/custom_button.dart';
+import 'package:sams/widget/appbar.dart';
 
 class teacherAttendanceManagementPage extends StatefulWidget {
   @override
@@ -79,47 +83,159 @@ class _teacherAttendanceManagementPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('出席管理ページ'),
-      ),
+      appBar: CustomAppBar(),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              '授業リスト',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "出席管理ページ\n授業リスト",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SizedBox(width: 90),
+                    CustomButton(
+                      text: "戻る",
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HomePageTeacher(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+          SizedBox(height: 30),
           Expanded(
-            child: ListView.builder(
-              itemCount: courses.length,
-              itemBuilder: (context, index) {
-                var course = courses[index];
-                return ListTile(
-                  title: Text(course['courseName'] ?? '不明'),
-                  subtitle: Text(
-                      '教室: ${course['coursePlace']}${course['courseRoom']}ー${course['courseDay']}ー${course['courseTime']}限目'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CourseDetailsPage(
-                          courseID: course['courseID']!,
-                          courseName: course['courseName']!,
-                          courseRoom: course['courseRoom']!,
-                          courseDay: course['courseDay']!,
-                          coursePlace: course['coursePlace']!,
-                          courseTime: course['courseTime']!,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: SingleChildScrollView(
+                child: Table(
+                  columnWidths: const {
+                    0: FlexColumnWidth(2),
+                    1: FlexColumnWidth(1),
+                    2: FlexColumnWidth(1),
+                    3: FlexColumnWidth(1),
+                  },
+                  children: [
+                    // Header Row
+                    TableRow(
+                      decoration: BoxDecoration(
+                        color: Colors.purple,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
                         ),
                       ),
-                    );
-                  },
-                );
-              },
+                      children: [
+                        TableCellHeader(text: "授業名"),
+                        TableCellHeader(text: "教室"),
+                        TableCellHeader(text: "曜日"),
+                        TableCellHeader(text: "時間割"),
+                        TableCellHeader(text: "授業詳細"),
+                      ],
+                    ),
+                    // Dynamic Rows for Courses
+                    if (courses != null && courses.isNotEmpty)
+                      ...courses.map((course) {
+                        return TableRow(
+                          decoration: BoxDecoration(
+                            color: courses.indexOf(course) % 2 == 0
+                                ? Colors.grey[200]
+                                : Colors.grey[100],
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(course['courseName'] ?? '不明'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(course['courseRoom'] ?? '不明'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(course['courseDay'] ?? '不明'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text('${course['courseTime']}限目'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CourseDetailsPage(
+                                        courseID: course['courseID'] ?? '',
+                                        courseName: course['courseName'] ?? '',
+                                        courseRoom: course['courseRoom'] ?? '',
+                                        courseDay: course['courseDay'] ?? '',
+                                        coursePlace:
+                                            course['coursePlace'] ?? '',
+                                        courseTime: course['courseTime'] ?? '',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text("詳細"),
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                  ],
+                ),
+              ),
             ),
-          ),
+          )
         ],
+      ),
+      bottomNavigationBar: BottomBar(),
+    );
+  }
+}
+
+class TableCellHeader extends StatelessWidget {
+  final String text;
+
+  const TableCellHeader({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+      child: Text(
+        text,
+        textAlign: TextAlign.start,
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
@@ -236,80 +352,234 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('授業詳細'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('授業ID: ${widget.courseID}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('授業名: ${widget.courseName}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('教室: ${widget.courseRoom}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('曜日: ${widget.courseDay}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('場所: ${widget.coursePlace}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('時間: ${widget.courseTime}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 16),
-            Text('日付と状態`:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: attendanceDates.isNotEmpty
-                        ? ListView.builder(
-                            itemCount: attendanceDates.length,
-                            itemBuilder: (context, index) {
-                              var attendance = attendanceDates[index];
-                              return Card(
-                                margin: EdgeInsets.symmetric(
-                                    vertical: 4, horizontal: 8),
-                                child: ListTile(
-                                  leading: Icon(Icons.calendar_today),
-                                  title: Text(
-                                    attendance['date'] ?? '不明',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Text(
-                                    '状態: ${attendance['status'] ?? '未設定'}',
-                                    style: TextStyle(
-                                      color: attendance['status'] == 'active'
-                                          ? Colors.green
-                                          : Colors.grey,
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AttendanceDetailPage(
-                                          date: attendance['date'] ?? '不明',
-                                          status: attendance['status'] ?? '不明',
-                                          courseID: widget.courseID,
-                                        ),
+      appBar: CustomAppBar(),
+      body: Column(
+        children: [
+          // Header Container
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "授業詳細",
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SizedBox(width: 90),
+                    CustomButton(
+                      text: "戻る",
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                teacherAttendanceManagementPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Main Content
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Course Details Card
+                  Card(
+                    elevation: 7,
+                    margin: EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.purple.shade50, Colors.white],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.school,
+                                  color: Colors.purple.shade700, size: 28),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '授業ID: ${widget.courseID}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
                                       ),
-                                    );
-                                  },
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '授業名: ${widget.courseName}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '教室: ${widget.courseRoom}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '曜日: ${widget.courseDay}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '場所: ${widget.coursePlace}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '時間: ${widget.courseTime}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                          )
-                        : Text('授業がなかった'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-          ],
-        ),
+//'日付と状態`:
+                  // Attendance Dates Section
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Icon(Icons.event_note,
+                            color: Colors.purple.shade700, size: 28),
+                        SizedBox(width: 12),
+                        Text(
+                          '授業日',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+
+                  // Attendance List
+                  isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : attendanceDates.isNotEmpty
+                          ? ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: attendanceDates.length,
+                              itemBuilder: (context, index) {
+                                var attendance = attendanceDates[index];
+                                return Card(
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 4, horizontal: 8),
+                                  child: ListTile(
+                                    title: Text(
+                                      attendance['date'] ?? '不明',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Text(
+                                      '状態: ${attendance['status'] ?? '未設定'}',
+                                      style: TextStyle(
+                                        color: attendance['status'] == 'active'
+                                            ? Colors.green
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              AttendanceDetailPage(
+                                            date: attendance['date'] ?? '不明',
+                                            status:
+                                                attendance['status'] ?? '不明',
+                                            courseID: widget.courseID,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            )
+                          : Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text('授業がなかった'),
+                            ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
+      bottomNavigationBar: BottomBar(),
     );
   }
 }
+
 //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑授業リストが押されたらここにくる↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓日付が押されたらここにくる↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
@@ -435,57 +705,448 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     }
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: CustomAppBar(),
+  //     body: Column(
+  //       children: [
+  //         Container(
+  //           margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+  //           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+  //           decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             border: Border.all(color: Colors.grey),
+  //             borderRadius: BorderRadius.circular(8),
+  //           ),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: [
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     "出席記錄詳細",
+  //                     style: TextStyle(
+  //                       fontSize: 30,
+  //                       fontWeight: FontWeight.bold,
+  //                       color: Colors.black,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.end,
+  //                 children: [
+  //                   SizedBox(width: 90),
+  //                   CustomButton(
+  //                     text: "戻る",
+  //                     onPressed: () {
+  //                       Navigator.pop(context);
+  //                     },
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         Expanded(
+  //           child: SingleChildScrollView(
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 // Course Details Card
+  //                 Card(
+  //                   elevation: 7,
+  //                   margin: EdgeInsets.all(16),
+  //                   shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(16),
+  //                   ),
+  //                   child: Container(
+  //                     padding: EdgeInsets.all(20),
+  //                     decoration: BoxDecoration(
+  //                       gradient: LinearGradient(
+  //                         colors: [Colors.purple.shade50, Colors.white],
+  //                         begin: Alignment.topLeft,
+  //                         end: Alignment.bottomRight,
+  //                       ),
+  //                     ),
+  //                     child: Column(
+  //                       crossAxisAlignment: CrossAxisAlignment.start,
+  //                       children: [
+  //                         Row(
+  //                           children: [
+  //                             Icon(Icons.school,
+  //                                 color: Colors.purple.shade700, size: 28),
+  //                             SizedBox(width: 12),
+  //                             Expanded(
+  //                               child: Column(
+  //                                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                                 children: [
+  //                                   Text(
+  //                                     '授業ID: ${widget.courseID}',
+  //                                     style: TextStyle(
+  //                                       fontSize: 15,
+  //                                       fontWeight: FontWeight.bold,
+  //                                       color: Colors.black87,
+  //                                     ),
+  //                                   ),
+  //                                   SizedBox(height: 8),
+  //                                   Text(
+  //                                     '日付: ${widget.date}',
+  //                                     style: TextStyle(
+  //                                       fontSize: 15,
+  //                                       fontWeight: FontWeight.bold,
+  //                                       color: Colors.black87,
+  //                                     ),
+  //                                   ),
+  //                                   SizedBox(height: 8),
+  //                                   Text(
+  //                                     '狀態: ${widget.status}',
+  //                                     style: TextStyle(
+  //                                       fontSize: 15,
+  //                                       fontWeight: FontWeight.bold,
+  //                                       color: Colors.black87,
+  //                                     ),
+  //                                   ),
+  //                                 ],
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+
+  //                 // Attendance Dates Section
+  //                 Padding(
+  //                   padding: EdgeInsets.symmetric(horizontal: 16),
+  //                   child: Row(
+  //                     children: [
+  //                       Icon(Icons.person_2,
+  //                           color: Colors.purple.shade700, size: 28),
+  //                       SizedBox(width: 12),
+  //                       Text(
+  //                         '学生リスト',
+  //                         style: TextStyle(
+  //                           fontWeight: FontWeight.bold,
+  //                           fontSize: 24,
+  //                           color: Colors.black87,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //         isLoading
+  //             ? Center(child: CircularProgressIndicator())
+  //             : Expanded(
+  //                 child: ListView.builder(
+  //                   itemCount: students.length,
+  //                   itemBuilder: (context, index) {
+  //                     var student = students[index];
+  //                     final isPresent = presentUIDs.contains(student['uid']);
+  //                     return Card(
+  //                       margin:
+  //                           EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+  //                       elevation: 5,
+  //                       shape: RoundedRectangleBorder(
+  //                         borderRadius: BorderRadius.circular(16),
+  //                       ),
+  //                       child: Container(
+  //                         padding: EdgeInsets.all(16),
+  //                         decoration: BoxDecoration(
+  //                           color: isPresent
+  //                               ? Colors.green.shade50
+  //                               : Colors.red.shade50,
+  //                           borderRadius: BorderRadius.circular(16),
+  //                         ),
+  //                         child: Row(
+  //                           children: [
+  //                             CircleAvatar(
+  //                               backgroundColor:
+  //                                   isPresent ? Colors.green : Colors.red,
+  //                               child: Icon(
+  //                                 isPresent ? Icons.check : Icons.close,
+  //                                 color: Colors.white,
+  //                               ),
+  //                             ),
+  //                             SizedBox(width: 16),
+  //                             Expanded(
+  //                               child: Column(
+  //                                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                                 children: [
+  //                                   Text(
+  //                                     student['name'] ?? '不明',
+  //                                     style: TextStyle(
+  //                                       fontSize: 18,
+  //                                       fontWeight: FontWeight.bold,
+  //                                       color: Colors.black87,
+  //                                     ),
+  //                                   ),
+  //                                   SizedBox(height: 4),
+  //                                   Text(
+  //                                     '学籍番号: ${student['id'] ?? '学籍番号不明'}',
+  //                                     style: TextStyle(
+  //                                       fontSize: 16,
+  //                                       color: Colors.black54,
+  //                                     ),
+  //                                   ),
+  //                                 ],
+  //                               ),
+  //                             ),
+  //                             Text(
+  //                               isPresent ? '出席' : '欠席',
+  //                               style: TextStyle(
+  //                                 fontSize: 16,
+  //                                 fontWeight: FontWeight.bold,
+  //                                 color: isPresent ? Colors.green : Colors.red,
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       ),
+  //                     );
+  //                   },
+  //                 ),
+  //               ),
+  //       ],
+  //     ),
+  //     bottomNavigationBar: BottomBar(),
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('出席記錄詳細'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('授業ID: ${widget.courseID}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('日付: ${widget.date}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 8),
-            Text('狀態: ${widget.status}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 16),
-            Text('學生列表: ',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: ListView.builder(
-                      itemCount: students.length,
-                      itemBuilder: (context, index) {
-                        var student = students[index];
-                        final isPresent = presentUIDs.contains(student['uid']);
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 4),
-                          child: ListTile(
-                            title: Text(student['name'] ?? '不明'),
-                            subtitle: Text(
-                              '学籍番号: ${student['id'] ?? '学籍番号不明'} - UID: ${student['uid'] ?? 'UID不明'}',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            trailing: Text(
-                              isPresent ? '出席' : '欠席',
-                              style: TextStyle(
-                                color: isPresent ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        );
+      appBar: CustomAppBar(),
+      body: Column(
+        children: [
+          // Header section
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "出席記録詳細",
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SizedBox(width: 90),
+                    CustomButton(
+                      text: "戻る",
+                      onPressed: () {
+                        Navigator.pop(context);
                       },
                     ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Details and Attendance section
+          Expanded(
+            child: Column(
+              children: [
+                // Course Details Card
+                Card(
+                  elevation: 7,
+                  margin: EdgeInsets.all(16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-          ],
-        ),
+                  child: Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.purple.shade50, Colors.white],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.school,
+                                color: Colors.purple.shade700, size: 28),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '授業ID: ${widget.courseID}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '日付: ${widget.date}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '狀態: ${widget.status}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8),
+
+                // Attendance List Section
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            Icon(Icons.person_2,
+                                color: Colors.purple.shade700, size: 28),
+                            SizedBox(width: 12),
+                            Text(
+                              '学生リスト',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : ListView.builder(
+                                itemCount: students.length,
+                                itemBuilder: (context, index) {
+                                  var student = students[index];
+                                  final isPresent =
+                                      presentUIDs.contains(student['uid']);
+                                  return Card(
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 16),
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: isPresent
+                                            ? Colors.green.shade50
+                                            : Colors.red.shade50,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            backgroundColor: isPresent
+                                                ? Colors.green
+                                                : Colors.red,
+                                            child: Icon(
+                                              isPresent
+                                                  ? Icons.check
+                                                  : Icons.close,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  student['name'] ?? '不明',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Text(
+                                                  '学籍番号: ${student['id'] ?? '学籍番号不明'}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black54,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Text(
+                                            isPresent ? '出席' : '欠席',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: isPresent
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
+      bottomNavigationBar: BottomBar(),
     );
   }
 }
