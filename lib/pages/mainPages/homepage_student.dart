@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:sams/Animation/animation_Welcome.dart';
 import 'package:sams/pages/loginPages/login.dart';
 import 'package:sams/pages/student/attendance_std.dart';
 import 'package:sams/widget/appbarlogout_mobile.dart';
@@ -14,13 +15,17 @@ class HomePageStudent extends StatefulWidget {
   _HomePageStudentState createState() => _HomePageStudentState();
 }
 
-class _HomePageStudentState extends State<HomePageStudent> {
+class _HomePageStudentState extends State<HomePageStudent>
+    with TickerProviderStateMixin {
   String userName = '';
   final String currentUID = FirebaseAuth.instance.currentUser!.uid; // 現在のユーザーID
   final FirebaseFirestore _firestore =
       FirebaseFirestore.instance; // Firestoreのインスタンス
   final FirebaseDatabase _realtimeDatabase =
       FirebaseDatabase.instance; // Realtime Databaseのインスタンス
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   // ログアウト処理
   Future<void> _signOut(BuildContext context) async {
@@ -241,6 +246,26 @@ class _HomePageStudentState extends State<HomePageStudent> {
   void initState() {
     super.initState();
     _initializePage(); // 初期化処理を呼び出す
+
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    _controller.forward();
   }
 
   Future<void> _initializePage() async {
@@ -318,13 +343,14 @@ class _HomePageStudentState extends State<HomePageStudent> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      '${userName.isNotEmpty ? userName : 'Loading...'}さん\n学生出席ページへようこそ！',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF7B1FA2),
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: AnimatedWelcomeMessage(
+                          username:
+                              userName.isNotEmpty ? userName : 'Loading...',
+                        ),
                       ),
                     ),
                     SizedBox(height: 100),
