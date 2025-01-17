@@ -9,6 +9,7 @@ class teacherAttendanceManagementPage extends StatefulWidget {
       _teacherAttendanceManagementPageState();
 }
 
+//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ここは出席管理メイン画面↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 class _teacherAttendanceManagementPageState
     extends State<teacherAttendanceManagementPage> {
   List<Map<String, String>> courses = [];
@@ -39,12 +40,12 @@ class _teacherAttendanceManagementPageState
               "courseID": classSnapshot.key!,
               "courseName": classSnapshot.child("CLASS").value as String,
               "courseRoom":
-                  classSnapshot.child("CLASSROOM").value as String? ?? '無教室',
-              "courseDay": classSnapshot.child("DAY").value as String? ?? '無日期',
+                  classSnapshot.child("CLASSROOM").value as String? ?? '不明',
+              "courseDay": classSnapshot.child("DAY").value as String? ?? '不明',
               "coursePlace":
-                  classSnapshot.child("PLACE").value as String? ?? '無地點',
+                  classSnapshot.child("PLACE").value as String? ?? '不明',
               "courseTime":
-                  classSnapshot.child("TIME").value as String? ?? '無時間',
+                  classSnapshot.child("TIME").value as String? ?? '不明',
             });
           }
         });
@@ -58,12 +59,12 @@ class _teacherAttendanceManagementPageState
               "courseID": classSnapshot.key!,
               "courseName": classSnapshot.child("CLASS").value as String,
               "courseRoom":
-                  classSnapshot.child("CLASSROOM").value as String? ?? '無教室',
-              "courseDay": classSnapshot.child("DAY").value as String? ?? '無日期',
+                  classSnapshot.child("CLASSROOM").value as String? ?? '不明',
+              "courseDay": classSnapshot.child("DAY").value as String? ?? '不明',
               "coursePlace":
-                  classSnapshot.child("PLACE").value as String? ?? '無地點',
+                  classSnapshot.child("PLACE").value as String? ?? '不明',
               "courseTime":
-                  classSnapshot.child("TIME").value as String? ?? '無時間',
+                  classSnapshot.child("TIME").value as String? ?? '不明',
             });
           }
         });
@@ -96,7 +97,7 @@ class _teacherAttendanceManagementPageState
               itemBuilder: (context, index) {
                 var course = courses[index];
                 return ListTile(
-                  title: Text(course['courseName'] ?? '無課程名稱'),
+                  title: Text(course['courseName'] ?? '不明'),
                   subtitle: Text(
                       '教室: ${course['coursePlace']}${course['courseRoom']}ー${course['courseDay']}ー${course['courseTime']}限目'),
                   onTap: () {
@@ -124,6 +125,9 @@ class _teacherAttendanceManagementPageState
   }
 }
 
+//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ここは出席管理メイン画面↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+
+//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓授業リストが押されたらここにくる↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 class CourseDetailsPage extends StatefulWidget {
   final String courseID;
   final String courseName;
@@ -185,7 +189,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         if (attendanceData != null) {
           attendanceData.forEach((date, value) {
             if (value is Map<String, dynamic>) {
-              String status = value['STATUS'] ?? '未設定';
+              String status = value['STATUS'] ?? '不明';
               datesWithStatus
                   .add({"date": date, "status": status, "department": "IT"});
             }
@@ -200,7 +204,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         if (attendanceData != null) {
           attendanceData.forEach((date, value) {
             if (value is Map<String, dynamic>) {
-              String status = value['STATUS'] ?? '未設定';
+              String status = value['STATUS'] ?? '不明';
               datesWithStatus
                   .add({"date": date, "status": status, "department": "GAME"});
             }
@@ -240,15 +244,15 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('課程ID: ${widget.courseID}', style: TextStyle(fontSize: 18)),
+            Text('授業ID: ${widget.courseID}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('課程名稱: ${widget.courseName}', style: TextStyle(fontSize: 18)),
+            Text('授業名: ${widget.courseName}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Text('教室: ${widget.courseRoom}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('日期: ${widget.courseDay}', style: TextStyle(fontSize: 18)),
+            Text('曜日: ${widget.courseDay}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('地點: ${widget.coursePlace}', style: TextStyle(fontSize: 18)),
+            Text('場所: ${widget.coursePlace}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Text('時間: ${widget.courseTime}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 16),
@@ -269,7 +273,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                 child: ListTile(
                                   leading: Icon(Icons.calendar_today),
                                   title: Text(
-                                    attendance['date'] ?? '無日期',
+                                    attendance['date'] ?? '不明',
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
@@ -282,14 +286,13 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                     ),
                                   ),
                                   onTap: () {
-                                    // 點擊後導航到新的頁面，並傳遞日期、狀態和課程ID
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             AttendanceDetailPage(
-                                          date: attendance['date'] ?? '無日期',
-                                          status: attendance['status'] ?? '未設定',
+                                          date: attendance['date'] ?? '不明',
+                                          status: attendance['status'] ?? '不明',
                                           courseID: widget.courseID,
                                         ),
                                       ),
@@ -299,7 +302,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               );
                             },
                           )
-                        : Text('未找到上課日期'),
+                        : Text('授業がなかった'),
                   ),
           ],
         ),
@@ -307,7 +310,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     );
   }
 }
+//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑授業リストが押されたらここにくる↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
+//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓日付が押されたらここにくる↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 class AttendanceDetailPage extends StatefulWidget {
   final String courseID;
   final String date;
@@ -327,7 +332,7 @@ class AttendanceDetailPage extends StatefulWidget {
 class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   bool isLoading = true;
   List<Map<String, String>> students = [];
-  Set<String> presentUIDs = {}; // 出席的UID集合
+  Set<String> presentUIDs = {}; // 出席UID
   @override
   void initState() {
     super.initState();
@@ -425,7 +430,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('資料加載失敗: ${e.toString()}')),
+        SnackBar(content: Text('FAILED: ${e.toString()}')),
       );
     }
   }
@@ -441,9 +446,9 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('課程ID: ${widget.courseID}', style: TextStyle(fontSize: 18)),
+            Text('授業ID: ${widget.courseID}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('日期: ${widget.date}', style: TextStyle(fontSize: 18)),
+            Text('日付: ${widget.date}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
             Text('狀態: ${widget.status}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 16),
@@ -484,3 +489,4 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     );
   }
 }
+//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑日付が押されたらここにくる↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
