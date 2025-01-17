@@ -7,6 +7,8 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:sams/widget/dropbox/custom_dropdown.dart';
 import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/pages/user/list.dart'; // UserList 페이지를 import
+import 'classLists.dart'; // ClassLists import 추가
+import 'package:sams/utils/log.dart'; // 로그 유틸 추가
 
 class UserEdit extends StatelessWidget {
   final String documentPath;
@@ -17,6 +19,7 @@ class UserEdit extends StatelessWidget {
   final TextEditingController classInputController;
   String selectedRole;
   String selectedCourse;
+  String? selectedClass; // 선택된 클래스 추가
 
   UserEdit({
     Key? key,
@@ -35,6 +38,7 @@ class UserEdit extends StatelessWidget {
         classInputController = TextEditingController(text: className),
         selectedRole = role,
         selectedCourse = course,
+        selectedClass = className, // 초기 클래스 설정
         super(key: key);
 
   Future<void> _updateUser(BuildContext context) async {
@@ -44,12 +48,17 @@ class UserEdit extends StatelessWidget {
         'ID': int.tryParse(dataIdInputController.text) ?? 0,
         'NAME': userNameInputController.text,
         'TEL': phoneNumberController.text,
-        'CLASS': classInputController.text,
+        'CLASS': selectedClass, // 선택된 클래스 사용
         'JOB': selectedRole,
         'COURSE': selectedCourse,
       };
 
       await FirebaseFirestore.instance.doc(documentPath).update(updatedData);
+
+      // 로그 추가
+      String adminName = "관리자"; // 관리자 이름
+      await Utils.logMessage(
+          "$adminNameが${updatedData['NAME']}を${updatedData['COURSE']}の${updatedData['JOB']}として変更しました。");
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("User updated successfully!"),
@@ -97,8 +106,20 @@ class UserEdit extends StatelessWidget {
                       controller: phoneNumberController,
                       hintText: 'Phone Number'),
                   SizedBox(height: 16),
-                  CustomInput(
-                      controller: classInputController, hintText: 'Class Name'),
+                  Customdropdown(
+                    hintText: 'Select Class',
+                    items: ClassLists.getClassesByCourse(selectedCourse)
+                        .map((className) => DropdownMenuItem<String>(
+                              value: className,
+                              child: Text(className),
+                            ))
+                        .toList(),
+                    value: selectedClass,
+                    onChanged: (value) {
+                      selectedClass = value;
+                      classInputController.text = value!;
+                    },
+                  ),
                   SizedBox(height: 16),
                   Customdropdown(
                     hintText: 'Select Role',
@@ -122,6 +143,7 @@ class UserEdit extends StatelessWidget {
                     value: selectedCourse,
                     onChanged: (value) {
                       selectedCourse = value!;
+                      selectedClass = null;
                     },
                   ),
                 ],
