@@ -342,51 +342,211 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
               ),
             ),
             SizedBox(height: 16.0),
+            // Expanded(
+            //   child: _currentUID == null
+            //       ? Center(child: CircularProgressIndicator())
+            //       : ListView.builder(
+            //           itemCount: _filteredCourses.length,
+            //           itemBuilder: (context, index) {
+            //             final course = _filteredCourses[index];
+            //             final stats = _attendanceResults[course['classID']];
+            //             return Card(
+            //               elevation: 4,
+            //               margin: EdgeInsets.symmetric(vertical: 8.0),
+            //               child: ListTile(
+            //                 title: Text(course['courseName']!),
+            //                 subtitle: Text(
+            //                     '教室: ${course['classroom']}, 時間: ${course['day']} - ${course['time']}限目'),
+            //                 trailing: Text(
+            //                   stats != null
+            //                       ? stats['status'] == '授業データありません'
+            //                           ? '授業データありません'
+            //                           : '${stats['attendanceRate']?.toStringAsFixed(1)}%'
+            //                       : '計算中...',
+            //                   style: TextStyle(
+            //                     fontWeight: FontWeight.bold,
+            //                     color: stats != null &&
+            //                             stats['status'] == '授業データありません'
+            //                         ? Colors.red
+            //                         : Colors.blue,
+            //                   ),
+            //                 ),
+            //                 onTap:
+            //                     stats != null && stats['status'] != '授業データありません'
+            //                         ? () {
+            //                             Navigator.push(
+            //                               context,
+            //                               MaterialPageRoute(
+            //                                 builder: (context) =>
+            //                                     AttendanceDetailPage(
+            //                                   classID: course['classID']!,
+            //                                   classType: course['classType']!,
+            //                                   courseName: course['courseName']!,
+            //                                 ),
+            //                               ),
+            //                             );
+            //                           }
+            //                         : null, // 状態が"授業データありません"の場合、何もしない
+            //               ),
+            //             );
+            //           },
+            //         ),
+            // ),
+
             Expanded(
-              child: _currentUID == null
-                  ? Center(child: CircularProgressIndicator())
+              child: _filteredCourses.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 64,
+                            color: Colors.grey.shade400,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            "関連する授業が見つかりませんでした",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   : ListView.builder(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       itemCount: _filteredCourses.length,
                       itemBuilder: (context, index) {
                         final course = _filteredCourses[index];
                         final stats = _attendanceResults[course['classID']];
-                        return Card(
-                          elevation: 4,
-                          margin: EdgeInsets.symmetric(vertical: 8.0),
-                          child: ListTile(
-                            title: Text(course['courseName']!),
-                            subtitle: Text(
-                                '教室: ${course['classroom']}, 時間: ${course['day']} - ${course['time']}限目'),
-                            trailing: Text(
-                              stats != null
-                                  ? stats['status'] == '授業データありません'
-                                      ? '授業データありません'
-                                      : '${stats['attendanceRate']?.toStringAsFixed(1)}%'
-                                  : '計算中...',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: stats != null &&
-                                        stats['status'] == '授業データありません'
-                                    ? Colors.red
-                                    : Colors.blue,
-                              ),
-                            ),
-                            onTap:
-                                stats != null && stats['status'] != '授業データありません'
-                                    ? () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                AttendanceDetailPage(
-                                              classID: course['classID']!,
-                                              classType: course['classType']!,
-                                              courseName: course['courseName']!,
+                        final attendanceRate = stats?['attendanceRate'];
+
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 12),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: stats != null &&
+                                      stats['status'] != '授業データありません'
+                                  ? () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              AttendanceDetailPage(
+                                            classID: course['classID']!,
+                                            classType: course['classType']!,
+                                            courseName: course['courseName']!,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  : null, // If "授業データありません", no action is taken
+                              borderRadius: BorderRadius.circular(12),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      spreadRadius: 1,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              course['courseName'] ?? "不明な授業",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
                                             ),
                                           ),
-                                        );
-                                      }
-                                    : null, // 状態が"授業データありません"の場合、何もしない
+                                          attendanceRate != null
+                                              ? Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: _getAttendanceColor(
+                                                        attendanceRate),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                  ),
+                                                  child: Text(
+                                                    '${attendanceRate.toStringAsFixed(1)}%',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  '授業データがありません',
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.location_on_outlined,
+                                            size: 16,
+                                            color: Colors.purple.shade600,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            course['classroom'] ?? "不明",
+                                            style: TextStyle(
+                                              color: Colors.purple.shade700,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          SizedBox(width: 16),
+                                          Icon(
+                                            Icons.access_time,
+                                            size: 16,
+                                            color: Colors.purple.shade600,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '${course['day'] ?? "不明"} - ${course['time'] ?? "不明"}限',
+                                            style: TextStyle(
+                                              color: Colors.purple.shade700,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -397,5 +557,17 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
       ),
       bottomNavigationBar: BottomBar(),
     );
+  }
+}
+
+Color _getAttendanceColor(double rate) {
+  if (rate >= 90) {
+    return Colors.green.shade500;
+  } else if (rate >= 80) {
+    return Colors.blue.shade500;
+  } else if (rate >= 70) {
+    return Colors.orange.shade500;
+  } else {
+    return Colors.red.shade500;
   }
 }
