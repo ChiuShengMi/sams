@@ -4,6 +4,7 @@ import 'package:sams/pages/admin/admin_leavesManagement.dart';
 import 'package:sams/pages/admin/admin_link.dart';
 import 'package:sams/pages/admin/log/log.dart';
 import 'package:sams/pages/admin/subjectlist/subjecttable.dart';
+import 'package:sams/pages/loginPages/login.dart';
 // import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/list.dart';
 import 'package:sams/widget/bottombar.dart';
@@ -12,6 +13,7 @@ import 'package:sams/widget/custom_input_container.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sams/Animation/animation_Welcome.dart';
+import 'package:sams/pages/admin/admin_announce.dart';
 
 class HomePageAdmin extends StatefulWidget {
   @override
@@ -110,6 +112,19 @@ class _HomePageAdminState extends State<HomePageAdmin>
       appBar: AppBar(
         title: Text('管理者トップ画面'),
         backgroundColor: Color(0xFF7B1FA2),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
+            tooltip: 'ログアウト',
+          ),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -137,9 +152,14 @@ class _HomePageAdminState extends State<HomePageAdmin>
                             Expanded(
                               child: _buildBoxedButton(
                                 context: context,
-                                label: '出席総計管理',
+                                label: 'アナウンス設定',
                                 onPressed: () {
-                                  // 첫 번째 버튼 동작
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            AdminAnnouncePage()),
+                                  );
                                 },
                               ),
                             ),

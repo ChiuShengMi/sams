@@ -28,11 +28,83 @@ class _UserAddState extends State<UserAdd> {
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController classInputController = TextEditingController();
 
+  Future<bool> _checkForDuplicates(BuildContext context) async {
+    try {
+      print("重複データ確認開始");
+
+      String basePath;
+      if (selectedRole == 'student') {
+        basePath = 'Users/Students/$selectedCourse';
+      } else if (selectedRole == 'teacher') {
+        basePath = 'Users/Teachers/$selectedCourse';
+      } else {
+        basePath = 'Users/Managers';
+      }
+
+      QuerySnapshot emailSanpshot = await FirebaseFirestore.instance
+          .collection(basePath)
+          .where('MAIL', isEqualTo: loginEmailInputController.text.trim())
+          .get();
+
+      if (emailSanpshot.docs.isNotEmpty) {
+        print("重複されたe-mailを検知");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("既に存在するメールです。"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ));
+        return true;
+      }
+      QuerySnapshot idSnapshot = await FirebaseFirestore.instance
+          .collection(basePath)
+          .where('ID', isEqualTo: int.tryParse(dataIdInputController.text))
+          .get();
+
+      if (idSnapshot.docs.isNotEmpty) {
+        print("重複されたID検知");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('ユーザ番号が既に存在します。'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ));
+        return true;
+      }
+
+      QuerySnapshot phoneSnapshot = await FirebaseFirestore.instance
+          .collection(basePath)
+          .where('TEL', isEqualTo: phoneNumberController.text.trim())
+          .get();
+      if (phoneSnapshot.docs.isNotEmpty) {
+        print("重複された電話番号検知");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("この携帯番号は既に存在します。"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ));
+        return true;
+      }
+      print("重複無し");
+      return false;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("エラーが発生しました。: $e"),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
+      ));
+      return true;
+    }
+  }
+
   String selectedRole = 'student';
   String selectedCourse = 'IT';
   String? seletedClass;
 
   Future<void> _registerUser(BuildContext context) async {
+    bool hasDuplicates = await _checkForDuplicates(context);
+    if (hasDuplicates) {
+      return;
+    }
+
     if (loginEmailInputController.text.isEmpty ||
         dataIdInputController.text.isEmpty ||
         passwordInputController.text.isEmpty ||
@@ -58,12 +130,10 @@ class _UserAddState extends State<UserAdd> {
     }
 
     try {
-      // 현재 관리자의 정보를 가져옵니다.
       User? currentUser = FirebaseAuth.instance.currentUser;
       String adminName = "Unknown Admin";
 
       if (currentUser != null) {
-        // Firestore에서 관리자 이름 가져오기
         DocumentSnapshot adminDoc = await FirebaseFirestore.instance
             .collection('Users/Managers/IT') // 관리자 경로를 프로젝트에 맞게 수정
             .doc(currentUser.uid)
@@ -369,7 +439,15 @@ class _UserAddState extends State<UserAdd> {
                   SizedBox(width: 16),
                   CustomButton(
                     text: '確認',
-                    onPressed: () {
+                    onPressed: () async {
+                      print('確認ボタン、クリック');
+
+                      bool hasDuplicates = await _checkForDuplicates(context);
+                      if (hasDuplicates) {
+                        print("重複されたデータにより登録中断");
+                        return;
+                      }
+
                       if (loginEmailInputController.text.isEmpty ||
                           dataIdInputController.text.isEmpty ||
                           passwordInputController.text.isEmpty ||
@@ -382,13 +460,16 @@ class _UserAddState extends State<UserAdd> {
                           backgroundColor: Colors.red,
                           duration: Duration(seconds: 2),
                         ));
+                        print("空欄があるたる登録中断");
                         return;
                       }
+                      print("登録ロジック実行準備");
                       showDialog(
                         context: context,
                         builder: (context) => ConfirmationModal(
                           onConfirm: () async {
                             Navigator.pop(context);
+                            print("登録開始");
                             await _registerUser(context);
                           },
                         ),
