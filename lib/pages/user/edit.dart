@@ -92,11 +92,14 @@ class UserEdit extends StatelessWidget {
                 title: 'Edit User',
                 inputWidgets: [
                   CustomInput(
-                      controller: loginEmailInputController,
-                      hintText: 'Login E-mail'),
+                    controller: loginEmailInputController,
+                    hintText: 'Login E-mail',
+                  ), // 수정 불가 처리
                   SizedBox(height: 16),
                   CustomInput(
-                      controller: dataIdInputController, hintText: 'Data ID'),
+                    controller: dataIdInputController,
+                    hintText: 'Data ID',
+                  ), // 수정 불가 처리
                   SizedBox(height: 16),
                   CustomInput(
                       controller: userNameInputController,
