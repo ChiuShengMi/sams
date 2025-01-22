@@ -10,6 +10,7 @@ import 'package:sams/widget/table/custom_table.dart';
 import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/detail.dart';
 import 'classLists.dart';
+import 'dummyData.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -240,6 +241,15 @@ class _UserListState extends State<UserList> {
                     },
                   ),
                   SizedBox(width: 16),
+                  MediumButton(
+                      text: 'ダミーデータ',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => DummyDataScreen()),
+                        );
+                      })
                 ],
               ),
             ],
