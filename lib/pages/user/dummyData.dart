@@ -50,7 +50,7 @@ class DummyDataScreen extends StatelessWidget {
 
   // 더미 데이터 생성 함수
   Future<void> generateDummyData(BuildContext context) async {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 22; i++) {
       String email;
       String phoneNumber;
       int userId;
@@ -92,7 +92,7 @@ class DummyDataScreen extends StatelessWidget {
 
         // 학생 데이터 생성
         Map<String, dynamic> studentData = {
-          'CLASS': 'SE2A', // 고정된 클래스
+          'CLASS': 'SK2B', // 고정된 클래스
           'COURSE': 'IT', // 고정된 코스
           'CREATE_AT': Timestamp.now(),
           'DELETE_FLG': 0,
