@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sams/utils/log.dart';
 
 class AdminAnnouncePage extends StatefulWidget {
   @override
@@ -46,6 +48,44 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
     });
   }
 
+  Future<void> _log() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+    final managerUid = user.uid;
+
+    DocumentSnapshot? managerSnapshot;
+    managerSnapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc('Managers')
+        .collection('IT')
+        .doc(managerUid)
+        .get();
+
+    if (!managerSnapshot.exists) {
+      managerSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc('Managers')
+          .collection('GAME')
+          .doc(managerUid)
+          .get();
+    }
+
+    if (!managerSnapshot.exists) {
+      throw Exception('管理者情報が見つかりません');
+    }
+
+    final managerData = managerSnapshot.data() as Map<String, dynamic>;
+    final approver = {
+      'UID': managerUid,
+      'ID': managerData['ID'].toString(),
+      'NAME': managerData['NAME'],
+    };
+
+    await Utils.logMessage(
+      '${managerData['NAME']}-${managerData['ID']}がのアナウンスを変動しました。',
+    );
+  }
+
   Future<void> _publishAnnouncement() async {
     final message = _announcementController.text.trim();
     if (message.isEmpty) return;
@@ -60,6 +100,7 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
 
     _announcementController.clear();
     _loadAnnouncements();
+    _log();
   }
 
   Future<void> _updateAnnouncementStatus(
@@ -71,6 +112,16 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
           .doc(id)
           .update({'Status': newStatus});
       _loadAnnouncements();
+      _log();
+    }
+  }
+
+  Future<void> _deleteAnnouncement(String id) async {
+    final confirmed = await _showConfirmationDialog('このアナウンスを削除しますか？');
+    if (confirmed == true) {
+      await _firestore.collection('Announce').doc(id).delete();
+      _loadAnnouncements();
+      _log();
     }
   }
 
@@ -84,11 +135,11 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text('キャンセル'),
+              child: Text('いいえ'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text('確認'),
+              child: Text('はい'),
             ),
           ],
         );
@@ -147,7 +198,7 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
                         onPressed: () => _updateAnnouncementStatus(
                           announce['id'],
                           0,
-                          'このアナウンスを非公開するか？',
+                          'このアナウンスを非公開にしますか？',
                         ),
                       ),
                     ),
@@ -166,13 +217,23 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
                         style:
                             TextStyle(fontSize: 16, color: Colors.blueAccent),
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.refresh, color: Colors.green),
-                        onPressed: () => _updateAnnouncementStatus(
-                          announce['id'],
-                          1,
-                          'このアナウンスを再度公開するか？',
-                        ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.refresh, color: Colors.green),
+                            onPressed: () => _updateAnnouncementStatus(
+                              announce['id'],
+                              1,
+                              'このアナウンスを再度公開するか？',
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () =>
+                                _deleteAnnouncement(announce['id']),
+                          ),
+                        ],
                       ),
                     ),
                 ],
