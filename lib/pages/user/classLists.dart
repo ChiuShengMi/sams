@@ -7,11 +7,11 @@ class ClassLists {
       'IE1B',
       'SE1A',
       'SK1A',
-      'IE2A',
-      'IE2B',
-      'SE2A',
-      'SK2A',
-      'SK2B',
+      'IE2A', //
+      'IE2B', //
+      'SE2A', //
+      'SK2A', //
+      'SK2B', //
       'IE3A',
       'IE3B',
       'SK3A',
