@@ -90,6 +90,10 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                     print(
                         'APPROVE 為 1，已確認出席 (classID: ${widget.classID}, dateKey: $dateKey)');
                     status = "休暇届承認されたにより出席　〇";
+                  } else if (studentRecord.containsKey('APPROVE') &&
+                      (studentRecord['APPROVE'] == 4 ||
+                          studentRecord['APPROVE'] == '4')) {
+                    status = "出席修正されたため出席　〇";
                   }
                   // 2️⃣ 如果 APPROVE 不是 1，則執行 UPDATE_TIME 的出席/遲到檢查
                   else if (studentRecord.containsKey('UPDATE_TIME')) {
@@ -215,7 +219,8 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: detail['status'] == "出席　〇" ||
-                                  detail['status'] == "休暇届承認されたにより出席　〇"
+                                  detail['status'] == "休暇届承認されたにより出席　〇" ||
+                                  detail['status'] == "出席修正されたため出席　〇"
                               ? Colors.green
                               : detail['status'] == "遅刻　△"
                                   ? Colors.orange
