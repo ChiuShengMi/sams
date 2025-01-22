@@ -342,57 +342,6 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
               ),
             ),
             SizedBox(height: 16.0),
-            // Expanded(
-            //   child: _currentUID == null
-            //       ? Center(child: CircularProgressIndicator())
-            //       : ListView.builder(
-            //           itemCount: _filteredCourses.length,
-            //           itemBuilder: (context, index) {
-            //             final course = _filteredCourses[index];
-            //             final stats = _attendanceResults[course['classID']];
-            //             return Card(
-            //               elevation: 4,
-            //               margin: EdgeInsets.symmetric(vertical: 8.0),
-            //               child: ListTile(
-            //                 title: Text(course['courseName']!),
-            //                 subtitle: Text(
-            //                     '教室: ${course['classroom']}, 時間: ${course['day']} - ${course['time']}限目'),
-            //                 trailing: Text(
-            //                   stats != null
-            //                       ? stats['status'] == '授業データありません'
-            //                           ? '授業データありません'
-            //                           : '${stats['attendanceRate']?.toStringAsFixed(1)}%'
-            //                       : '計算中...',
-            //                   style: TextStyle(
-            //                     fontWeight: FontWeight.bold,
-            //                     color: stats != null &&
-            //                             stats['status'] == '授業データありません'
-            //                         ? Colors.red
-            //                         : Colors.blue,
-            //                   ),
-            //                 ),
-            //                 onTap:
-            //                     stats != null && stats['status'] != '授業データありません'
-            //                         ? () {
-            //                             Navigator.push(
-            //                               context,
-            //                               MaterialPageRoute(
-            //                                 builder: (context) =>
-            //                                     AttendanceDetailPage(
-            //                                   classID: course['classID']!,
-            //                                   classType: course['classType']!,
-            //                                   courseName: course['courseName']!,
-            //                                 ),
-            //                               ),
-            //                             );
-            //                           }
-            //                         : null, // 状態が"授業データありません"の場合、何もしない
-            //               ),
-            //             );
-            //           },
-            //         ),
-            // ),
-
             Expanded(
               child: _filteredCourses.isEmpty
                   ? Center(

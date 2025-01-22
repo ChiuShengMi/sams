@@ -757,69 +757,69 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
             child: Column(
               children: [
                 // Course Details Card
-                Card(
-                  elevation: 7,
-                  margin: EdgeInsets.all(16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.purple.shade50, Colors.white],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.school,
-                                color: Colors.purple.shade700, size: 28),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '授業ID: ${widget.courseID}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    '日付: ${widget.date}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    '狀態: ${widget.status}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8),
+                // Card(
+                //   elevation: 7,
+                //   margin: EdgeInsets.all(16),
+                //   shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(16),
+                //   ),
+                //   child: Container(
+                //     padding: EdgeInsets.all(20),
+                //     decoration: BoxDecoration(
+                //       gradient: LinearGradient(
+                //         colors: [Colors.purple.shade50, Colors.white],
+                //         begin: Alignment.topLeft,
+                //         end: Alignment.bottomRight,
+                //       ),
+                //     ),
+                //     child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         Row(
+                //           children: [
+                //             Icon(Icons.school,
+                //                 color: Colors.purple.shade700, size: 28),
+                //             SizedBox(width: 12),
+                //             Expanded(
+                //               child: Column(
+                //                 crossAxisAlignment: CrossAxisAlignment.start,
+                //                 children: [
+                //                   Text(
+                //                     '授業ID: ${widget.courseID}',
+                //                     style: TextStyle(
+                //                       fontSize: 15,
+                //                       fontWeight: FontWeight.bold,
+                //                       color: Colors.black87,
+                //                     ),
+                //                   ),
+                //                   SizedBox(height: 8),
+                //                   Text(
+                //                     '日付: ${widget.date}',
+                //                     style: TextStyle(
+                //                       fontSize: 15,
+                //                       fontWeight: FontWeight.bold,
+                //                       color: Colors.black87,
+                //                     ),
+                //                   ),
+                //                   SizedBox(height: 8),
+                //                   Text(
+                //                     '狀態: ${widget.status}',
+                //                     style: TextStyle(
+                //                       fontSize: 15,
+                //                       fontWeight: FontWeight.bold,
+                //                       color: Colors.black87,
+                //                     ),
+                //                   ),
+                //                 ],
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+                //SizedBox(height: 8),
 
                 // Attendance List Section
                 Expanded(
@@ -837,7 +837,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                               '学生リスト',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 24,
+                                fontSize: 20,
                                 color: Colors.black87,
                               ),
                             ),
@@ -855,18 +855,18 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                                       presentUIDs.contains(student['uid']);
                                   return Card(
                                     margin: EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 16),
+                                        vertical: 8, horizontal: 10),
                                     elevation: 5,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Container(
-                                      padding: EdgeInsets.all(16),
+                                      padding: EdgeInsets.all(10),
                                       decoration: BoxDecoration(
                                         color: isPresent
                                             ? Colors.green.shade50
                                             : Colors.red.shade50,
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Row(
                                         children: [
@@ -890,7 +890,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                                                 Text(
                                                   student['name'] ?? '不明',
                                                   style: TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 12,
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.black87,
                                                   ),
@@ -899,7 +899,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                                                 Text(
                                                   '学籍番号: ${student['id'] ?? '学籍番号不明'}',
                                                   style: TextStyle(
-                                                    fontSize: 16,
+                                                    fontSize: 12,
                                                     color: Colors.black54,
                                                   ),
                                                 ),
@@ -909,7 +909,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                                           Text(
                                             isPresent ? '出席' : '欠席',
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.bold,
                                               color: isPresent
                                                   ? Colors.green

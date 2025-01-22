@@ -167,7 +167,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        "'${widget.courseName} 詳細状況'",
+                        "${widget.courseName} 詳細状況",
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
