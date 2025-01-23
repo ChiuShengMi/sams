@@ -259,8 +259,11 @@ class _UserListState extends State<UserList> {
     );
   }
 
-  // 페이지네이션 컨트롤 구현
   Widget _buildPaginationControls(int totalPages) {
+    // currentPage가 범위 내에 있도록 보정
+    currentPage = currentPage.clamp(0, totalPages - 1);
+
+    // startPage와 endPage 계산
     int startPage = (currentPage ~/ 10) * 10; // 10단위로 그룹화
     int endPage =
         (startPage + 9) < totalPages ? (startPage + 9) : totalPages - 1;
