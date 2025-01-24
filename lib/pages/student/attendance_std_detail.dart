@@ -3,11 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sams/widget/attendencetable.dart';
-import 'package:sams/widget/button/custom_button.dart';
+
 import 'package:sams/widget/appbar.dart';
-import 'package:sams/widget/button/custom_button.dart';
+
 import 'package:sams/pages/student/attendance_std.dart';
 import 'package:sams/widget/bottombar.dart';
+import 'package:sams/widget/button/custom_buttonMob.dart';
 
 class AttendanceDetailPage extends StatefulWidget {
   final String classID;
@@ -152,9 +153,66 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Container(
+            //   margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            //   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            //   decoration: BoxDecoration(
+            //     color: Colors.white,
+            //     border: Border.all(color: Colors.grey),
+            //     borderRadius: BorderRadius.circular(8),
+            //   ),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.center,
+            //     children: [
+            //       // タイトル行
+            //       Row(
+            //         mainAxisAlignment: MainAxisAlignment.start,
+            //         children: [
+            //           Text(
+            //             "${widget.courseName} 詳細状況",
+            //             style: TextStyle(
+            //               fontSize: 30,
+            //               fontWeight: FontWeight.bold,
+            //               color: Colors.black,
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+
+            //       // フィルタリングと検索バー
+            //       Row(
+            //         mainAxisAlignment: MainAxisAlignment.end,
+            //         children: [
+            //           CustomButton(
+            //             text: "戻る",
+            //             onPressed: () {
+            //               Navigator.pop(context);
+            //             },
+            //             width:
+            //                 MediaQuery.of(context).size.width < 600 ? 100 : 150,
+            //             height:
+            //                 MediaQuery.of(context).size.width < 600 ? 40 : 50,
+            //             fontSize:
+            //                 MediaQuery.of(context).size.width < 600 ? 14 : 16,
+            //           ),
+            //         ],
+            //       ),
+            //     ],
+            //   ),
+            // ),
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              margin: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width < 600
+                    ? 10
+                    : 20, // Adjust margins for mobile and desktop
+                vertical: 10,
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width < 600
+                    ? 10
+                    : 20, // Adjust padding for mobile and desktop
+                vertical: 10,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(color: Colors.grey),
@@ -167,12 +225,16 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Text(
-                        "${widget.courseName} 詳細状況",
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                      Expanded(
+                        child: Text(
+                          "${widget.courseName} 詳細状況",
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width < 600
+                                ? 20
+                                : 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ],
@@ -185,19 +247,48 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                       CustomButton(
                         text: "戻る",
                         onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AttendanceRatePage(),
-                            ),
-                          );
+                          Navigator.pop(context);
                         },
+                        width:
+                            MediaQuery.of(context).size.width < 600 ? 100 : 150,
+                        height:
+                            MediaQuery.of(context).size.width < 600 ? 40 : 50,
+                        fontSize:
+                            MediaQuery.of(context).size.width < 600 ? 14 : 16,
                       ),
                     ],
                   ),
                 ],
               ),
             ),
+            // Expanded(
+            //   child: ListView.builder(
+            //     itemCount: _attendanceDetails.length,
+            //     itemBuilder: (context, index) {
+            //       final detail = _attendanceDetails[index];
+            //       return Card(
+            //         elevation: 4,
+            //         margin: EdgeInsets.symmetric(vertical: 8.0),
+            //         child: ListTile(
+            //           title: Text('日付: ${detail['date']}'),
+            //           trailing: Text(
+            //             detail['status']!,
+            //             style: TextStyle(
+            //               fontWeight: FontWeight.bold,
+            //               color: detail['status'] == "出席　〇" ||
+            //                       detail['status'] == "休暇届承認されたにより出席　〇" ||
+            //                       detail['status'] == "出席修正されたため出席　〇"
+            //                   ? Colors.green
+            //                   : detail['status'] == "遅刻　△"
+            //                       ? Colors.orange
+            //                       : Colors.red,
+            //             ),
+            //           ),
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // )
             Expanded(
               child: ListView.builder(
                 itemCount: _attendanceDetails.length,
@@ -205,7 +296,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                   final detail = _attendanceDetails[index];
                   return Card(
                     elevation: 4,
-                    margin: EdgeInsets.symmetric(vertical: 8.0),
+                    margin: EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: MediaQuery.of(context).size.width < 600
+                            ? 8.0
+                            : 16.0), // Adjust margins for mobile and desktop
                     child: ListTile(
                       title: Text('日付: ${detail['date']}'),
                       trailing: Text(

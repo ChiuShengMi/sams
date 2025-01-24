@@ -6,7 +6,7 @@ import 'package:sams/pages/mainPages/homepage_student.dart';
 import 'package:sams/pages/student/attendance_std_detail.dart';
 import 'package:sams/widget/bottombar.dart';
 
-import 'package:sams/widget/button/custom_button.dart';
+import 'package:sams/widget/button/custom_buttonMob.dart';
 import 'package:sams/widget/appbar.dart';
 
 class AttendanceRatePage extends StatefulWidget {
@@ -350,6 +350,16 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
                                             HomePageStudent()),
                                   );
                                 },
+                                width: MediaQuery.of(context).size.width < 600
+                                    ? 100
+                                    : 150, // 幅を携帯用に小さく
+                                height: MediaQuery.of(context).size.width < 600
+                                    ? 40
+                                    : 50, // 高さを調整
+                                fontSize:
+                                    MediaQuery.of(context).size.width < 600
+                                        ? 14
+                                        : 16, // フォントサイズを調整
                               ),
                             ],
                           ),
