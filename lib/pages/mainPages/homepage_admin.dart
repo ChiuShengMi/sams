@@ -110,7 +110,6 @@ class _HomePageAdminState extends State<HomePageAdmin>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('管理者トップ画面'),
         backgroundColor: Color(0xFF7B1FA2),
         actions: [
           IconButton(
