@@ -10,6 +10,7 @@ import 'package:sams/widget/table/custom_table.dart';
 import 'package:sams/pages/user/add.dart';
 import 'package:sams/pages/user/detail.dart';
 import 'classLists.dart';
+import 'dummyData.dart';
 
 class UserList extends StatefulWidget {
   @override
@@ -24,6 +25,8 @@ class _UserListState extends State<UserList> {
   String? selectedClass; // No default class
   int currentPage = 0; // 현재 페이지
   int itemsPerPage = 10; // 한 페이지에 표시되는 아이템 수
+  int startPage = 0; // 현재 보여지는 페이지 그룹의 첫 번째 페이지
+  int endPage = 9; // 현재 보여지는 페이지 그룹의 마지막 페이지
 
   List<List<String>> _mapSnapshotToData(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
@@ -177,9 +180,7 @@ class _UserListState extends State<UserList> {
 
                       // 페이지네이션 데이터 계산
                       final totalItems = allData.length;
-                      final totalPages = (totalItems / itemsPerPage)
-                          .ceil()
-                          .clamp(1, totalItems);
+                      final totalPages = (totalItems / itemsPerPage).ceil();
                       final pageData = allData.sublist(
                         currentPage * itemsPerPage,
                         ((currentPage + 1) * itemsPerPage).clamp(0, totalItems),
@@ -240,6 +241,15 @@ class _UserListState extends State<UserList> {
                     },
                   ),
                   SizedBox(width: 16),
+                  MediumButton(
+                      text: 'ダミーデータ',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => DummyDataScreen()),
+                        );
+                      })
                 ],
               ),
             ],
@@ -250,46 +260,72 @@ class _UserListState extends State<UserList> {
   }
 
   Widget _buildPaginationControls(int totalPages) {
+    // currentPage가 범위 내에 있도록 보
+    ///sex
+    currentPage = currentPage.clamp(0, totalPages - 1);
+
+    // startPage와 endPage 계산
+    int startPage = (currentPage ~/ 10) * 10; // 10단위로 그룹화
+    int endPage =
+        (startPage + 9) < totalPages ? (startPage + 9) : totalPages - 1;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        totalPages,
-        (index) => MouseRegion(
-          cursor: SystemMouseCursors.click, // 포인터 효과 추가
-          child: GestureDetector(
+      children: [
+        if (startPage > 0)
+          IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              setState(() {
+                currentPage = (startPage - 10).clamp(0, totalPages - 1);
+              });
+            },
+          ),
+        ...List.generate(
+          endPage - startPage + 1,
+          (index) => GestureDetector(
             onTap: () {
               setState(() {
-                currentPage = index; // 페이지 변경
+                currentPage = startPage + index;
               });
             },
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 4.0),
               padding: EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: currentPage == index
+                color: currentPage == startPage + index
                     ? Color(0xFF7B1FA2)
-                    : Colors.white, // 선택 여부에 따른 색상
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(4.0),
                 border: Border.all(
-                  color: currentPage == index
+                  color: currentPage == startPage + index
                       ? Color(0xFF7B1FA2)
-                      : Colors.white, // 선택 여부에 따른 색상
+                      : Colors.white,
                   width: 1.0,
                 ),
               ),
               child: Text(
-                '${index + 1}',
+                '${startPage + index + 1}',
                 style: TextStyle(
-                  color: currentPage == index
+                  color: currentPage == startPage + index
                       ? Colors.white
-                      : Colors.black, // 텍스트 색상
+                      : Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
         ),
-      ),
+        if (endPage < totalPages - 1)
+          IconButton(
+            icon: Icon(Icons.arrow_forward),
+            onPressed: () {
+              setState(() {
+                currentPage = (endPage + 1).clamp(0, totalPages - 1);
+              });
+            },
+          ),
+      ],
     );
   }
 }

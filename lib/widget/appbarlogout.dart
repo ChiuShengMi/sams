@@ -37,7 +37,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.logout, size: appBarHeight * 0.5),
+          icon: Icon(Icons.logout, size: appBarHeight * 0.3),
           tooltip: 'Logout',
           onPressed: () async {
             await FirebaseAuth.instance.signOut();
