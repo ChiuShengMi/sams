@@ -40,7 +40,7 @@ class _LessonTableScreenState extends State<Lessontable> {
               ),
               child: Column(
                 children: [
-                  // Fixed Header
+                  // ヘッダーを固定
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.purple,
@@ -64,11 +64,10 @@ class _LessonTableScreenState extends State<Lessontable> {
                         TableRow(
                           children: [
                             TableCellHeader(text: '授業名'),
-                            TableCellHeader(text: "コース"),
+                            TableCellHeader(text: 'コース'),
                             TableCellHeader(text: '教師'),
                             TableCellHeader(text: '授業曜日'),
                             TableCellHeader(text: '時間割'),
-                            // TableCellHeader(text: 'QRコード'),
                             TableCellHeader(text: '教室'),
                             TableCellHeader(text: '号館'),
                             TableCellHeader(text: '編集'),
@@ -77,15 +76,122 @@ class _LessonTableScreenState extends State<Lessontable> {
                       ],
                     ),
                   ),
-                  // Scrollable Content
+                  // スクロール可能なデータ行
                   Expanded(
                     child: SingleChildScrollView(
-                      child: _buildTableContent(),
+                      child: Table(
+                        columnWidths: const {
+                          0: FlexColumnWidth(2),
+                          1: FlexColumnWidth(1),
+                          2: FlexColumnWidth(2),
+                          3: FlexColumnWidth(1),
+                          4: FlexColumnWidth(1),
+                          5: FlexColumnWidth(2),
+                          6: FlexColumnWidth(1),
+                          7: FlexColumnWidth(1),
+                        },
+                        children: _buildTableRows(),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+// データ行を生成
+  List<TableRow> _buildTableRows() {
+    if (widget.lessonData.isEmpty) {
+      return [
+        TableRow(
+          children: [
+            TableCell(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'データが見つかりませんでした。',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ];
+    }
+
+    return widget.lessonData.asMap().entries.map((entry) {
+      final int index = entry.key;
+      final Map<String, dynamic> data = entry.value;
+
+      // 背景色を交互に設定
+      final Color rowColor = index.isEven ? Colors.white : Colors.grey.shade100;
+
+      return TableRow(
+        decoration: BoxDecoration(
+          color: rowColor,
+        ),
+        children: [
+          _buildTableCell(data['CLASS'] ?? 'N/A'),
+          _buildTableCell(data['classType'] ?? 'N/A'),
+          _buildTableCell((data['TEACHER_ID'] as Map<dynamic, dynamic>?)
+                  ?.values
+                  .map((teacher) => teacher['NAME'] ?? 'N/A')
+                  .join('\n') ??
+              'N/A'),
+          _buildTableCell(data['DAY'] ?? 'N/A'),
+          _buildTableCell(data['TIME'] ?? 'N/A'),
+          _buildTableCell(data['CLASSROOM'] ?? 'N/A'),
+          _buildTableCell(data['PLACE'] ?? 'N/A'),
+          _buildEditCell(data, data['classID'], data['classType']),
+        ],
+      );
+    }).toList();
+  }
+
+// セルを構築
+  Widget _buildTableCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+// 編集セルを構築
+  Widget _buildEditCell(
+      Map<String, dynamic> lessonData, String id, String course) {
+    return InkWell(
+      onTap: () async {
+        bool? result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SubjecttableEdit(
+              lessonData: lessonData,
+              id: id,
+              course: course,
+            ),
+          ),
+        );
+        if (result == true) {
+          setState(() {});
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          '編集',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
           ),
         ),
       ),
