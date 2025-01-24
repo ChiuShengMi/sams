@@ -291,48 +291,71 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
                       Text(
                         "出席率",
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: MediaQuery.of(context).size.width < 600
+                              ? 24
+                              : 30, // 小画面用に調整
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: 10),
 
                   // フィルタリングと検索バー
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 検索バー
-                      Container(
-                        width: 500,
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (value) {
-                            _filterCourses; // 檢索條件改變時重新篩選
-                          },
-                          decoration: InputDecoration(
-                            hintText: '検索する内容を入力',
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 10),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // レスポンシブ対応
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 検索バー
+                              Container(
+                                width: constraints.maxWidth < 600
+                                    ? constraints.maxWidth * 0.9
+                                    : 500, // 小画面では幅を縮小
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: (value) {
+                                    _filterCourses; // 検索条件変更時の処理
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: '検索する内容を入力',
+                                    border: OutlineInputBorder(),
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 10),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                      SizedBox(width: 30),
-                      // ITとGAMEを切り替えるトグルボタン（複数選択可能）
+                          SizedBox(
+                              height:
+                                  constraints.maxWidth < 600 ? 20 : 30), // 間隔調整
 
-                      CustomButton(
-                        text: "戻る",
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => HomePageStudent()),
-                          );
-                        },
-                      ),
-                    ],
+                          Row(
+                            mainAxisAlignment: constraints.maxWidth < 600
+                                ? MainAxisAlignment.end
+                                : MainAxisAlignment.end, // 小画面では中央揃え
+                            children: [
+                              CustomButton(
+                                text: "戻る",
+                                onPressed: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            HomePageStudent()),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
