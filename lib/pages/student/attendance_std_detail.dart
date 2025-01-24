@@ -148,9 +148,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(),
-      // appBar: AppBar(
-      //   title: Text('${widget.courseName} 詳細状況'),
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -185,9 +182,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // SizedBox(
-                      //   width: 90,
-                      // ),
                       CustomButton(
                         text: "戻る",
                         onPressed: () {
