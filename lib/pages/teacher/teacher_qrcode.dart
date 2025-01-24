@@ -80,6 +80,9 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
   Future<void> addAttendanceToSubject(
       String classType, String classID, String currentDate) async {
     try {
+      DateTime now = DateTime.now();
+      String formattedDate =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       DocumentReference subjectDoc = _firestore
           .collection('Class')
           .doc(classType)
@@ -88,8 +91,8 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
 
       await subjectDoc.set({
         'ATTENDANCE': {
-          currentDate: {
-            'GENERATEDAE': DateTime.now().toIso8601String(),
+          formattedDate: {
+            'GENERATEDAE': currentDate,
             'STATUS': 'active',
           },
         },
@@ -266,6 +269,29 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
                                     TableCell(
                                       child: ElevatedButton(
                                         onPressed: () async {
+                                          DateTime now = DateTime.now();
+                                          String todayWeekday =
+                                              _getJapaneseWeekday(now.weekday);
+
+                                          if (todayWeekday != day) {
+                                            bool? continueGeneration =
+                                                await _showWarningDialog(
+                                              context,
+                                              "授業日じゃないですが、それでも生成するか？",
+                                            );
+
+                                            if (continueGeneration != true) {
+                                              return;
+                                            }
+                                          }
+
+                                          String currentDate =
+                                              DateTime.now().toIso8601String();
+                                          await addAttendanceToSubject(
+                                              classData["classType"],
+                                              classID,
+                                              currentDate);
+
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -317,6 +343,7 @@ class _TeacherQrcodeState extends State<TeacherQrcode> {
 }
 
 // QRコード表示画面
+
 class QrCodeDisplayScreen extends StatelessWidget {
   final String data;
 
@@ -324,64 +351,88 @@ class QrCodeDisplayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    final double qrSize = screenWidth > 600 ? 300 : screenWidth * 0.6;
+
     return Scaffold(
       appBar: CustomAppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Title and Return Button
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // 垂直置中
+              crossAxisAlignment: CrossAxisAlignment.center, // 水平置中
+              children: [
+                // Title and Return Button
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        "出席用QRコード生成",
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            "出席用QRコード生成",
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          SizedBox(width: 90),
+                          CustomButton(
+                            text: "戻る", // 戻るボタン
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => TeacherQrcode()),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      SizedBox(width: 90),
-                      CustomButton(
-                        text: "戻る", // 戻るボタン
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => TeacherQrcode()),
-                          );
-                        },
+                ),
+                SizedBox(height: 40), // 空白
+                // QR Code 顯示
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
-                ],
-              ),
+                  child: QrImageView(
+                    data: data,
+                    version: QrVersions.auto,
+                    size: qrSize,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 20),
-            SizedBox(height: 80), // Empty space for layout
-            QrImageView(
-              data: data,
-              version: QrVersions.auto,
-              size: 200.0,
-            ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomBar(),
