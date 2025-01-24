@@ -11,7 +11,6 @@ import 'package:sams/widget/searchbar/custom_input.dart';
 import 'package:sams/widget/modal/confirmation_modal.dart';
 import 'package:sams/utils/log.dart'; // Utils 클래스에서 로그 기능을 사용
 import 'classLists.dart';
-import 'package:faker/faker.dart';
 
 class UserAdd extends StatefulWidget {
   @override
@@ -165,7 +164,7 @@ class _UserAddState extends State<UserAdd> {
         'PHOTO': null,
         'TEL': phoneNumberController.text,
         'UID': authResult.user!.uid,
-      };  
+      };
 
       String collectionPath;
       if (selectedRole == 'student') {

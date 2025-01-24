@@ -260,7 +260,8 @@ class _UserListState extends State<UserList> {
   }
 
   Widget _buildPaginationControls(int totalPages) {
-    // currentPage가 범위 내에 있도록 보정
+    // currentPage가 범위 내에 있도록 보
+    ///sex
     currentPage = currentPage.clamp(0, totalPages - 1);
 
     // startPage와 endPage 계산
