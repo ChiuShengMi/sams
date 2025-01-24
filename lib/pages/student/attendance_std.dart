@@ -322,10 +322,6 @@ class _AttendanceRatePageState extends State<AttendanceRatePage> {
                       SizedBox(width: 30),
                       // ITとGAMEを切り替えるトグルボタン（複数選択可能）
 
-                      SizedBox(
-                        width: 90,
-                      ),
-
                       CustomButton(
                         text: "戻る",
                         onPressed: () {
