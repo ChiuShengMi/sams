@@ -68,7 +68,7 @@ class _LessonTableScreenState extends State<Lessontable> {
                             TableCellHeader(text: '教師'),
                             TableCellHeader(text: '授業曜日'),
                             TableCellHeader(text: '時間割'),
-                            TableCellHeader(text: 'QRコード'),
+                            // TableCellHeader(text: 'QRコード'),
                             TableCellHeader(text: '教室'),
                             TableCellHeader(text: '号館'),
                             TableCellHeader(text: '編集'),
@@ -114,7 +114,7 @@ class _LessonTableScreenState extends State<Lessontable> {
                 'N/A', // 教師情報
             data['DAY'] ?? 'N/A',
             data['TIME'] ?? 'N/A',
-            data['QR_CODE'] ?? 'N/A',
+            // data['QR_CODE'] ?? 'N/A',
             data['CLASSROOM'] ?? 'N/A',
             data['PLACE'] ?? 'N/A',
           ],

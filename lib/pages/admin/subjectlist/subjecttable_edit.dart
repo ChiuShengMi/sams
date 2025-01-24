@@ -30,7 +30,7 @@ class SubjecttableEdit extends StatefulWidget {
 class _SubjecttableEditState extends State<SubjecttableEdit> {
   late TextEditingController _classController;
   late TextEditingController _courseController;
-  late TextEditingController _qrCodeController;
+  // late TextEditingController _qrCodeController;
   late TextEditingController _classroomController;
   bool isSnackbarActive = false;
 
@@ -61,8 +61,8 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
         text: widget.lessonData['CLASS']?.toString() ?? '');
     _courseController =
         TextEditingController(text: widget.course.toString() ?? '');
-    _qrCodeController = TextEditingController(
-        text: widget.lessonData['QR_CODE']?.toString() ?? '');
+    // _qrCodeController = TextEditingController(
+    //     text: widget.lessonData['QR_CODE']?.toString() ?? '');
     _classroomController = TextEditingController(
         text: widget.lessonData['CLASSROOM']?.toString() ?? '');
     _selectedDay = widget.lessonData['DAY']?.toString();
@@ -76,7 +76,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
   @override
   void dispose() {
     _classController.dispose();
-    _qrCodeController.dispose();
+    // _qrCodeController.dispose();
     _classroomController.dispose();
     super.dispose();
   }
@@ -159,10 +159,10 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
       _showSnackBar('授業名を入力してください');
       return;
     }
-    if (_qrCodeController.text.isEmpty) {
-      _showSnackBar('QRコードを入力してください');
-      return;
-    }
+    // if (_qrCodeController.text.isEmpty) {
+    //   _showSnackBar('QRコードを入力してください');
+    //   return;
+    // }
     if (_classroomController.text.isEmpty) {
       _showSnackBar('教室名を入力してください');
       return;
@@ -234,7 +234,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
       },
       'DAY': _selectedDay,
       'TIME': _selectedTime,
-      'QR_CODE': _qrCodeController.text,
+      // 'QR_CODE': _qrCodeController.text,
       'CLASSROOM': _classroomController.text,
       'PLACE': _selectedPlace,
     };
@@ -540,8 +540,8 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
                     onChanged: (value) => setState(() => _selectedTime = value),
                     hintText: '時間割',
                   ),
-                  SizedBox(height: 8),
-                  CustomInput(controller: _qrCodeController, hintText: 'QRコード'),
+                  // SizedBox(height: 8),
+                  // CustomInput(controller: _qrCodeController, hintText: 'QRコード'),
                   SizedBox(height: 8),
                   CustomInput(controller: _classroomController, hintText: '教室'),
                   SizedBox(height: 8),

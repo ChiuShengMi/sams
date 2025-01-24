@@ -158,24 +158,6 @@ class _HomePageTeacherState extends State<HomePageTeacher>
                       Expanded(
                         child: _buildBoxedButton(
                           context: context,
-                          label: 'TestPage',
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => TestPage()),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildBoxedButton(
-                          context: context,
                           label: '出席管理',
                           onPressed: () {
                             Navigator.push(
@@ -187,17 +169,35 @@ class _HomePageTeacherState extends State<HomePageTeacher>
                           },
                         ),
                       ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: _buildBoxedButton(
-                          context: context,
-                          label: '4',
-                          onPressed: () {},
-                        ),
-                      ),
                     ],
                   ),
                   SizedBox(height: 20),
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: _buildBoxedButton(
+                  //         context: context,
+                  //         label: 'TestPage',
+                  //         onPressed: () {
+                  //           Navigator.push(
+                  //             context,
+                  //             MaterialPageRoute(
+                  //                 builder: (context) => TestPage()),
+                  //           );
+                  //         },
+                  //       ),
+                  //     ),
+                  //     SizedBox(width: 20),
+                  //     Expanded(
+                  //       child: _buildBoxedButton(
+                  //         context: context,
+                  //         label: '4',
+                  //         onPressed: () {},
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // SizedBox(height: 20),
                 ],
               ),
             ],

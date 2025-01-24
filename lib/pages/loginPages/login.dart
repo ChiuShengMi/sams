@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:sams/pages/loginPages/forget_password.dart';
 import 'package:sams/pages/mainPages/homepage_admin.dart';
 import 'package:sams/pages/mainPages/homepage_student.dart';
 import 'package:sams/pages/mainPages/homepage_teacher.dart';
@@ -230,14 +231,21 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             SizedBox(height: 80),
-            Align(
-              alignment: Alignment.center,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ForgetPasswordPage()),
+                );
+              },
               child: Text(
                 'パスワードを忘れた方',
                 style: TextStyle(
                   fontFamily: 'FjallaOne',
                   fontWeight: FontWeight.bold,
                   fontSize: isMobile ? 18 : 20,
+                  color: Colors.blueAccent,
+                  decoration: TextDecoration.underline,
                 ),
               ),
             ),
