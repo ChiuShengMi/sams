@@ -127,93 +127,97 @@ class _HomePageAdminState extends State<HomePageAdmin>
         ],
       ),
       body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SlideTransition(
-                      position: _slideAnimation,
-                      child: FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: AnimatedWelcomeMessage(
-                          username:
-                              userName.isNotEmpty ? userName : 'Loading...',
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 80),
-                    CustomInputContainer(
-                      inputWidgets: [
-                        SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildBoxedButton(
-                                context: context,
-                                label: 'アナウンス設定',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            AdminAnnouncePage()),
-                                  );
-                                },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // SlideTransition と FadeTransition を固定
+              SlideTransition(
+                position: _slideAnimation,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: AnimatedWelcomeMessage(
+                    username: userName.isNotEmpty ? userName : 'Loading...',
+                  ),
+                ),
+              ),
+              SizedBox(height: 80),
+              // ここから下はスクロール可能にする
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      CustomInputContainer(
+                        inputWidgets: [
+                          SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: 'アナウンス設定',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              AdminAnnouncePage()),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 20),
-                            Expanded(
-                              child: _buildBoxedButton(
-                                context: context,
-                                label: '全体出席データ管理',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            AdminAttendanceCalculator()),
-                                  );
-                                },
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: '全体出席データ管理',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              AdminAttendanceCalculator()),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildBoxedButton(
-                                context: context,
-                                label: '授業リスト',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => SubjectTable()),
-                                  );
-                                },
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: '授業リスト',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => SubjectTable()),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 20),
-                            Expanded(
-                              child: _buildBoxedButton(
-                                context: context,
-                                label: 'ユーザ管理',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => UserList()),
-                                  );
-                                },
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: _buildBoxedButton(
+                                  context: context,
+                                  label: 'ユーザ管理',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => UserList()),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20),
-                        Row(
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
@@ -243,9 +247,10 @@ class _HomePageAdminState extends State<HomePageAdmin>
                                   },
                                 ),
                               ),
-                            ]),
-                        SizedBox(height: 20),
-                        Row(
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
@@ -292,10 +297,16 @@ class _HomePageAdminState extends State<HomePageAdmin>
                                   },
                                 ),
                               ),
-                            ]),
-                      ],
-                    ),
-                  ])),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomBar(),

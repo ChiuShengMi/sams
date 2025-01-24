@@ -79,7 +79,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 600;
