@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 class ClassLists {
   static const Map<String, List<String>> classes = {
     'IT': [
-      'IE1A',
-      'IE1B',
-      'SE1A',
-      'SK1A',
+      'IE1A', //
+      'IE1B', //
+      'SE1A', //
+      'SK1A', //
       'IE2A', //
       'IE2B', //
       'SE2A', //
       'SK2A', //
       'SK2B', //
-      'IE3A',
-      'IE3B',
-      'SK3A',
+      'IE3A', //
+      'IE3B', //
+      'SK3A', //
       'IE4A',
       'IE4B',
       'WD1A',
