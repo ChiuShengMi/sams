@@ -1,7 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sams/pages/mainPages/homepage_admin.dart';
 import 'package:sams/utils/log.dart';
+import 'package:sams/widget/appbar.dart';
+import 'package:sams/widget/bottombar.dart';
+import 'package:sams/widget/button/custom_button.dart';
+import 'package:sams/widget/custombotton01.dart';
 
 class AdminAnnouncePage extends StatefulWidget {
   @override
@@ -150,93 +155,185 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('アナウンス設定'),
-      ),
+      appBar: CustomAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'アナウンスの内容を入力してください：',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _announcementController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'ここに内容を入力',
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
               ),
-              maxLines: 3,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _publishAnnouncement,
-              child: Text('アナウンスを発表する'),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '現在のアナウンス：',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  if (_activeAnnouncements.isEmpty)
-                    Text('現在有効なアナウンスはありません。', style: TextStyle(fontSize: 16)),
-                  for (var announce in _activeAnnouncements)
-                    ListTile(
-                      title: Text(
-                        announce['Msg'],
-                        style: TextStyle(fontSize: 16, color: Colors.red),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "アナウンス設定",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.grey),
-                        onPressed: () => _updateAnnouncementStatus(
-                          announce['id'],
-                          0,
-                          'このアナウンスを非公開にしますか？',
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CustomButton(
+                        text: '戻る',
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16.0),
+
+            // 入力フィールドとボタンを固定
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'アナウンスの内容を入力してください：',
+                  style: TextStyle(
+                    color: Color(0xFF7B1FA2),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _announcementController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'ここに内容を入力',
                         ),
                       ),
                     ),
-                  SizedBox(height: 20),
-                  Text(
-                    '過去のアナウンス：',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  if (_pastAnnouncements.isEmpty)
-                    Text('過去のアナウンスはありません。', style: TextStyle(fontSize: 16)),
-                  for (var announce in _pastAnnouncements)
-                    ListTile(
-                      title: Text(
-                        announce['Msg'],
-                        style:
-                            TextStyle(fontSize: 16, color: Colors.blueAccent),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    SizedBox(width: 20),
+                    CustomButton(
+                      text: '入力',
+                      onPressed: _publishAnnouncement,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+
+            // スクロール可能な領域
+            Expanded(
+              child: SingleChildScrollView(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 現在のアナウンス
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IconButton(
-                            icon: Icon(Icons.refresh, color: Colors.green),
-                            onPressed: () => _updateAnnouncementStatus(
-                              announce['id'],
-                              1,
-                              'このアナウンスを再度公開するか？',
+                          Text(
+                            '現在のアナウンス：',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
-                            onPressed: () =>
-                                _deleteAnnouncement(announce['id']),
-                          ),
+                          SizedBox(height: 10),
+                          if (_activeAnnouncements.isEmpty)
+                            Text(
+                              '現在有効なアナウンスはありません。',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          for (var announce in _activeAnnouncements)
+                            ListTile(
+                              title: Text(
+                                announce['Msg'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete, color: Colors.grey),
+                                onPressed: () => _updateAnnouncementStatus(
+                                  announce['id'],
+                                  0,
+                                  'このアナウンスを非公開にしますか？',
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                ],
+                    SizedBox(width: 20),
+                    // 過去のアナウンス
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '過去のアナウンス：',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          if (_pastAnnouncements.isEmpty)
+                            Text(
+                              '過去のアナウンスはありません。',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          for (var announce in _pastAnnouncements)
+                            ListTile(
+                              title: Text(
+                                announce['Msg'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.blueAccent,
+                                ),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.refresh,
+                                        color: Colors.green),
+                                    onPressed: () => _updateAnnouncementStatus(
+                                      announce['id'],
+                                      1,
+                                      'このアナウンスを再度公開するか？',
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () =>
+                                        _deleteAnnouncement(announce['id']),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
