@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -5,6 +6,7 @@ import 'package:sams/pages/mainPages/homepage_admin.dart';
 import 'package:sams/widget/button/custom_button.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
+import 'package:sams/utils/log.dart';
 
 class AdminAttendanceCalculator extends StatefulWidget {
   @override
@@ -719,74 +721,200 @@ class AttendanceDetailsPage extends StatelessWidget {
     required this.activeDates,
   });
 
-  Future<Map<String, String>> _fetchAttendanceDetails() async {
+  Future<List<Map<String, String>>> _fetchAttendanceData() async {
     try {
-      // 選択された日付のFirebase Realtime Databaseから出席状況を取得
-      DatabaseReference attendanceRef = FirebaseDatabase.instance
-          .ref('ATTENDANCE/$classType/$classID/$selectedDate');
-      DataSnapshot snapshot = await attendanceRef.get();
+      List<String> presentUIDs = [];
+      FirebaseDatabase database = FirebaseDatabase.instance;
 
-      if (snapshot.exists) {
-        Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
-        Map<String, String> attendanceDetails = {};
+      List<String> departments = ['IT', 'GAME'];
+      for (var department in departments) {
+        final attendanceRef = database
+            .ref()
+            .child('ATTENDANCE')
+            .child(department)
+            .child(classID)
+            .child(selectedDate);
+        final attendanceSnapshot = await attendanceRef.get();
 
-        for (var entry in data.entries) {
-          String studentID = entry.key.toString(); // 学生ID
-          Map<dynamic, dynamic>? studentData =
-              entry.value as Map<dynamic, dynamic>?;
-
-          if (studentData != null && studentData.containsKey("NAME")) {
-            // NAMEフィールドが存在する場合は直接使用
-            attendanceDetails[studentID] = studentData["NAME"];
-          } else {
-            // NAMEが存在しない場合、Firestoreから学生名を検索
-            String studentName =
-                await _fetchStudentNameFromFirestore(studentID);
-            attendanceDetails[studentID] = studentName;
-          }
+        if (attendanceSnapshot.exists) {
+          final attendanceData =
+              attendanceSnapshot.value as Map<dynamic, dynamic>;
+          presentUIDs.addAll(attendanceData.keys.cast<String>());
         }
-        return attendanceDetails;
-      } else {
-        return {}; // データがない場合は空のMapを返す
       }
+
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      List<Map<String, String>> studentList = [];
+
+      final itDoc = await firestore
+          .collection("Class")
+          .doc("IT")
+          .collection("Subjects")
+          .doc(classID)
+          .get();
+
+      if (itDoc.exists) {
+        Map<String, dynamic>? data = itDoc.data();
+        _addStudentsFromData(data, studentList, presentUIDs);
+      }
+
+      final gameDoc = await firestore
+          .collection("Class")
+          .doc("GAME")
+          .collection("Subjects")
+          .doc(classID)
+          .get();
+
+      if (gameDoc.exists) {
+        Map<String, dynamic>? data = gameDoc.data();
+        _addStudentsFromData(data, studentList, presentUIDs);
+      }
+
+      return studentList;
     } catch (e) {
-      print("出席データの取得に失敗しました: $e");
-      return {}; // エラーが発生した場合は空のMapを返す
+      print('出席データの取得に失敗しました: $e');
+      return [];
     }
   }
 
-  Future<String> _fetchStudentNameFromFirestore(String studentID) async {
-    try {
-      DocumentSnapshot? studentSnapshot;
-      // まずはIT学生を検索
-      studentSnapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc('Students')
-          .collection('IT')
-          .doc(studentID)
-          .get();
-
-      // IT集合で見つからない場合、GAME学生を検索
-      if (!studentSnapshot.exists) {
-        studentSnapshot = await FirebaseFirestore.instance
-            .collection('Users')
-            .doc('Students')
-            .collection('GAME')
-            .doc(studentID)
-            .get();
+  void _addStudentsFromData(
+    Map<String, dynamic>? data,
+    List<Map<String, String>> studentList,
+    List<String> presentUIDs,
+  ) {
+    if (data != null && data.containsKey('STD')) {
+      Map<String, dynamic>? stdData = data['STD'];
+      if (stdData != null) {
+        stdData.forEach((key, student) {
+          if (student is Map<String, dynamic>) {
+            String uid = student['UID']?.toString() ?? 'UID不明';
+            bool isPresent = presentUIDs.contains(uid);
+            studentList.add({
+              'name': student['NAME'] ?? '不明',
+              'id': student['ID']?.toString() ?? 'ID不明',
+              'uid': uid,
+              'status': isPresent ? '出席' : '未出席',
+            });
+          }
+        });
       }
+    }
+  }
 
-      // Firestoreで学生データが見つかった場合
-      if (studentSnapshot.exists) {
-        final studentData = studentSnapshot.data() as Map<String, dynamic>;
-        return studentData['NAME'] ?? "不明な学生";
-      } else {
-        return "不明な学生"; // データが見つからない場合は "不明な学生" を返す
+  Future<void> _updateAttendance(
+      String uid, String status, String studentID, String studentName) async {
+    FirebaseDatabase database = FirebaseDatabase.instance;
+
+    List<String> departments = ['IT', 'GAME'];
+
+    String updateTime = DateTime.now().toIso8601String();
+
+    try {
+      for (String department in departments) {
+        final attendanceRef = database
+            .ref()
+            .child('ATTENDANCE')
+            .child(department)
+            .child(classID)
+            .child(selectedDate);
+
+        if (status == '出席') {
+          final studentData = {
+            'ID': studentID,
+            'NAME': studentName,
+            'METHOD': 'ADMINISTRATION',
+            'UPDATE_TIME': updateTime,
+            'APPROVE': 4,
+          };
+          await attendanceRef.update({uid: studentData});
+        } else if (status == '欠席') {
+          await attendanceRef.child(uid).remove();
+        }
+
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) throw Exception('ユーザーがログインしていません');
+        final managerUid = user.uid;
+
+        DocumentSnapshot? managerSnapshot;
+        managerSnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc('Managers')
+            .collection('IT')
+            .doc(managerUid)
+            .get();
+
+        if (!managerSnapshot.exists) {
+          managerSnapshot = await FirebaseFirestore.instance
+              .collection('Users')
+              .doc('Managers')
+              .collection('GAME')
+              .doc(managerUid)
+              .get();
+        }
+
+        if (!managerSnapshot.exists) {
+          throw Exception('管理者情報が見つかりません');
+        }
+
+        final managerData = managerSnapshot.data() as Map<String, dynamic>;
+        final approver = {
+          'UID': managerUid,
+          'ID': managerData['ID'].toString(),
+          'NAME': managerData['NAME'],
+        };
+
+        await Utils.logMessage(
+          '${managerData['NAME']}-${managerData['ID']}が ${studentName}-${selectedDate} の出席状態を変動しました。',
+        );
       }
     } catch (e) {
-      print("学生名の取得に失敗しました: $e");
-      return "不明な学生"; // エラーが発生した場合は "不明な学生" を返す
+      print('出席データの更新に失敗しました: $e');
     }
+  }
+
+  void _showAttendanceDialog(
+      BuildContext context, Map<String, String> student) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('出席状態を変わりますか'),
+          content: Text('学生: ${student['name']}\nID: ${student['id']}'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 取消
+              },
+              child: Text('取消'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await _updateAttendance(
+                  student['uid']!,
+                  '出席',
+                  student['id']!,
+                  student['name']!,
+                );
+                Navigator.of(context).pop();
+              },
+              child: Text('出席'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await _updateAttendance(
+                  student['uid']!,
+                  '欠席',
+                  student['id']!,
+                  student['name']!,
+                );
+                Navigator.of(context).pop(); // 欠席
+              },
+              child: Text('欠席'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -810,7 +938,7 @@ class AttendanceDetailsPage extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.2),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: Offset(0, 3), // Shadow position
+                    offset: Offset(0, 3),
                   ),
                 ],
               ),
@@ -857,17 +985,16 @@ class AttendanceDetailsPage extends StatelessWidget {
                 ],
               ),
             ),
-
             SizedBox(height: 16.0),
             // Attendance List Section
             Expanded(
-              child: FutureBuilder<Map<String, String>>(
-                future: _fetchAttendanceDetails(),
+              child: FutureBuilder<List<Map<String, String>>>(
+                future: _fetchAttendanceData(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(),
-                    ); // Show a loading spinner
+                    );
                   }
 
                   if (snapshot.hasError) {
@@ -879,8 +1006,8 @@ class AttendanceDetailsPage extends StatelessWidget {
                     );
                   }
 
-                  final attendanceData = snapshot.data!;
-                  if (attendanceData.isEmpty) {
+                  final students = snapshot.data ?? [];
+                  if (students.isEmpty) {
                     return Center(
                       child: Text(
                         "出席データがありません",
@@ -889,12 +1016,11 @@ class AttendanceDetailsPage extends StatelessWidget {
                     );
                   }
 
-                  // Display Attendance List
                   return ListView.builder(
-                    itemCount: attendanceData.length,
+                    itemCount: students.length,
                     itemBuilder: (context, index) {
-                      final studentName =
-                          attendanceData.values.elementAt(index);
+                      final student = students[index];
+                      final isPresent = student['status'] == '出席';
 
                       return Card(
                         elevation: 4,
@@ -905,31 +1031,27 @@ class AttendanceDetailsPage extends StatelessWidget {
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.green,
+                            backgroundColor: isPresent
+                                ? Colors.green
+                                : Colors.red, // 綠色表示出席，紅色表示未出席
                             child: Icon(
-                              Icons.check,
+                              isPresent ? Icons.check : Icons.close,
                               color: Colors.white,
                             ),
                           ),
                           title: Text(
-                            studentName,
+                            student['name'] ?? '不明',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           subtitle: Text(
-                            "出席済み",
+                            "ID: ${student['id']}, UID: ${student['uid']}",
                             style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.grey,
-                            size: 18,
-                          ),
                           onTap: () {
-                            // Add action for tapping a student
-                            print("Tapped on $studentName");
+                            _showAttendanceDialog(context, student); // 顯示對話框
                           },
                         ),
                       );

@@ -152,7 +152,7 @@ class _HomePageStudentState extends State<HomePageStudent>
         Navigator.pop(context); // 読み込み中ダイアログを閉じる
         isLoadingDialogOpen = false;
       }
-      _showResultDialog(context, "エラー", "出席確認中にエラーが発生しました");
+      _showResultDialog(context, "出席失敗", "この授業が無いためが、出席出来ません。");
     } finally {
       if (isLoadingDialogOpen && Navigator.canPop(context)) {
         Navigator.pop(context); // 必ず読み込み中ダイアログを閉じる

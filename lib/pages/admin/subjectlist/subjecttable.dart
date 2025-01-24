@@ -75,7 +75,7 @@ class _SubjectTableState extends State<SubjectTable> {
           'COURSE': value['COURSE'] ?? 'N/A', // コース
           'DAY': value['DAY'] ?? 'N/A', // 授業曜日
           'PLACE': value['PLACE'] ?? 'N/A', // 号館
-          'QR_CODE': value['QR_CODE'] ?? 'N/A', // QRコード
+          // 'QR_CODE': value['QR_CODE'] ?? 'N/A', // QRコード
           'TEACHER_ID': value['TEACHER_ID'] ?? {}, // 教師ID
           'TIME': value['TIME'] ?? 'N/A', // 時間
           'classID': key, // 授業ID

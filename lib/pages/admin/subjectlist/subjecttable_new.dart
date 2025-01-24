@@ -369,7 +369,7 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
         }
       });
 
-      String qrCode = "https://example.com/qr/$classId";
+      // String qrCode = "https://example.com/qr/$classId";
 
       await _realtimeDatabaseService.saveClassData(course, classId, {
         'CLASS': classController.text,
@@ -378,7 +378,7 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
         'TIME': selectedTime,
         'CLASSROOM': classroomController.text,
         'PLACE': selectedPlace,
-        'QR_CODE': qrCode,
+        // 'QR_CODE': qrCode,
       });
 
       // Log に保存
