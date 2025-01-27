@@ -25,8 +25,6 @@ class _UserListState extends State<UserList> {
   String? selectedClass; // No default class
   int currentPage = 0; // 현재 페이지
   int itemsPerPage = 10; // 한 페이지에 표시되는 아이템 수
-  int startPage = 0; // 현재 보여지는 페이지 그룹의 첫 번째 페이지
-  int endPage = 9; // 현재 보여지는 페이지 그룹의 마지막 페이지
 
   List<List<String>> _mapSnapshotToData(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
@@ -181,6 +179,10 @@ class _UserListState extends State<UserList> {
                       // 페이지네이션 데이터 계산
                       final totalItems = allData.length;
                       final totalPages = (totalItems / itemsPerPage).ceil();
+
+                      // currentPage 값 범위 제한
+                      currentPage = currentPage.clamp(0, totalPages - 1);
+
                       final pageData = allData.sublist(
                         currentPage * itemsPerPage,
                         ((currentPage + 1) * itemsPerPage).clamp(0, totalItems),
@@ -260,14 +262,17 @@ class _UserListState extends State<UserList> {
   }
 
   Widget _buildPaginationControls(int totalPages) {
-    // currentPage가 범위 내에 있도록 보
-    ///sex
+    // currentPage가 범위 내에 있도록 보장
     currentPage = currentPage.clamp(0, totalPages - 1);
 
     // startPage와 endPage 계산
     int startPage = (currentPage ~/ 10) * 10; // 10단위로 그룹화
     int endPage =
         (startPage + 9) < totalPages ? (startPage + 9) : totalPages - 1;
+
+    // startPage와 endPage가 범위를 벗어나지 않도록 조정
+    startPage = startPage.clamp(0, totalPages - 1);
+    endPage = endPage.clamp(0, totalPages - 1);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
