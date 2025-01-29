@@ -462,14 +462,16 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
             ),
           ),
           actions: <Widget>[
-            TextButton(
-              child: Text(
-                '戻る',
-                style: TextStyle(color: Colors.grey[700]),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                iconColor: Color(0xFF7B1FA2), // 背景色
+                padding:
+                    EdgeInsets.symmetric(horizontal: 20, vertical: 10), // テキスト色
               ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              child: Text('戻る'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
