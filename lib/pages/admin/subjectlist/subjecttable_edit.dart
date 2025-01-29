@@ -159,10 +159,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
       _showSnackBar('授業名を入力してください');
       return;
     }
-    // if (_qrCodeController.text.isEmpty) {
-    //   _showSnackBar('QRコードを入力してください');
-    //   return;
-    // }
+
     if (_classroomController.text.isEmpty) {
       _showSnackBar('教室名を入力してください');
       return;
@@ -266,7 +263,7 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
       );
 
       scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(content: Text('授業情報が更新されました')),
+        SnackBar(content: Text('授業情報が更新されました'), backgroundColor: Colors.green),
       );
 
       Future.delayed(Duration(milliseconds: 300), () {
@@ -331,9 +328,10 @@ class _SubjecttableEditState extends State<SubjecttableEdit> {
         '$userName-$userId が授業 (${_classController.text}) を削除しました。',
       );
 
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(content: Text('授業が削除されました')),
-      );
+      scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+        content: Text('授業が削除されました'),
+        backgroundColor: Colors.red,
+      ));
 
       Future.delayed(Duration(milliseconds: 300), () {
         Navigator.of(context).pop();

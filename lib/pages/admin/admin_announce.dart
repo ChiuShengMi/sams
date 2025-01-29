@@ -178,7 +178,7 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
                       Text(
                         "アナウンス設定",
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -247,20 +247,24 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
                           ),
                         ),
                         SizedBox(width: 16),
-                        ElevatedButton(
+                        // ElevatedButton(
+                        //   onPressed: _publishAnnouncement,
+                        //   style: ElevatedButton.styleFrom(
+                        //     iconColor: Color(0xFF7B1FA2),
+                        //     padding: EdgeInsets.symmetric(
+                        //         horizontal: 24, vertical: 16),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(8),
+                        //     ),
+                        //   ),
+                        //   child: Text(
+                        //     '投稿する',
+                        //     style: TextStyle(fontSize: 16),
+                        //   ),
+                        // ),
+                        CustomButton(
                           onPressed: _publishAnnouncement,
-                          style: ElevatedButton.styleFrom(
-                            iconColor: Color(0xFF7B1FA2),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: Text(
-                            '投稿する',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                          text: '投稿する',
                         ),
                       ],
                     ),
@@ -430,6 +434,7 @@ class _AdminAnnouncePageState extends State<AdminAnnouncePage> {
           ],
         ),
       ),
+      bottomNavigationBar: BottomBar(),
     );
   }
 

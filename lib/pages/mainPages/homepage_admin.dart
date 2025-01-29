@@ -144,6 +144,7 @@ class _HomePageAdminState extends State<HomePageAdmin>
               ),
               SizedBox(height: 80),
               // ここから下はスクロール可能にする
+
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
