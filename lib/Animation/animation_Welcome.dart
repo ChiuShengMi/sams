@@ -102,13 +102,13 @@ class _AnimatedWelcomeMessageState extends State<AnimatedWelcomeMessage>
             if (announcements.isNotEmpty)
               Container(
                 height: 50,
-                color: Colors.yellow[100],
+                color: const Color.fromARGB(255, 157, 49, 155),
                 child: Marquee(
                   text: announcements.join('  ★  '),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: const Color.fromARGB(221, 255, 255, 255),
                   ),
                   scrollAxis: Axis.horizontal,
                   crossAxisAlignment: CrossAxisAlignment.center,
