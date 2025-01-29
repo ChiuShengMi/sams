@@ -1,3 +1,4 @@
+import 'package:sams/pages/admin/subjectlist/subjecttable_edit.dart';
 import 'package:sams/pages/mainPages/homepage_admin.dart';
 import 'package:sams/widget/appbar.dart';
 import 'package:sams/widget/bottombar.dart';
