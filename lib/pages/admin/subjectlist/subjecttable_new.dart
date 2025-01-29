@@ -152,7 +152,7 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                           ),
                           CustomButton(
                             text: '確定',
-                            onPressed: _submitClassData,
+                            onPressed: _showConfirmationDialog,
                           ),
                         ],
                       ),
@@ -416,6 +416,105 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
       selectedTime = null;
       selectedTeacherIds = [null];
     });
+  }
+
+  Future<void> _showConfirmationDialog() async {
+    // 教師名の処理を改善
+    String teacherDisplay = selectedTeacherIds.any((id) => id != null)
+        ? selectedTeacherIds
+            .where((id) => id != null)
+            .map((id) {
+              if (id != null) {
+                // 先頭の "IT - " や "GAME - " を削除
+                return id.replaceFirst(RegExp(r'^(IT|GAME) - '), '');
+              }
+              return '';
+            })
+            .where((name) => name.isNotEmpty)
+            .join('、')
+        : '未選択';
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            '入力内容の確認',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildConfirmationField('クラス名', classController.text),
+                _buildConfirmationField('コース', selectedCourse ?? '未選択'),
+                _buildConfirmationField('教師', teacherDisplay),
+                _buildConfirmationField('曜日', selectedDay ?? '未選択'),
+                _buildConfirmationField('時間', selectedTime ?? '未選択'),
+                _buildConfirmationField('教室名', classroomController.text),
+                _buildConfirmationField('場所', selectedPlace ?? '未選択'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                '戻る',
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                iconColor: Color(0xFF7B1FA2),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: Text('確定'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _submitClassData();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildConfirmationField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+              fontSize: 14,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
+          SizedBox(height: 8),
+          Divider(height: 1),
+        ],
+      ),
+    );
   }
 }
 
