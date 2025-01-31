@@ -170,7 +170,7 @@ class _SubjecttableNewState extends State<SubjecttableNew> {
                       inputWidgets: [
                         CustomInput(
                           controller: classController,
-                          hintText: 'クラス名',
+                          hintText: '授業名',
                           keyboardType: TextInputType.name,
                         ),
                         SizedBox(height: 16),
