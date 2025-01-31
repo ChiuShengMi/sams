@@ -72,14 +72,6 @@ class _LoginPageState extends State<LoginPage> {
         );
       } else {
         Fluttertoast.showToast(msg: "役割が見つかりませんでした");
-
-        Future.delayed(Duration(seconds: 5), () async {
-          await FirebaseAuth.instance.signOut();
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => LoginPage()),
-          );
-        });
       }
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(msg: e.message ?? "ログインに失敗しました");
@@ -112,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                         TypingTextAnimation(
                           text: 'Hello ECC !!',
                           textStyle: TextStyle(
-                            fontSize: isMobile ? 70 : 100, // 모바일에서만 크기 증가
+                            fontSize: 100, // 폰트 크기
                             fontFamily: 'CarterOne',
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -122,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
                         TypingTextAnimation(
                           text: currentGreeting,
                           textStyle: TextStyle(
-                            fontSize: isMobile ? 15 : 30,
+                            fontSize: 30, // 폰트 크기
                             fontFamily: 'CarterOne',
                             color: Colors.white70,
                             fontWeight: FontWeight.bold,
@@ -154,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
           TypingTextAnimation(
               text: 'Hello ECC!!',
               textStyle: TextStyle(
-                fontSize: 60, // 모바일에서 폰트 크기 조정
+                fontSize: 30,
                 fontFamily: 'CarterOne',
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -163,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
           TypingTextAnimation(
             text: currentGreeting,
             textStyle: TextStyle(
-              fontSize: 20, // 모바일에서 작은 크기 조정
+              fontSize: 10,
               fontFamily: 'FjallaOne',
               color: Colors.white70,
             ),
@@ -179,151 +171,143 @@ class _LoginPageState extends State<LoginPage> {
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 600;
 
-    return SingleChildScrollView(
-      // 화면을 스크롤 가능하게 만들어줍니다.
-      child: Container(
-        margin: const EdgeInsets.only(top: 60),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(40),
-            topRight: Radius.circular(40),
-          ),
-          color: Colors.white,
+    return Container(
+      margin: const EdgeInsets.only(top: 60),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(40),
+          topRight: Radius.circular(40),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 이메일 입력란
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  suffixIcon: Icon(Icons.check, color: Colors.grey),
-                  label: Text(
-                    'メール',
-                    style: TextStyle(
-                      fontFamily: 'FjallaOne',
-                      fontWeight: FontWeight.bold,
-                      fontSize: isMobile ? 16 : 20,
-                      color: Color(0xFF7B1FA2),
-                    ),
+        color: Colors.white,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(
+                suffixIcon: Icon(Icons.check, color: Colors.grey),
+                label: Text(
+                  'メール',
+                  style: TextStyle(
+                    fontFamily: 'FjallaOne',
+                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 16 : 20,
+                    color: Color(0xFF7B1FA2),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: passwordController,
+              obscureText: !_isPasswordVisible,
+              decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  color: Colors.grey,
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+                label: Text(
+                  'パスワード',
+                  style: TextStyle(
+                    fontFamily: 'FjallaOne',
+                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 16 : 20,
+                    color: Color(0xFF7B1FA2),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 80),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ForgetPasswordPage()),
+                );
+              },
+              child: Text(
+                'パスワードを忘れた方',
+                style: TextStyle(
+                  fontFamily: 'FjallaOne',
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 18 : 20,
+                  color: Colors.blueAccent,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+            SizedBox(height: 40),
+            GestureDetector(
+              onTap: signInWithEmailPassword,
+              child: StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  bool isHovering = false;
 
-              // 비밀번호 입력란
-              TextField(
-                controller: passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: InputDecoration(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    color: Colors.grey,
-                    onPressed: () {
+                  return MouseRegion(
+                    onEnter: (_) {
                       setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
+                        isHovering = true;
                       });
                     },
-                  ),
-                  label: Text(
-                    'パスワード',
-                    style: TextStyle(
-                      fontFamily: 'FjallaOne',
-                      fontWeight: FontWeight.bold,
-                      fontSize: isMobile ? 16 : 20,
-                      color: Color(0xFF7B1FA2),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 80),
-
-              // 비밀번호 찾기 링크
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ForgetPasswordPage()),
-                  );
-                },
-                child: SizedBox(
-                  height: 40, // 기존 텍스트가 있던 자리에 같은 크기의 빈 공간을 추가
-                ),
-              ),
-              SizedBox(height: 25),
-
-              // 로그인 버튼
-              GestureDetector(
-                onTap: signInWithEmailPassword,
-                child: StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                    bool isHovering = false;
-
-                    return MouseRegion(
-                      onEnter: (_) {
-                        setState(() {
-                          isHovering = true;
-                        });
-                      },
-                      onExit: (_) {
-                        setState(() {
-                          isHovering = false;
-                        });
-                      },
-                      cursor: SystemMouseCursors.click, // 커서 변경
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        height: 55,
-                        width: 300,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          gradient: LinearGradient(
-                            colors: isHovering
-                                ? [
-                                    Color(0xFF9B59B6),
-                                    Color(0xFF8E44AD)
-                                  ] // 호버 시 색상
-                                : [
-                                    Color(0xFF7B1FA2),
-                                    Color(0xFF8E44AD)
-                                  ], // 기본 색상
-                          ),
-                          boxShadow: isHovering
+                    onExit: (_) {
+                      setState(() {
+                        isHovering = false;
+                      });
+                    },
+                    cursor: SystemMouseCursors.click, // 커서 변경
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 300),
+                      height: 55,
+                      width: 300,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        gradient: LinearGradient(
+                          colors: isHovering
                               ? [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4),
-                                  )
-                                ]
-                              : [],
+                                  Color(0xFF9B59B6),
+                                  Color(0xFF8E44AD)
+                                ] // 호버 시 색상
+                              : [Color(0xFF7B1FA2), Color(0xFF8E44AD)], // 기본 색상
                         ),
-                        child: Center(
-                          child: Text(
-                            'ログイン',
-                            style: TextStyle(
-                              fontFamily: 'FjallaOne',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.white,
-                            ),
+                        boxShadow: isHovering
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                )
+                              ]
+                            : [],
+                      ),
+                      child: Center(
+                        child: Text(
+                          'ログイン',
+                          style: TextStyle(
+                            fontFamily: 'FjallaOne',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
-              )
-            ],
-          ),
+                    ),
+                  );
+                },
+              ),
+            )
+          ],
         ),
       ),
     );
