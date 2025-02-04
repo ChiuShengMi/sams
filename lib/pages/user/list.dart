@@ -51,6 +51,14 @@ class _UserListState extends State<UserList> {
         .collection(selectedCourse)
         .where('DELETE_FLG', isEqualTo: 0); // DELETE_FLG가 0인 데이터만 필터링
 
+    // 검색 필터 추가
+    if (searchInputController.text.isNotEmpty) {
+      query = query
+          .where('NAME', isGreaterThanOrEqualTo: searchInputController.text)
+          .where('NAME',
+              isLessThanOrEqualTo: searchInputController.text + '\uf8ff');
+    }
+
     if (selectedClass != null && selectedClass!.isNotEmpty) {
       query = query.where('CLASS', isEqualTo: selectedClass);
     }
@@ -136,6 +144,9 @@ class _UserListState extends State<UserList> {
                       child: CustomInput(
                         controller: searchInputController,
                         hintText: 'Search',
+                        onChanged: (value) {
+                          setState(() {}); // 상태를 갱신하여 검색 조건 반영
+                        },
                       ),
                     ),
                     SizedBox(width: 10),
@@ -144,7 +155,7 @@ class _UserListState extends State<UserList> {
                         text: '検索',
                         onPressed: () {
                           setState(() {
-                            // 상태를 갱신하여 검색 조건 반영
+                            // 검색 버튼 클릭 시 상태 갱신
                           });
                         },
                       ),
@@ -241,15 +252,6 @@ class _UserListState extends State<UserList> {
                     },
                   ),
                   SizedBox(width: 16),
-                  MediumButton(
-                      text: 'ダミーデータ',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => DummyDataScreen()),
-                        );
-                      })
                 ],
               ),
             ],
@@ -260,12 +262,9 @@ class _UserListState extends State<UserList> {
   }
 
   Widget _buildPaginationControls(int totalPages) {
-    // currentPage가 범위 내에 있도록 보
-    ///sex
     currentPage = currentPage.clamp(0, totalPages - 1);
 
-    // startPage와 endPage 계산
-    int startPage = (currentPage ~/ 10) * 10; // 10단위로 그룹화
+    int startPage = (currentPage ~/ 10) * 10;
     int endPage =
         (startPage + 9) < totalPages ? (startPage + 9) : totalPages - 1;
 
