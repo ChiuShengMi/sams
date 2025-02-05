@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -18,11 +20,14 @@ class LeaveEditPage extends StatefulWidget {
 }
 
 class _LeaveEditPageState extends State<LeaveEditPage> {
-  bool isLeaveUpdated = false; // To track if leave status is updated
+  bool isLeaveUpdated = false;
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldMessengerKey,
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -176,14 +181,16 @@ class _LeaveEditPageState extends State<LeaveEditPage> {
                 CustomButton(
                   text: '不承認',
                   onPressed: () {
-                    _confirmAction(context, '休暇不承認しますか？', 2);
+                    // _confirmAction(context, '休暇不承認しますか？', 2);
+                    _updateLeaveStatus(context, 2);
                   },
                 ),
                 SizedBox(width: 10),
                 CustomButton(
                   text: '承認',
                   onPressed: () {
-                    _confirmAction(context, '休暇を承認しますか？', 1);
+                    //_confirmAction(context, '休暇を承認しますか？', 1);
+                    _updateLeaveStatus(context, 1);
                   },
                 ),
               ],
@@ -277,17 +284,138 @@ class _LeaveEditPageState extends State<LeaveEditPage> {
         isLeaveUpdated = true; // Flag to show the confirmation message
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      // `ScaffoldMessenger.of(context)` биш, `ScaffoldMessengerKey` ашиглах
+      _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(content: Text(status == 1 ? '承認しました' : '不承認にしました')),
       );
 
       Navigator.of(context).pop('refresh');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(content: Text('エラーが発生しました: $e')),
       );
     }
   }
+  // Future<void> _updateLeaveStatus(BuildContext context, int status) async {
+  //   try {
+  //     final user = FirebaseAuth.instance.currentUser;
+  //     if (user == null) throw Exception('ユーザーがログインしていません');
+  //     final uid = user.uid;
+
+  //     DocumentSnapshot? managerSnapshot;
+  //     managerSnapshot = await FirebaseFirestore.instance
+  //         .collection('Users')
+  //         .doc('Managers')
+  //         .collection('IT')
+  //         .doc(uid)
+  //         .get();
+
+  //     if (!managerSnapshot.exists) {
+  //       managerSnapshot = await FirebaseFirestore.instance
+  //           .collection('Users')
+  //           .doc('Managers')
+  //           .collection('GAME')
+  //           .doc(uid)
+  //           .get();
+  //     }
+
+  //     if (!managerSnapshot.exists) {
+  //       throw Exception('管理者情報が見つかりません');
+  //     }
+
+  //     final managerData = managerSnapshot.data() as Map<String, dynamic>;
+  //     final approver = {
+  //       'UID': uid,
+  //       'ID': managerData['ID'].toString(),
+  //       'NAME': managerData['NAME'],
+  //     };
+
+  //     await Utils.logMessage(
+  //       '${managerData['NAME']}が${widget.leaveDetails['USER_NAME']}の休暇を変動しました。',
+  //     );
+
+  //     String leaveId = widget.leaveDetails['LEAVE_ID'];
+  //     await FirebaseFirestore.instance.collection('Leaves').doc(leaveId).update(
+  //       {
+  //         'LEAVE_STATUS': status,
+  //         'APPROVER': approver,
+  //       },
+  //     );
+
+  //     if (status == 1) {
+  //       final leaveDate = widget.leaveDetails['LEAVE_DATE'];
+  //       final userUid = widget.leaveDetails['USER_UID'];
+  //       final classType =
+  //           widget.leaveDetails['CLASS_NAME'].contains('GAME') ? 'GAME' : 'IT';
+  //       final classID = widget.leaveDetails['CLASS_ID'];
+
+  //       final ref = FirebaseDatabase.instance.ref(
+  //         'ATTENDANCE/$classType/$classID/$leaveDate/$userUid/',
+  //       );
+
+  //       await ref.update({
+  //         'APPROVE': 1,
+  //       });
+  //     }
+
+  //     if (status == 2) {
+  //       final leaveDate = widget.leaveDetails['LEAVE_DATE'];
+  //       final userUid = widget.leaveDetails['USER_UID'];
+  //       final classType =
+  //           widget.leaveDetails['CLASS_NAME'].contains('GAME') ? 'GAME' : 'IT';
+  //       final classID = widget.leaveDetails['CLASS_ID'];
+
+  //       final ref = FirebaseDatabase.instance.ref(
+  //         'ATTENDANCE/$classType/$classID/$leaveDate/$userUid/',
+  //       );
+
+  //       await ref.update({
+  //         'APPROVE': 2,
+  //       });
+  //     }
+
+  //     setState(() {
+  //       isLeaveUpdated = true; // Flag to show the confirmation message
+  //     });
+
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text(status == 1 ? '承認しました' : '不承認にしました')),
+  //     );
+
+  //     Navigator.of(context).pop('refresh');
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('エラーが発生しました: $e')),
+  //     );
+  //   }
+  // }
+
+  // void _confirmAction(BuildContext context, String message, int status) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return AlertDialog(
+  //         title: const Text('確認'),
+  //         content: Text(message),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: const Text('いいえ'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //               _updateLeaveStatus(context, status);
+  //             },
+  //             child: const Text('はい'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _buildImageWidget(String? imageUrl) {
     if (imageUrl == null || imageUrl.isEmpty) {
@@ -310,33 +438,6 @@ class _LeaveEditPageState extends State<LeaveEditPage> {
       _logImageError(error, stackTrace, imageUrl);
       return _buildErrorWidget();
     }
-  }
-
-  void _confirmAction(BuildContext context, String message, int status) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('確認'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('いいえ'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _updateLeaveStatus(context, status);
-              },
-              child: const Text('はい'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _showImageDialog(BuildContext context, String imageUrl) {

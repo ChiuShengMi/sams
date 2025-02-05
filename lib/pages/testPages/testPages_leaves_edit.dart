@@ -185,7 +185,34 @@ class LeaveEditPage extends StatelessWidget {
     );
   }
 
-  Future<void> _updateLeaveStatus(BuildContext context, int status) async {
+  void _confirmAction(BuildContext rootContext, String message, int status) {
+    showDialog(
+      context: rootContext,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('確認'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('いいえ'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _updateLeaveStatus(rootContext, status); // rootContext を渡す
+              },
+              child: const Text('はい'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _updateLeaveStatus(BuildContext rootContext, int status) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('ユーザーがログインしていません');
@@ -231,7 +258,7 @@ class LeaveEditPage extends StatelessWidget {
         },
       );
 
-      if (status == 1) {
+      if (status == 1 || status == 2) {
         final leaveDate = leaveDetails['LEAVE_DATE'];
         final userUid = leaveDetails['USER_UID'];
         final classType =
@@ -243,64 +270,26 @@ class LeaveEditPage extends StatelessWidget {
         );
 
         await ref.update({
-          'APPROVE': 1,
+          'APPROVE': status,
         });
       }
 
-      if (status == 2) {
-        final leaveDate = leaveDetails['LEAVE_DATE'];
-        final userUid = leaveDetails['USER_UID'];
-        final classType =
-            leaveDetails['CLASS_NAME'].contains('GAME') ? 'GAME' : 'IT';
-        final classID = leaveDetails['CLASS_ID'];
-
-        final ref = FirebaseDatabase.instance.ref(
-          'ATTENDANCE/$classType/$classID/$leaveDate/$userUid/',
-        );
-
-        await ref.update({
-          'APPROVE': 2,
-        });
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(status == 1 ? '承認しました' : '不承認にしました')),
+      // SnackBar を表示
+      ScaffoldMessenger.of(rootContext).showSnackBar(
+        SnackBar(
+          content: Text(status == 1 ? '承認しました' : '不承認にしました'),
+          backgroundColor:
+              status == 1 ? Colors.green : Colors.red, // ✅ 状態に応じて色を変更
+        ),
       );
 
-      Navigator.of(context).pop('refresh');
+      // 画面を閉じる
+      Navigator.of(rootContext).pop('refresh');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(rootContext).showSnackBar(
         SnackBar(content: Text('エラーが発生しました: $e')),
       );
     }
-  }
-
-  // 確認ダイアログを表示する
-  void _confirmAction(BuildContext context, String message, int status) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('確認'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('いいえ'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _updateLeaveStatus(context, status); // 状態を更新する
-              },
-              child: const Text('はい'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Widget _buildImageWidget(String? imageUrl) {
